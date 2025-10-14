@@ -17,8 +17,32 @@ footer{
 a{
   color: #a8a8a8;
   font-style: normal;
-text-decoration: none;
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
 }
+
+a:hover{
+  color: #ffffff;
+  transform: translateX(5px) scale(1.05);
+}
+
+a::after{
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+a:hover::after{
+  width: 100%;
+}
+
 .footer {
     padding: 2rem;
     text-align: center;
@@ -40,6 +64,4 @@ text-decoration: none;
 
 .subListColor{
   color: #a8a8a8;
-
 }
-
