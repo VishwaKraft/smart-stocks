@@ -57,7 +57,7 @@ export function trimString(str) {
 }
 
 export function extendCtx(context) {
-  context.roundRect = function(
+  context.roundRect = function (
     x,
     y,
     width,
@@ -65,20 +65,8 @@ export function extendCtx(context) {
     radius,
     borderThickness,
     backgroundColor,
-    borderColor
+    borderColor,
   ) {
-    ///<signature>
-    ///<summary>Creates a rounded rectangle with given fill/stroke parameters</summary>
-    ///<param name="x" type="number">x value</param>
-    ///<param name="y" type="number">y value</param>
-    ///<param name="width" type="number">Border Width</param>
-    ///<param name="height" type="number">Border Height</param>
-    ///<param name="radius" type="number">Border CornerRadius</param>
-    ///<param name="borderThickness" type="number">Border Thickess</param>
-    ///<param name="backgroundColor" type="number">Background Color</param>
-    ///<param name="borderColor" type="number">Border Color</param>
-    ///</signature>
-
     if (backgroundColor) {
       this.fillStyle = backgroundColor;
     }
@@ -86,10 +74,6 @@ export function extendCtx(context) {
     if (borderColor) {
       this.strokeStyle = borderColor;
     }
-
-    //if (typeof stroke == "undefined") {
-    //	stroke = true;
-    //}
 
     if (typeof radius === "undefined") {
       radius = 5;
@@ -106,7 +90,7 @@ export function extendCtx(context) {
       x + width,
       y + height,
       x + width - radius,
-      y + height
+      y + height,
     );
     this.lineTo(x + radius, y + height);
     this.quadraticCurveTo(x, y + height, x, y + height - radius);
@@ -156,10 +140,6 @@ export function intToRGB(num) {
   var g = (num & 0x00ff00) >> 8;
   var b = (num & 0x0000ff) >> 0;
 
-  //r = r.length < 2 ? "0" + r : r;
-  //g = g.length < 2 ? "0" + g : g;
-  //b = b.length < 2 ? "0" + b : b;
-
   rgb[0] = r;
   rgb[1] = g;
   rgb[2] = b;
@@ -167,7 +147,7 @@ export function intToRGB(num) {
   return rgb;
 }
 
-export function arrayIndexOf(elt /*, from*/) {
+export function arrayIndexOf(elt) {
   var len = this.length >>> 0;
 
   var from = Number(arguments[1]) || 0;
@@ -180,7 +160,6 @@ export function arrayIndexOf(elt /*, from*/) {
   return -1;
 }
 
-//IE8- Fix: indexOf is not supported in IE8- for arrays
 export function addArrayIndexOf(obj) {
   if (!obj.indexOf) {
     obj.indexOf = arrayIndexOf;
@@ -193,8 +172,6 @@ var fontHeightInPixels = {};
 var textMeasureEl = null;
 
 export function getFontHeightInPixels(fontFamily, fontSize, fontWeight) {
-  //return fontSize;
-
   fontWeight = fontWeight || "normal";
 
   var entry = fontFamily + "_" + fontSize + "_" + fontWeight;
@@ -212,7 +189,6 @@ export function getFontHeightInPixels(fontFamily, fontSize, fontWeight) {
         "px; font-weight:" +
         fontWeight +
         ";";
-      //console.log(style);
       if (!textMeasureEl) {
         var body = document.body;
         textMeasureEl = document.createElement("span");
@@ -227,10 +203,6 @@ export function getFontHeightInPixels(fontFamily, fontSize, fontWeight) {
 
       height = Math.round(textMeasureEl.offsetHeight);
       textMeasureEl.style.display = "none";
-      //body.removeChild(tempDiv);
-
-      //if (window.console)
-      //	window.console.log(fontSize + ": " + height);
     } catch (e) {
       height = Math.ceil(fontSize * 1.1);
     }
@@ -259,7 +231,7 @@ export function getLineDashArray(lineDashType, lineThickness) {
     dashDot: [4, 2, 1, 2],
     longDash: [8, 2],
     longDashDot: [8, 2, 1, 2],
-    longDashDotDot: [8, 2, 1, 2, 1, 2]
+    longDashDotDot: [8, 2, 1, 2, 1, 2],
   };
 
   lineDashArray = lineDashTypeMap[lineDashType];
@@ -273,21 +245,20 @@ export function getLineDashArray(lineDashType, lineThickness) {
   return lineDashArray;
 }
 
-//userCapture is optional. Defaults to false
 export function addEvent(obj, eventType, fn, useCapture) {
   if (obj.addEventListener) {
     obj.addEventListener(eventType, fn, useCapture || false);
   } else if (obj.attachEvent) {
-    obj.attachEvent("on" + eventType, function(e) {
+    obj.attachEvent("on" + eventType, function (e) {
       e = e || window.event;
       e.preventDefault =
         e.preventDefault ||
-        function() {
+        function () {
           e.returnValue = false;
         };
       e.stopPropagation =
         e.stopPropagation ||
-        function() {
+        function () {
           e.cancelBubble = true;
         };
       fn.call(obj, e);
@@ -295,9 +266,9 @@ export function addEvent(obj, eventType, fn, useCapture) {
   } else return false;
 }
 
-//#region formatting functions/methods
 export function dateFormat() {
-  var reg = /D{1,4}|M{1,4}|Y{1,4}|h{1,2}|H{1,2}|m{1,2}|s{1,2}|f{1,3}|t{1,2}|T{1,2}|K|z{1,3}|"[^"]*"|'[^']*'/g;
+  var reg =
+    /D{1,4}|M{1,4}|Y{1,4}|h{1,2}|H{1,2}|m{1,2}|s{1,2}|f{1,3}|t{1,2}|T{1,2}|K|z{1,3}|"[^"]*"|'[^']*'/g;
 
   var defDays = [
     "Sunday",
@@ -306,7 +277,7 @@ export function dateFormat() {
     "Wednesday",
     "Thursday",
     "Friday",
-    "Saturday"
+    "Saturday",
   ];
   var defShortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -322,7 +293,7 @@ export function dateFormat() {
     "September",
     "October",
     "November",
-    "December"
+    "December",
   ];
   var defShortMonths = [
     "Jan",
@@ -336,13 +307,14 @@ export function dateFormat() {
     "Sep",
     "Oct",
     "Nov",
-    "Dec"
+    "Dec",
   ];
 
-  var timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
+  var timezone =
+    /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g;
   var timezoneClip = /[^-+\dA-Z]/g;
 
-  return function(dt, formatString, cultureInfo) {
+  return function (dt, formatString, cultureInfo) {
     var days = cultureInfo ? cultureInfo.days : defDays;
     var months = cultureInfo ? cultureInfo.months : defMonths;
 
@@ -371,7 +343,7 @@ export function dateFormat() {
     var milliseconds = dt[pre + "Milliseconds"]();
     var offset = utc ? 0 : dt.getTimezoneOffset();
 
-    result = formatString.replace(reg, function(key) {
+    result = formatString.replace(reg, function (key) {
       switch (key) {
         case "D":
           return date;
@@ -441,19 +413,19 @@ export function dateFormat() {
             ? "UTC"
             : (String(dt).match(timezone) || [""])
                 .pop()
-                .replace(timezoneClip, ""); // Time Zone;
+                .replace(timezoneClip, "");
         case "z":
-          return (offset > 0 ? "-" : "+") + Math.floor(Math.abs(offset) / 60); // Hour Offset from UTC without padding
+          return (offset > 0 ? "-" : "+") + Math.floor(Math.abs(offset) / 60);
         case "zz":
           return (
             (offset > 0 ? "-" : "+") + pad(Math.floor(Math.abs(offset) / 60), 2)
-          ); // Hour Offset from UTC with padding
+          );
         case "zzz":
           return (
             (offset > 0 ? "-" : "+") +
             pad(Math.floor(Math.abs(offset) / 60), 2) +
             pad(Math.abs(offset) % 60, 2)
-          ); // Hour and Minute Offset from UTC with padding
+          );
 
         default:
           return key.slice(1, key.length - 1);
@@ -477,21 +449,19 @@ export function numberFormat(v, fs, cultureInfo) {
   var vString = "";
   fs = String(fs);
   var multiplier = 1;
-  var temp;
   var result = "";
 
   var matches = "";
   var decimalPosition = -1;
   var fsBeforeDecimal = [];
   var fsAfterDecimal = [];
-  var noPhBeforeDecimal = 0; // Number of Placeholders before Decimal
-  var noPhAfterDecimal = 0; // Number of Placeholders after Decimal
+  var noPhBeforeDecimal = 0;
+  var noPhAfterDecimal = 0;
   var noComma = 0;
   var isScientificNotation = false;
   var exponent = 0;
 
   matches = fs.match(/"[^"]*"|'[^']*'|[eE][+-]*[0]+|[,]+[.]|‰|./g);
-  //window.console.log(matches + " = " + matches.length);
   var match = null;
 
   for (var i = 0; matches && i < matches.length; i++) {
@@ -539,14 +509,11 @@ export function numberFormat(v, fs, cultureInfo) {
 
   vString = v.toFixed(noPhAfterDecimal);
   var split = vString.split(".");
-  //window.console.log(split);
   var vStringBeforeDecimal = (split[0] + "").split("");
   var vStringAfterDecimal = (split[1] + "").split("");
 
   if (vStringBeforeDecimal && vStringBeforeDecimal[0] === "0")
     vStringBeforeDecimal.shift();
-
-  //window.console.log(fsBeforeDecimal + "<---------->" + fsAfterDecimal + " &        " + vStringBeforeDecimal + "<---------->" + vStringAfterDecimal);
 
   var noPhProcessed = 0;
   var noDigitsAdded = 0;
@@ -565,7 +532,6 @@ export function numberFormat(v, fs, cultureInfo) {
         vStringBeforeDecimal = [];
 
         if (match === "0") {
-          //var totalDigits = result.match(/[0-9]/g).length;
           var toPad =
             noPhBeforeDecimal - noDigitsAdded - (digits ? digits.length : 0);
 
@@ -614,7 +580,7 @@ export function numberFormat(v, fs, cultureInfo) {
       if (exponent < 0) match = match.replace("+", "").replace("-", "");
       else match = match.replace("-", "");
 
-      result += match.replace(/[0]+/, function($0) {
+      result += match.replace(/[0]+/, function ($0) {
         return pad(exponent, $0.length);
       });
     } else {
@@ -635,7 +601,6 @@ export function numberFormat(v, fs, cultureInfo) {
     }
   }
 
-  var charCount = 0;
   var resultAfterDecimal = "";
   var addDecimalSeparator = false;
 
@@ -659,7 +624,6 @@ export function numberFormat(v, fs, cultureInfo) {
         (match[0] === "'" && match[match.length - 1] === "'"))
     ) {
       resultAfterDecimal += match.slice(1, match.length - 1);
-      //addDecimalSeparator = true;
     } else if (
       (match[0] === "E" || match[0] === "e") &&
       match[match.length - 1] === "0" &&
@@ -667,21 +631,17 @@ export function numberFormat(v, fs, cultureInfo) {
     ) {
       if (exponent < 0) match = match.replace("+", "").replace("-", "");
       else match = match.replace("-", "");
-      resultAfterDecimal += match.replace(/[0]+/, function($0) {
+      resultAfterDecimal += match.replace(/[0]+/, function ($0) {
         return pad(exponent, $0.length);
       });
     } else {
       resultAfterDecimal += match;
-      //addDecimalSeparator = true;
     }
   }
 
   result += (addDecimalSeparator ? decimalSeparator : "") + resultAfterDecimal;
-  //window.console.log(result);
   return result;
 }
-
-//#endregion formatting functions/methods
 
 export function getObjectId(x, y, ctx) {
   x *= devicePixelBackingStoreRatio;
@@ -705,11 +665,8 @@ export function getObjectId(x, y, ctx) {
   } else {
     return 0;
   }
-
-  //window.console.log(pixels);
 }
 
-//extracts mouse coordinates from the event parameters
 export function getMouseCoordinates(ev) {
   var x = 0;
   var y = 0;
@@ -720,7 +677,6 @@ export function getMouseCoordinates(ev) {
     x = ev.offsetX;
     y = ev.offsetY;
   } else if (ev.layerX || ev.layerX == 0) {
-    // Firefox
     x = ev.layerX;
     y = ev.layerY;
   } else {
@@ -742,24 +698,24 @@ export function getFontString(prefix, object, fallbackObject) {
   fontString += object[fontStyleString]
     ? object[fontStyleString] + " "
     : fallbackObject && fallbackObject[fontStyleString]
-    ? fallbackObject[fontStyleString] + " "
-    : "";
+      ? fallbackObject[fontStyleString] + " "
+      : "";
   fontString += object[fontWeightString]
     ? object[fontWeightString] + " "
     : fallbackObject && fallbackObject[fontWeightString]
-    ? fallbackObject[fontWeightString] + " "
-    : "";
+      ? fallbackObject[fontWeightString] + " "
+      : "";
   fontString += object[fontSizeString]
     ? object[fontSizeString] + "px "
     : fallbackObject && fallbackObject[fontSizeString]
-    ? fallbackObject[fontSizeString] + "px "
-    : "";
+      ? fallbackObject[fontSizeString] + "px "
+      : "";
 
   var fontFamily = object[fontFamilyString]
     ? object[fontFamilyString] + ""
     : fallbackObject && fallbackObject[fontFamilyString]
-    ? fallbackObject[fontFamilyString] + ""
-    : "";
+      ? fallbackObject[fontFamilyString] + ""
+      : "";
 
   if (!isCanvasSupported && fontFamily) {
     var firstFontFamily = fontFamily.split(",")[0];
@@ -783,7 +739,6 @@ export function getProperty(propertyName, object, fallbackObject) {
 }
 
 var optimizeForHiDPI = true;
-//optimizeForHiDPI = false;
 var devicePixelRatio = window.devicePixelRatio || 1;
 var backingStoreRatio = 1;
 
@@ -815,9 +770,6 @@ export function setCanvasSize(canvas, width, height) {
 
       ctx.scale(devicePixelBackingStoreRatio, devicePixelBackingStoreRatio);
     }
-
-    //window.alert(backingStoreRatio);
-    //window.alert(devicePixelRatio);
   } else {
     canvas.width = width;
     canvas.height = height;
@@ -849,10 +801,8 @@ export function exportCanvas(canvas, format, fileName) {
   downloadLink.download = fullFileName;
   downloadLink.href = img;
   downloadLink.target = "_blank";
-  var e;
 
   if (typeof Blob !== "undefined" && !!new Blob()) {
-    //alert("blob");
     var imgData = img.replace(/^data:[a-z/]*;base64,/, "");
 
     var byteString = atob(imgData);
@@ -864,7 +814,6 @@ export function exportCanvas(canvas, format, fileName) {
 
     var blob = new Blob([buffer], { type: "image/" + format });
 
-    // Save the blob
     try {
       window.navigator.msSaveBlob(blob, fullFileName);
       saved = true;
@@ -872,7 +821,7 @@ export function exportCanvas(canvas, format, fileName) {
       downloadLink.dataset.downloadurl = [
         mimeType,
         downloadLink.download,
-        downloadLink.href
+        downloadLink.href,
       ].join(":");
       downloadLink.href = window.URL.createObjectURL(blob);
     }
@@ -897,24 +846,20 @@ export function exportCanvas(canvas, format, fileName) {
         false,
         false,
         0,
-        null
+        null,
       );
 
       if (downloadLink.dispatchEvent) {
-        //alert("dispatchEvent");
         downloadLink.dispatchEvent(event);
       } else if (downloadLink.fireEvent) {
-        //alert("fireEvent");
         downloadLink.fireEvent("onclick");
       }
     } catch (e) {
       var win = window.open();
-      //alert("<IE10");
-      //window.console.log("IE");
       win.document.write(
         "<img src='" +
           img +
-          "'></img><div>Please right click on the image and save it to your device</div>"
+          "'></img><div>Please right click on the image and save it to your device</div>",
       );
       win.document.close();
     }
@@ -924,20 +869,20 @@ export function exportCanvas(canvas, format, fileName) {
 var base64Images = {
   reset: {
     image:
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAcCAYAAAAAwr0iAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAKRSURBVEiJrdY/iF1FFMfxzwnZrGISUSR/JLGIhoh/QiRNBLWxMLIWEkwbgiAoFgoW2mhlY6dgpY2IlRBRxBSKhSAKIklWJRYuMZKAhiyopAiaTY7FvRtmZ+/ed9/zHRjezLw5v/O9d86cuZGZpmURAfdn5o9DfdZNLXpjz+LziPgyIl6MiG0jPTJzZBuyDrP4BVm0P/AKbljTb4ToY/gGewYA7KyCl+1b3DUYANvwbiHw0gCAGRzBOzjTAXEOu0cC4Ch+r5x/HrpdrcZmvIDFSucMtnYCYC++6HmNDw8FKDT34ETrf639/azOr5vwRk/g5fbeuABtgC04XWk9VQLciMP4EH/3AFzErRNC7MXlQmsesSoHsGPE23hmEoBW+61K66HMXFmIMvN8myilXS36R01ub+KfYvw43ZXwYDX+AHP4BAci4pFJomfmr/ihmNofESsBImJGk7mlncrM45n5JPbhz0kAWpsv+juxaX21YIPmVJS2uNzJMS6ZNexC0d+I7fUWXLFyz2kSZlpWPvASlmqAf/FXNXf3FAF2F/1LuFifAlionB6dRuSI2IwHi6lzmXmp6xR8XY0fiIh7psAwh+3FuDkRHQVjl+a8lkXjo0kLUKH7XaV5oO86PmZ1FTzyP4K/XGl9v/zwfbW7BriiuETGCP5ch9bc9f97HF/vcFzCa5gdEPgWq+t/4v0V63oE1uF4h0DiFJ7HnSWMppDdh1dxtsPvJ2wcBNAKbsJXa0Ck5opdaBPsRNu/usba09i1KsaAVzmLt3sghrRjuK1Tf4xkegInxwy8gKf7dKMVH2QRsV5zXR/Cftyu+aKaKbbkQrsdH+PTzLzcqzkOQAVzM+7FHdiqqe2/YT4zF/t8S/sPmawyvC974vcAAAAASUVORK5CYII="
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAcCAYAAAAAwr0iAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAKRSURBVEiJrdY/iF1FFMfxzwnZrGISUSR/JLGIhoh/QiRNBLWxMLIWEkwbgiAoFgoW2mhlY6dgpY2IlRBRxBSKhSAKIklWJRYuMZKAhiyopAiaTY7FvRtmZ+/ed9/zHRjezLw5v/O9d86cuZGZpmURAfdn5o9DfdZNLXpjz+LziPgyIl6MiG0jPTJzZBuyDrP4BVm0P/AKbljTb4ToY/gGewYA7KyCl+1b3DUYANvwbiHw0gCAGRzBOzjTAXEOu0cC4Ch+r5x/HrpdrcZmvIDFSucMtnYCYC++6HmNDw8FKDT34ETrf639/azOr5vwRk/g5fbeuABtgC04XWk9VQLciMP4EH/3AFzErRNC7MXlQmsesSoHsGPE23hmEoBW+61K66HMXFmIMvN8myilXS36R01ub+KfYvw43ZXwYDX+AHP4BAci4pFJomfmr/ihmNofESsBImJGk7mlncrM45n5JPbhz0kAWpsv+juxaX21YIPmVJS2uNzJMS6ZNexC0d+I7fUWXLFyz2kSZlpWPvASlmqAf/FXNXf3FAF2F/1LuFifAlionB6dRuSI2IwHi6lzmXmp6xR8XY0fiIh7psAwh+3FuDkRHQVjl+a8lkXjo0kLUKH7XaV5oO86PmZ1FTzyP4K/XGl9v/zwfbW7BriiuETGCP5ch9bc9f97HF/vcFzCa5gdEPgWq+t/4v0V63oE1uF4h0DiFJ7HnSWMppDdh1dxtsPvJ2wcBNAKbsJXa0Ck5opdaBPsRNu/usba09i1KsaAVzmLt3sghrRjuK1Tf4xkegInxwy8gKf7dKMVH2QRsV5zXR/Cftyu+aKaKbbkQrsdH+PTzLzcqzkOQAVzM+7FHdiqqe2/YT4zF/t8S/sPmawyvC974vcAAAAASUVORK5CYII=",
   },
   pan: {
     image:
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAJVSURBVFiFvZe7a1RBGMV/x2hWI4JpfKCIiSBKOoOCkID/wP4BFqIIFkE02ChIiC8QDKlSiI3YqRBsBVGwUNAUdiIEUgjiAzQIIsuKJsfizsXr5t7d+8jmwLDfzHz3nLOzc7+ZxTZlGyDgZiWOCuJ9wH2gCUyuqQFgF/AGcKJNrYkBYBj40CIet+muGQi/96kM4WS7C/Tm5VUg7whJg8BkEGkCR4BDYfodsADUgP6wErO5iCtswsuJb32hdbXy8qzL5TIdmzJinHdZoZIBZcSFkGlAKs1Z3YCketZcBtouuaQNkrblMiBpBrhme7mAgU4wMCvpcFsDkq4C54DFVRTH9h+i6vlE0r5UA5ImgCuh28jB28iIs7BIVCOeStoZD64P4uPAjUTygKSx2FsK2TIwkugfk9Qkfd/E+yMWHQCeSRqx/R3gOp3LazfaS2C4B5gHDgD7U9x3E3uAH7KNpC3AHHAwTL4FHgM9GQ8vAaPA0dB/Abxqk2/gBLA9MXba9r1k/d4LfA3JtwueBeM58ucS+edXnAW23wP10N3advEi9CXizTnyN4bPS7Zn4sH/dq3t18AY4e1YLYSy3g/csj2VnFshZPuOpOeSKHCodUINuGj7YetE6je1PV9QoNPJ9StNHKodx7nRbiWrGHBGXAi5DUiqtQwtpcWK0Jubt8CltA5MEV1IfwO7+VffPwGfia5m34CT4bXujIIX0Qna1/cGMNqV/wUJE2czxD8CQ4X5Sl7Jz7SILwCDpbjKPBRMHAd+EtX4HWV5Spdc2w8kDQGPbH8py/MXMygM69/FKz4AAAAASUVORK5CYII="
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAJVSURBVFiFvZe7a1RBGMV/x2hWI4JpfKCIiSBKOoOCkID/wP4BFqIIFkE02ChIiC8QDKlSiI3YqRBsBVGwUNAUdiIEUgjiAzQIIsuKJsfizsXr5t7d+8jmwLDfzHz3nLOzc7+ZxTZlGyDgZiWOCuJ9wH2gCUyuqQFgF/AGcKJNrYkBYBj40CIet+muGQi/96kM4WS7C/Tm5VUg7whJg8BkEGkCR4BDYfodsADUgP6wErO5iCtswsuJb32hdbXy8qzL5TIdmzJinHdZoZIBZcSFkGlAKs1Z3YCketZcBtouuaQNkrblMiBpBrhme7mAgU4wMCvpcFsDkq4C54DFVRTH9h+i6vlE0r5UA5ImgCuh28jB28iIs7BIVCOeStoZD64P4uPAjUTygKSx2FsK2TIwkugfk9Qkfd/E+yMWHQCeSRqx/R3gOp3LazfaS2C4B5gHDgD7U9x3E3uAH7KNpC3AHHAwTL4FHgM9GQ8vAaPA0dB/Abxqk2/gBLA9MXba9r1k/d4LfA3JtwueBeM58ucS+edXnAW23wP10N3advEi9CXizTnyN4bPS7Zn4sH/dq3t18AY4e1YLYSy3g/csj2VnFshZPuOpOeSKHCodUINuGj7YetE6je1PV9QoNPJ9StNHKodx7nRbiWrGHBGXAi5DUiqtQwtpcWK0Jubt8CltA5MEV1IfwO7+VffPwGfia5m34CT4bXujIIX0Qna1/cGMNqV/wUJE2czxD8CQ4X5Sl7Jz7SILwCDpbjKPBRMHAd+EtX4HWV5Spdc2w8kDQGPbH8py/MXMygM69/FKz4AAAAASUVORK5CYII=",
   },
   zoom: {
     image:
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAMqSURBVFiFvdfbj91TFMDxz57U6GUEMS1aYzyMtCSSDhWjCZMInpAI3khE/QHtgzdRkXgSCS8SES9epKLi0oRKNETjRahREq2KS1stdRujtDPtbA97n5zdn9+5zJxTK9k5v3POXmt991p7r71+IcaoGwkhTOIebMRqzOBTvIG3Y4zTXRmqSoyx5cAKbMJOHMFJnMZ8/jyFaXyMR7G6nb1aH22cP4BvcBxziG3GKfyTIR9D6BYg1KUghPBCDveFlb/24Av8iuUYw41YVsz5G7uxKcZ4aMEpwGt5NY3V/YbHsQ6rcAHOw/kYxigewr5CZw4fYGxBKcCLOFEYehXrMdRhr5yLETxVScsOLOkKAPfn1TYMPIvLFrShUlS2FDZm8XRHACzFAWl3R2xbqPMCYhmeLCAOYEMngAczbcTvuHYxzguIy/FesR9e6gSwU/OoPYHBHgHgviIKX2Flq7k34KhmcVnbi/PC8JX4MgMcxb118wZwdz5aISscqx7VRcox7MrPQ7i+btIAJrAkf9+bI9EPmZY2IAxiTSuAldLq4Y9+AcSUh78KP0tbAcwU35cXMD1JCIFUoGiehlqAz6TNB1f1C0DK+0h+nsNPrQC2a4bqGmlD9kOGcWt+Po6pVgDvSxfJaSkFd4UQBvoAsBYbCoB3a2flM7slA0R8iyt6rAFDeDPbm8eOTpVwGD9qVq7nLbIaZnmksPU1JtsCZMXNmpdRxFasWITzh6Xj3LCzra1OxcD2QjHiGVzdpfORnMqZio2PcF23ABdJF1Np4BPptlyPi6WzPYBzpJZtHe7A6xW9cnyP8TqA//SEIYRL8Bxul7rihvwgtVn78WcGGZXa9HGd5TDujDHuOePXNiHdKjWgZX/YbsxLx/ktqbjVzTlcjUSnvI5JrdlUVp6WesZZ6R1hRrpq9+EVTGS9jTjYAuKIouGpbcurEkIYxC051KNSamazsc+xK8b4S0VnEi/j0hqTP+M27O258egQwZuzs7pI7Mf4WQXIEDc5s9sux+5+1Py2EmP8UOq6GvWhIScxfdYjUERiAt9Jd84J6a16zf8JEKT3yCm8g1UxRv8CC4pyRhzR1uUAAAAASUVORK5CYII="
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAMqSURBVFiFvdfbj91TFMDxz57U6GUEMS1aYzyMtCSSDhWjCZMInpAI3khE/QHtgzdRkXgSCS8SES9epKLi0oRKNETjRahREq2KS1stdRujtDPtbA97n5zdn9+5zJxTK9k5v3POXmt991p7r71+IcaoGwkhTOIebMRqzOBTvIG3Y4zTXRmqSoyx5cAKbMJOHMFJnMZ8/jyFaXyMR7G6nb1aH22cP4BvcBxziG3GKfyTIR9D6BYg1KUghPBCDveFlb/24Av8iuUYw41YVsz5G7uxKcZ4aMEpwGt5NY3V/YbHsQ6rcAHOw/kYxigewr5CZw4fYGxBKcCLOFEYehXrMdRhr5yLETxVScsOLOkKAPfn1TYMPIvLFrShUlS2FDZm8XRHACzFAWl3R2xbqPMCYhmeLCAOYEMngAczbcTvuHYxzguIy/FesR9e6gSwU/OoPYHBHgHgviIKX2Flq7k34KhmcVnbi/PC8JX4MgMcxb118wZwdz5aISscqx7VRcox7MrPQ7i+btIAJrAkf9+bI9EPmZY2IAxiTSuAldLq4Y9+AcSUh78KP0tbAcwU35cXMD1JCIFUoGiehlqAz6TNB1f1C0DK+0h+nsNPrQC2a4bqGmlD9kOGcWt+Po6pVgDvSxfJaSkFd4UQBvoAsBYbCoB3a2flM7slA0R8iyt6rAFDeDPbm8eOTpVwGD9qVq7nLbIaZnmksPU1JtsCZMXNmpdRxFasWITzh6Xj3LCzra1OxcD2QjHiGVzdpfORnMqZio2PcF23ABdJF1Np4BPptlyPi6WzPYBzpJZtHe7A6xW9cnyP8TqA//SEIYRL8Bxul7rihvwgtVn78WcGGZXa9HGd5TDujDHuOePXNiHdKjWgZX/YbsxLx/ktqbjVzTlcjUSnvI5JrdlUVp6WesZZ6R1hRrpq9+EVTGS9jTjYAuKIouGpbcurEkIYxC051KNSamazsc+xK8b4S0VnEi/j0hqTP+M27O258egQwZuzs7pI7Mf4WQXIEDc5s9sux+5+1Py2EmP8UOq6GvWhIScxfdYjUERiAt9Jd84J6a16zf8JEKT3yCm8g1UxRv8CC4pyRhzR1uUAAAAASUVORK5CYII=",
   },
   menu: {
     image:
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMTUvMTTPsvU0AAAAP0lEQVRIie2SMQoAIBDDUvH/X667g8sJJ9KOhYYOkW0qGaU1MPdC0vGSbV19EACo3YMPAFH5BUBUjsqfAPpVXtNgGDfxEDCtAAAAAElFTkSuQmCC"
-  }
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAK6wAACusBgosNWgAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMTUvMTTPsvU0AAAAP0lEQVRIie2SMQoAIBDDUvH/X667g8sJJ9KOhYYOkW0qGaU1MPdC0vGSbV19EACo3YMPAFH5BUBUjsqfAPpVXtNgGDfxEDCtAAAAAElFTkSuQmCC",
+  },
 };
 
 export function setButtonState(chart, button, state) {
@@ -995,11 +940,11 @@ export function getBezierPoints(points, tension) {
 
     var drv1 = {
       x: (points[i2].x - points[i1].x) / tension,
-      y: (points[i2].y - points[i1].y) / tension
+      y: (points[i2].y - points[i1].y) / tension,
     };
     var cp1 = {
       x: points[pointIndex].x + drv1.x / 3,
-      y: points[pointIndex].y + drv1.y / 3
+      y: points[pointIndex].y + drv1.y / 3,
     };
     bezierPoints[bezierPoints.length] = cp1;
 
@@ -1009,11 +954,11 @@ export function getBezierPoints(points, tension) {
 
     var drv2 = {
       x: (points[i2].x - points[i1].x) / tension,
-      y: (points[i2].y - points[i1].y) / tension
+      y: (points[i2].y - points[i1].y) / tension,
     };
     var cp2 = {
       x: points[pointIndex].x - drv2.x / 3,
-      y: points[pointIndex].y - drv2.y / 3
+      y: points[pointIndex].y - drv2.y / 3,
     };
     bezierPoints[bezierPoints.length] = cp2;
 
@@ -1024,14 +969,12 @@ export function getBezierPoints(points, tension) {
 }
 
 export function convertPercentToValue(input, referenceValue) {
-  //input can be a number or string
   if (input === null || typeof input === "undefined") return referenceValue;
 
   var result =
     parseFloat(input.toString()) *
     (input.toString().indexOf("%") >= 0 ? referenceValue / 100 : 1);
 
-  // limit to plot area
   if (!isNaN(result) && result <= referenceValue && result >= 0) return result;
 
   return referenceValue;
@@ -1050,25 +993,20 @@ export function drawRect(
   bottom,
   left,
   right,
-  fillOpacity
+  fillOpacity,
 ) {
   if (typeof fillOpacity === "undefined") fillOpacity = 1;
 
   borderThickness = borderThickness || 0;
   borderColor = borderColor || "black";
-  //alert("top"+ top + "bottom" + bottom + " lt" + left+ "rt" + right )
   var a1 = x1,
     a2 = x2,
     b1 = y1,
-    b2 = y2,
-    edgeY,
-    edgeX;
+    b2 = y2;
   if (x2 - x1 > 15 && y2 - y1 > 15) var bevelDepth = 8;
   else var bevelDepth = 0.35 * Math.min(x2 - x1, y2 - y1);
-  //alert(a1 + "" + a2);
   var color2 = "rgba(255, 255, 255, .4)";
   var color3 = "rgba(255, 255, 255, 0.1)";
-  //color1 = "rgba(" + r + "," + g + ", " + b + ",1)";
   var color1 = color;
 
   ctx.beginPath();
@@ -1090,15 +1028,13 @@ export function drawRect(
       x1 - offset,
       y1 - offset,
       x2 - x1 + 2 * offset,
-      y2 - y1 + 2 * offset
+      y2 - y1 + 2 * offset,
     );
     ctx.stroke();
   }
 
   ctx.restore();
-  //   ctx.beginPath();
   if (top === true) {
-    // alert(x1 + "" + x2 + " " + bevelDepth);
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -1110,13 +1046,12 @@ export function drawRect(
       (x2 + x1) / 2,
       b1 + bevelDepth,
       (x2 + x1) / 2,
-      b1
+      b1,
     );
     grd.addColorStop(0, color1);
     grd.addColorStop(1, color2);
     ctx.fillStyle = grd;
     ctx.fill();
-    //              ctx.stroke();
     ctx.restore();
   }
 
@@ -1132,18 +1067,16 @@ export function drawRect(
       (x2 + x1) / 2,
       b2 - bevelDepth,
       (x2 + x1) / 2,
-      b2
+      b2,
     );
     grd.addColorStop(0, color1);
     grd.addColorStop(1, color2);
     ctx.fillStyle = grd;
-    //       ctx.stroke();
     ctx.fill();
     ctx.restore();
   }
 
   if (left === true) {
-    //   alert(x1)
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -1155,13 +1088,12 @@ export function drawRect(
       a1 + bevelDepth,
       (y2 + y1) / 2,
       a1,
-      (y2 + y1) / 2
+      (y2 + y1) / 2,
     );
     grd.addColorStop(0, color1);
     grd.addColorStop(1, color3);
     ctx.fillStyle = grd;
     ctx.fill();
-    //     ctx.stroke();
     ctx.restore();
   }
 
@@ -1176,7 +1108,7 @@ export function drawRect(
       a2 - bevelDepth,
       (y2 + y1) / 2,
       a2,
-      (y2 + y1) / 2
+      (y2 + y1) / 2,
     );
     grd.addColorStop(0, color1);
     grd.addColorStop(1, color3);
@@ -1186,10 +1118,8 @@ export function drawRect(
     ctx.fillStyle = grd;
     ctx.fill();
     ctx.closePath();
-    //          ctx.stroke();
     ctx.restore();
   }
-  //
 }
 
 export function drawSegment(
@@ -1201,11 +1131,10 @@ export function drawSegment(
   theta1,
   theta2,
   fillOpacity,
-  percentInnerRadius
+  percentInnerRadius,
 ) {
   if (typeof fillOpacity === "undefined") fillOpacity = 1;
 
-  //IE8- FIX: In IE8- segment doesn't get draw if theta2 is equal to theta1 + 2*PI.
   if (!isCanvasSupported) {
     var theta2Mod = Number((theta2 % (2 * Math.PI)).toFixed(8));
     var theta1Mod = Number((theta1 % (2 * Math.PI)).toFixed(8));
@@ -1222,12 +1151,7 @@ export function drawSegment(
     ctx.fillStyle = color;
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
-    //    ctx.shadowOffsetX = 2;
-    //    ctx.shadowOffsetY = 1;
-    //     ctx.shadowBlur = 2;
-    //    ctx.shadowColor = '#BFBFBF';
     ctx.closePath();
-    //ctx.stroke();
     ctx.fill();
   } else if (type === "doughnut") {
     ctx.beginPath();
@@ -1238,18 +1162,12 @@ export function drawSegment(
       percentInnerRadius * radius,
       theta2,
       theta1,
-      true
+      true,
     );
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
-    // shadow properties
-    //     ctx.shadowOffsetX = 1;
-    //    ctx.shadowOffsetY = 1;
-    //     ctx.shadowBlur = 1;
-    //    ctx.shadowColor = '#BFBFBF';  //grey shadow
-    //ctx.stroke();
     ctx.fill();
   }
 

@@ -1,15 +1,5 @@
 export const cultures = {
-  "en": {
-    //Derives from the default options
-  }//,
-  //"es": {
-  //    decimalSeparator: ",",
-  //    digitGroupSeparator: ".",
-  //    zoomText: "zoom",
-  //    panText: "pan",
-  //    resetText: "reset",
-  //    days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
-  //}
+  en: {},
 };
 
 export const constants = {
@@ -23,5 +13,13 @@ export const constants = {
   secondDuration: 1000,
   millisecondDuration: 1,
 
-  dayOfWeekFromInt: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  dayOfWeekFromInt: [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ],
 };
