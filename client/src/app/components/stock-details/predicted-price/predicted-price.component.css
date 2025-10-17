@@ -1,60 +1,57 @@
 mat-card {
-    height: auto;
-    width: auto;
-    /* border: 2px solid #ff6700; */
-    padding: 0rem;
-    margin: 0rem;
-    border-radius: 1rem;
-    font-family: 'Poppins', sans-serif;
+  height: auto;
+  width: auto;
+  padding: 0rem;
+  margin: 0rem;
+  border-radius: 1rem;
+  font-family: 'Poppins', sans-serif;
 }
 
 mat-card-header {
-    background-color: #ffd1b2;
-    border-radius: 1rem 1rem 0rem 0rem;
-    color: white;
+  background-color: #ffd1b2;
+  border-radius: 1rem 1rem 0rem 0rem;
+  color: white;
 }
 
 mat-card-title {
-    padding: 1rem;
+  padding: 1rem;
 }
 
 .heading {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 mat-card-content {
-    padding: 1rem;
+  padding: 1rem;
 }
 
 .details {
-    font-size: 1.25rem;
+  font-size: 1.25rem;
 }
 
 .grad {
-    /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-    background-image: linear-gradient(to right, #ff6702, #ffd1b2);
+  background-image: linear-gradient(to right, #ff6702, #ffd1b2);
 }
 
 .prices {
-    border: solid 2px #ff6700;
-    border-radius: 1rem;
-    padding: 0.5rem 0.5rem;
-    align-items: center;
-    margin-bottom: 1rem;
+  border: solid 2px #ff6700;
+  border-radius: 1rem;
+  padding: 0.5rem 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
 
-    color: #575A89;
+  color: #575a89;
 }
 
-.prices:hover{
+.prices:hover {
   background-color: #f2f2f2;
 }
 
-
 label {
-    text-align: center;
-    padding: 0.5rem;
+  text-align: center;
+  padding: 0.5rem;
 }
 
-.poppins{
+.poppins {
   font-family: 'Poppins', sans-serif;
 }

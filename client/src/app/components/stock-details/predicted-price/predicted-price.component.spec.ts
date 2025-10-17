@@ -8,9 +8,8 @@ describe('PredictedPriceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PredictedPriceComponent ]
-    })
-    .compileComponents();
+      declarations: [PredictedPriceComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

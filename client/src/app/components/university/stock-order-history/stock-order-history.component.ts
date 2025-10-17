@@ -9,20 +9,17 @@ import { DashboardService } from 'src/app/services/dashboard.service';
   styleUrls: ['./stock-order-history.component.css'],
 })
 export class StockOrderHistoryComponent implements OnInit {
-  //totalProfit:number;
   displayedColumns: string[] = [
     'date_time',
     'stockName',
     'noOfUnits',
     'type',
     'price',
-    'profit_loss'
+    'profit_loss',
   ];
   dataSource: StockOrder[] = [];
   subscription: Subscription;
-  constructor(
-    private dashboardService: DashboardService
-  ) { }
+  constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
@@ -31,13 +28,14 @@ export class StockOrderHistoryComponent implements OnInit {
       for (var i = 0; i < this.dataSource.length; i++) {
         var date = new Date(this.dataSource[i].transactionsDate);
         date = new Date(date.getTime() + 330 * 60000);
-        this.dataSource[i].transactionsDate = date.toLocaleString("en-IN", { timeZone: 'Asia/Kolkata', hour12: true });
+        this.dataSource[i].transactionsDate = date.toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour12: true,
+        });
 
-        //this.dataSource[i].transactionsDate = date.toUTCString();
-        if (this.dataSource[i].type == "BUY") {
-          this.dataSource[i].profit = "-"
-        }
-        else if (this.dataSource[i].type == "SELL") {
+        if (this.dataSource[i].type == 'BUY') {
+          this.dataSource[i].profit = '-';
+        } else if (this.dataSource[i].type == 'SELL') {
           this.dataSource[i].profit = parseFloat(this.dataSource[i].profit).toFixed(2).toString();
         }
       }
@@ -49,12 +47,14 @@ export class StockOrderHistoryComponent implements OnInit {
         for (var i = 0; i < this.dataSource.length; i++) {
           var date = new Date(this.dataSource[i].transactionsDate);
           date = new Date(date.getTime() + 330 * 60000);
-          this.dataSource[i].transactionsDate = date.toLocaleString("en-IN", { timeZone: 'Asia/Kolkata', hour12: true });
+          this.dataSource[i].transactionsDate = date.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour12: true,
+          });
 
-          if (this.dataSource[i].type == "BUY") {
-            this.dataSource[i].profit = "-"
-          }
-          else if (this.dataSource[i].type == "SELL") {
+          if (this.dataSource[i].type == 'BUY') {
+            this.dataSource[i].profit = '-';
+          } else if (this.dataSource[i].type == 'SELL') {
             this.dataSource[i].profit = parseFloat(this.dataSource[i].profit).toFixed(2).toString();
           }
         }

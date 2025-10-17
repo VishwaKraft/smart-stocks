@@ -1,12 +1,12 @@
 .example-card {
   box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
   margin-bottom: 1rem;
-  transition: transform .6s; /* Animation */
+  transition: transform 0.6s;
 }
 
 .material-icons {
   font-size: 4rem;
-  color: #FF6700;
+  color: #ff6700;
 }
 
 .example-card:hover {

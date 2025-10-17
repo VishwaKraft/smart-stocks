@@ -1,41 +1,41 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">{{title}}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <div>
-            <div class="table-responsive">
-                <table mat-table [dataSource]="monthTable">
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">{{ title }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="monthTable">
+          <ng-container matColumnDef="companyName">
+            <th mat-header-cell *matHeaderCellDef>Company Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.companyName }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="companyName">
-                        <th mat-header-cell *matHeaderCellDef> Company Name </th>
-                        <td mat-cell *matCellDef="let element"> {{element.companyName}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="ltp">
+            <th mat-header-cell *matHeaderCellDef>High Price</th>
+            <td mat-cell *matCellDef="let element">{{ element.ltp }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="ltp">
-                        <th mat-header-cell *matHeaderCellDef> High Price </th>
-                        <td mat-cell *matCellDef="let element"> {{element.ltp}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="dayChange">
+            <th mat-header-cell *matHeaderCellDef>Change</th>
+            <td mat-cell *matCellDef="let element">{{ element.dayChange.toFixed(2) }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="dayChange">
-                        <th mat-header-cell *matHeaderCellDef> Change </th>
-                        <td mat-cell *matCellDef="let element"> {{element.dayChange.toFixed(2)}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="dayChangePerc">
+            <th mat-header-cell *matHeaderCellDef>Change (%)</th>
+            <td mat-cell *matCellDef="let element">{{ element.dayChangePerc.toFixed(2) }}%</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="dayChangePerc">
-                        <th mat-header-cell *matHeaderCellDef> Change (%) </th>
-                        <td mat-cell *matCellDef="let element"> {{element.dayChangePerc.toFixed(2)}}% </td>
-                    </ng-container>
-
-
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="clickedRecommendation(row)">
-                    </tr>
-
-                </table>
-                <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn">
-                </mat-progress-bar>
-            </div>
-        </div>
-    </mat-card-content>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            (click)="clickedRecommendation(row)"
+          ></tr>
+        </table>
+        <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn">
+        </mat-progress-bar>
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>

@@ -1,43 +1,68 @@
 <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'" mode="side" [opened]="(isHandset$ | async) === false && isSideNav">
-        <mat-toolbar></mat-toolbar>
-        <div class="left">
-            <mat-nav-list>
-                <button *ngFor="let item of sideNavItem;" mat-button routerLink="{{item.link}}" routerLinkActive="active">
-                    {{item.text}}
-                </button>
-            </mat-nav-list>
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    fixedInViewport
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    mode="side"
+    [opened]="(isHandset$ | async) === false && isSideNav"
+  >
+    <mat-toolbar></mat-toolbar>
+    <div class="left">
+      <mat-nav-list>
+        <button
+          *ngFor="let item of sideNavItem"
+          mat-button
+          routerLink="{{ item.link }}"
+          routerLinkActive="active"
+        >
+          {{ item.text }}
+        </button>
+      </mat-nav-list>
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar class="sticky-top header-design px-sm-4">
+      <div class="flex-grow-1">
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          style="outline-style: none"
+          *ngIf="isSideNav"
+        >
+          <mat-icon>menu</mat-icon>
+        </button>
+        <a routerLink="/">
+          <span id="appName"><img id="image" src="assets/logobulb.PNG" /></span>
+        </a>
+      </div>
+      <div>
+        <div *ngIf="!isLogin">
+          <button class="custom-btn me-2 me-sm-3" mat-raised-button (click)="onLogin()">
+            Login
+          </button>
+          <button class="custom-btn me-sm-3" mat-raised-button (click)="onSignUp()">Sign Up</button>
         </div>
-    </mat-sidenav>
-    <mat-sidenav-content>
-        <mat-toolbar class="sticky-top header-design px-sm-4">
-            <div class="flex-grow-1">
-                <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle();" style="outline-style: none;" *ngIf="isSideNav">
-                    <mat-icon>menu</mat-icon>
-                </button>
-                <a routerLink="/">
-                    <span id="appName"><img id="image" src="assets/logobulb.PNG"></span>
-                </a>
-            </div>
-            <div>
-                <div *ngIf="!isLogin">
-                    <button class="custom-btn me-2 me-sm-3" mat-raised-button (click)="onLogin()">Login</button>
-                    <button class="custom-btn me-sm-3" mat-raised-button (click)="onSignUp()">Sign
-                        Up</button>
-                </div>
-                <button style="background-color: transparent; border: none; display: flex;
-                align-items: baseline;" class="px-2" [matMenuTriggerFor]="menu" *ngIf="isLogin">
-                    <mat-icon id="profileIcon" color="black">account_circle</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                    <button mat-menu-item routerLink="/user/profile">Profile</button>
-                    <button mat-menu-item routerLink="/home">Home</button>
-                    <button mat-menu-item routerLink="/discover/top-gainer">Discover</button>
-                    <button mat-menu-item routerLink="/user/sandbox/dashboard">Sandbox</button>
-                    <button mat-menu-item (click)="onLogOut()">Logout</button>
-                </mat-menu>
-            </div>
-        </mat-toolbar>
-        <ng-content></ng-content>
-    </mat-sidenav-content>
+        <button
+          style="background-color: transparent; border: none; display: flex; align-items: baseline"
+          class="px-2"
+          [matMenuTriggerFor]="menu"
+          *ngIf="isLogin"
+        >
+          <mat-icon id="profileIcon" color="black">account_circle</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item routerLink="/user/profile">Profile</button>
+          <button mat-menu-item routerLink="/home">Home</button>
+          <button mat-menu-item routerLink="/discover/top-gainer">Discover</button>
+          <button mat-menu-item routerLink="/user/sandbox/dashboard">Sandbox</button>
+          <button mat-menu-item (click)="onLogOut()">Logout</button>
+        </mat-menu>
+      </div>
+    </mat-toolbar>
+    <ng-content></ng-content>
+  </mat-sidenav-content>
 </mat-sidenav-container>
+

@@ -2,14 +2,10 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UiService {
-
-
-
   public discoverStockEndpoint: string = 'gainer';
-
 
   discoverSubject = new Subject<any>();
 
@@ -18,6 +14,5 @@ export class UiService {
     return this.discoverSubject.asObservable();
   }
 
-  constructor() {
-  }
+  constructor() {}
 }

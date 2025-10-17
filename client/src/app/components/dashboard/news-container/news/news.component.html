@@ -1,19 +1,23 @@
 <div class="wow slideInLeft fix" data-wow-duration="2s">
-    <mat-card class="example-card">
-        <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn"></mat-progress-bar>
-        <mat-card-content *ngIf="!requireLoader">
-            <span class="mat-headline"> {{latestNews[index].title}}.</span>
-            <br /> <br />
-            <p>
-                {{latestNews[index].description}}.
-            </p>
-            <div align="left" *ngIf="latestNews[index].author">
-                <b>Source: </b> {{latestNews[index].author}}
-            </div>
-            <div align="right">
-                <button mat-raised-button *ngIf="index != 0" (click)="prevNews()">Prev</button>
-                <button mat-raised-button *ngIf="index != (maxindex-1)" (click)="nextNews()">Next</button>
-            </div>
-        </mat-card-content>
-    </mat-card>
+  <mat-card class="example-card">
+    <mat-progress-bar
+      *ngIf="requireLoader"
+      class="my-3"
+      mode="indeterminate"
+      color="warn"
+    ></mat-progress-bar>
+    <mat-card-content *ngIf="!requireLoader">
+      <span class="mat-headline"> {{ latestNews[index].title }}.</span>
+      <br />
+      <br />
+      <p>{{ latestNews[index].description }}.</p>
+      <div align="left" *ngIf="latestNews[index].author">
+        <b>Source: </b> {{ latestNews[index].author }}
+      </div>
+      <div align="right">
+        <button mat-raised-button *ngIf="index != 0" (click)="prevNews()">Prev</button>
+        <button mat-raised-button *ngIf="index != maxindex - 1" (click)="nextNews()">Next</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

@@ -8,9 +8,8 @@ describe('AddCreditsModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AddCreditsModalComponent ]
-    })
-    .compileComponents();
+      declarations: [AddCreditsModalComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

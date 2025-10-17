@@ -1,33 +1,35 @@
 #container {
-    padding: 1rem;
-    border-radius: 1rem;
-    background-color: white;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: white;
+  box-shadow:
+    rgba(0, 0, 0, 0.2) 0px 2px 1px -1px,
+    rgba(0, 0, 0, 0.14) 0px 1px 1px 0px,
+    rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
 }
 
 #chartContainer {
-    height: 400px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 1rem;
+  height: 400px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 1rem;
 }
 
 .graphButton {
-    padding: 0.1rem .25rem;
-    border: white;
+  padding: 0.1rem 0.25rem;
+  border: white;
 }
 
 button {
-    /* border: #ff6700 solid 1px; */
-    padding: .5rem 1rem;
-    border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
 }
 
 #zoom {
-    float: right;
+  float: right;
 }
 
 a {
-    color: black;
+  color: black;
 }

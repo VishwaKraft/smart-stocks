@@ -8,18 +8,16 @@
   width: 100%;
 }
 
-button{
-  background: #FF6700;
-  color: #F2F2F2;
+button {
+  background: #ff6700;
+  color: #f2f2f2;
   margin-top: 1rem;
- text-align: center;
+  text-align: center;
 }
 
-
-mat-card{
+mat-card {
   height: auto;
   width: auto;
-  /* border: 2px solid #ff6700; */
   padding: 0rem;
   margin: 0rem;
   border-radius: 0rem;
@@ -27,16 +25,15 @@ mat-card{
   border-radius: 1rem;
 }
 
-mat-card-header{
-  /* background-color: #ffd1b2; */
+mat-card-header {
   border-radius: 1rem 1rem 0rem 0rem;
   color: white;
 }
-mat-card-title{
+mat-card-title {
   padding: 1rem;
 }
 
-mat-card-content{
+mat-card-content {
   padding: 1rem;
 }
 
@@ -60,33 +57,32 @@ mat-card-content{
 }
 
 .grad {
-  /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-  background-image: linear-gradient(to right, #ff6702  , #ffd1b2);
+  background-image: linear-gradient(to right, #ff6702, #ffd1b2);
 }
 
-.heading{
+.heading {
   font-size: 1.5rem;
 }
 
-table{
+table {
   width: 100%;
   box-shadow: none;
   font-family: 'Poppins', sans-serif;
 }
 
-td{
+td {
   font-size: 1rem;
 }
 
-th{
+th {
   font-size: 1rem;
 }
 
-#stockName{
-font-size: 1.25rem;
+#stockName {
+  font-size: 1.25rem;
 }
 
-#stockPrice{
+#stockPrice {
   font-size: 1.25rem;
 }
 

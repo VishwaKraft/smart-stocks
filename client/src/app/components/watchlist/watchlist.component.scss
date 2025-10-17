@@ -1,100 +1,99 @@
 .page-container {
-    height: 100%;
-    background: #fafafa;
-    color: #575A89;
+  height: 100%;
+  background: #fafafa;
+  color: #575a89;
+  display: flex;
+  flex-direction: column;
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  header {
+    background: #fff;
+    color: #ff6700;
+    border-bottom: 0.1rem solid #f2f2f2;
+    padding: 18px 24px;
+    font-weight: bold;
     display: flex;
-    flex-direction: column;
-    a {
-        color: inherit;
-        text-decoration: none;
+    justify-content: space-between;
+    .menu-button {
+      margin-right: 24px;
+      min-width: 0;
+      padding: 0;
+      line-height: normal;
     }
-    header {
-        background: #fff;
-        color: #FF6700;
-        border-bottom: .1rem solid #F2F2F2;
-        padding: 18px 24px;
-        font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        .menu-button {
-            margin-right: 24px;
-            min-width: 0;
-            padding: 0;
-            line-height: normal;
-        }
-        .app-title {
-            font-size: 1.5rem;
-        }
+    .app-title {
+      font-size: 1.5rem;
     }
+  }
 }
 
 .sidenav-container {
-    flex: 1;
-    .sidenav {
-        min-width: 240px;
-        a {
-            display: block;
-            padding: 6px 24px;
-            text-align: left;
-            width: 100%;
-        }
+  flex: 1;
+  .sidenav {
+    min-width: 240px;
+    a {
+      display: block;
+      padding: 6px 24px;
+      text-align: left;
+      width: 100%;
     }
-    main {
-        padding: 18px 24px;
-    }
+  }
+  main {
+    padding: 18px 24px;
+  }
 }
 
 table {
-    width: 100%;
+  width: 100%;
 }
 
 .mat-form-field {
-    font-size: 14px;
-    width: 80%;
+  font-size: 14px;
+  width: 80%;
 }
 
 td,
 input {
-    color: #575A89;
+  color: #575a89;
 }
 
 mat-paginator,
 mat-label,
 th,
 mat-form-field {
-    color: #FF6700;
+  color: #ff6700;
 }
 
 .mat-row .mat-cell {
-    transition: transform .6s;
-    /* Animation */
+  transition: transform 0.6s;
 }
 
 .mat-row:hover .mat-cell {
-    border-color: #FF6700;
-    background: #F2F2F2;
+  border-color: #ff6700;
+  background: #f2f2f2;
 }
 
 .mat-elevation-z2 {
-    width: 90%;
-    border-left: 3px solid #FF6700;
-    border-radius: 8px;
+  width: 90%;
+  border-left: 3px solid #ff6700;
+  border-radius: 8px;
 }
 
 li,
 ul {
-    color: #FF6700;
-    font-size: 1rem;
-    transition: transform .3s;
-    padding-bottom: .5rem;
+  color: #ff6700;
+  font-size: 1rem;
+  transition: transform 0.3s;
+  padding-bottom: 0.5rem;
 }
 
 ul {
-    list-style-type: square;
+  list-style-type: square;
 }
 
 li:hover {
-    cursor: pointer;
-    font-size: 1.01rem;
-    background: #F2F2F2;
+  cursor: pointer;
+  font-size: 1.01rem;
+  background: #f2f2f2;
 }

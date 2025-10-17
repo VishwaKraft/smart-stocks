@@ -3,65 +3,64 @@
     <mat-card-title class="heading">Price Prediction</mat-card-title>
   </mat-card-header>
   <mat-card-content *ngIf="requireLoader">
-    <h2  class="poppins" style="text-align: center;"> We are fetching Predictions for you, It may Take time.</h2>
-    <mat-progress-bar class="my-3" mode="indeterminate" color="warn">
-    </mat-progress-bar>
+    <h2 class="poppins" style="text-align: center">
+      We are fetching Predictions for you, It may Take time.
+    </h2>
+    <mat-progress-bar class="my-3" mode="indeterminate" color="warn"> </mat-progress-bar>
   </mat-card-content>
   <mat-card-content *ngIf="!requireLoader">
-    <div class="details" [hidden]='!this.predictPrice'>
+    <div class="details" [hidden]="!this.predictPrice">
       <div class="container">
         <div class="row">
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center">
               <div class="prices">
-                <label for="date">{{ this.day1.Date}}</label>
-                <label for="price">₹ {{this.day1.Price}} </label>
+                <label for="date">{{ this.day1.Date }}</label>
+                <label for="price">₹ {{ this.day1.Price }} </label>
               </div>
             </div>
           </div>
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center">
               <div class="prices">
-                <label for="date">{{ this.day2.Date}}</label>
-                <label for="price">₹ {{this.day2.Price}} </label>
+                <label for="date">{{ this.day2.Date }}</label>
+                <label for="price">₹ {{ this.day2.Price }} </label>
               </div>
             </div>
           </div>
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center">
               <div class="prices">
-                <label for="date">{{ this.day3.Date}}</label>
-                <label for="price">₹ {{this.day3.Price}} </label>
+                <label for="date">{{ this.day3.Date }}</label>
+                <label for="price">₹ {{ this.day3.Price }} </label>
               </div>
             </div>
           </div>
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center">
               <div class="prices">
-                <label for="date">{{ this.day5.Date}}</label>
-                <label for="price">₹ {{this.day5.Price}} </label>
+                <label for="date">{{ this.day5.Date }}</label>
+                <label for="price">₹ {{ this.day5.Price }} </label>
               </div>
             </div>
           </div>
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center my-3 my-sm-0">
               <div class="prices">
-                <label for="date">{{ this.day10.Date}}</label>
-                <label for="price">₹ {{this.day10.Price}} </label>
+                <label for="date">{{ this.day10.Date }}</label>
+                <label for="price">₹ {{ this.day10.Price }} </label>
               </div>
             </div>
           </div>
           <div class="col-sm-3 col-md-3 col-lg-2">
             <div class="text-center">
               <div class="prices">
-                <label for="date">{{ this.day20.Date}}</label>
-                <label for="price">₹ {{this.day20.Price}} </label>
+                <label for="date">{{ this.day20.Date }}</label>
+                <label for="price">₹ {{ this.day20.Price }} </label>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   </mat-card-content>

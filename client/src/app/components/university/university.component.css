@@ -1,66 +1,66 @@
 #main {
-    margin-top: 5%;
+  margin-top: 5%;
 }
 
 #mi {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+  display: flex;
+  margin-top: 5%;
+  justify-content: center;
 }
 
 #bottom {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+  display: flex;
+  margin-top: 5%;
+  justify-content: center;
 }
 
 .pf {
-    font-family: Roboto;
-    justify-items: center;
-    color: #5c5f8d;
+  font-family: Roboto;
+  justify-items: center;
+  color: #5c5f8d;
 }
 
 .unic {
-    margin: 10px;
+  margin: 10px;
 }
 
 .unica {
-    margin: 10px;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  margin: 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .but {
-    background-color: #ffd1b2;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: #575A89;
+  background-color: #ffd1b2;
+  height: 60px;
+  width: 240px;
+  font-size: medium;
+  font-family: Roboto;
+  border-color: transparent;
+  color: #575a89;
 }
 
 #image {
-    width: 637px;
-    height: 373px;
-    left: 59px;
-    top: 151px;
+  width: 637px;
+  height: 373px;
+  left: 59px;
+  top: 151px;
 }
 
 .right-icon {
-    margin-right: 15px;
-    margin-left: 15px;
-    height: 55px;
-    width: 50px;
+  margin-right: 15px;
+  margin-left: 15px;
+  height: 55px;
+  width: 50px;
 }
 .sld {
-    background-color: #ff6b06;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: white;
+  background-color: #ff6b06;
+  height: 60px;
+  width: 240px;
+  font-size: medium;
+  font-family: Roboto;
+  border-color: transparent;
+  color: white;
 }

@@ -8,9 +8,8 @@ describe('BestMonthComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BestMonthComponent ]
-    })
-    .compileComponents();
+      declarations: [BestMonthComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

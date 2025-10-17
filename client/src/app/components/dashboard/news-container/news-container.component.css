@@ -1,38 +1,38 @@
 .txt {
-    margin: 2rem !important;
+  margin: 2rem !important;
 }
 
 .grid-news {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    grid-template-rows: 1fr;
-    gap: 12px 0px;
-    grid-template-areas: ". .";
-    width: 100%;
-    height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 1fr;
+  gap: 12px 0px;
+  grid-template-areas: '. .';
+  width: 100%;
+  height: 100%;
 }
 
 @keyframes float {
-    0% {
-        transform: translatey(0px);
-    }
-    50% {
-        transform: translatey(-20px);
-    }
-    100% {
-        transform: translatey(0px);
-    }
+  0% {
+    transform: translatey(0px);
+  }
+  50% {
+    transform: translatey(-20px);
+  }
+  100% {
+    transform: translatey(0px);
+  }
 }
 
 .image-area {
-    transform: translatey(0px);
-    animation: float 5s ease-in-out infinite;
+  transform: translatey(0px);
+  animation: float 5s ease-in-out infinite;
 }
 
 h1 {
-    font-size: 3rem;
+  font-size: 3rem;
 }
 
 .color {
-    color: #FF6700;
+  color: #ff6700;
 }

@@ -5,18 +5,22 @@
   <mat-card-content>
     <div>
       <div class="container">
-
-        <div >
+        <div>
           <mat-form-field appearance="fill">
-          <mat-label>Bought Price:</mat-label>
-            <input matInput [(ngModel)]="boughtPrice">
-          </mat-form-field> <br>
+            <mat-label>Bought Price:</mat-label>
+            <input matInput [(ngModel)]="boughtPrice" />
+          </mat-form-field>
+          <br />
           <mat-form-field appearance="fill">
-          <mat-label>No of units: </mat-label>
-          <input matInput [(ngModel)]="noOfUnits">
-        </mat-form-field> <br>
-          <label style=" font-size: medium;">Current Price:  {{this.curPrice}} ₹</label><br> <br>
-          <label style=" font-size: medium;">Total Profit/Loss: <strong>{{this.profit_loss}} ₹</strong></label><br>
+            <mat-label>No of units: </mat-label>
+            <input matInput [(ngModel)]="noOfUnits" />
+          </mat-form-field>
+          <br />
+          <label style="font-size: medium">Current Price: {{this.curPrice}} ₹</label><br />
+          <br />
+          <label style="font-size: medium"
+            >Total Profit/Loss: <strong>{{this.profit_loss}} ₹</strong></label
+          ><br />
         </div>
         <div mat-dialog-actions>
           <button mat-button (click)="calculateAmount()">Calculate</button>

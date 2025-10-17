@@ -1,62 +1,50 @@
 #addCredits {
-    text-align: center;
+  text-align: center;
 }
 
 .alignCenter {
-    text-align: center;
+  text-align: center;
 }
 
 .card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.heading {
-    font-size: 1.25rem;
-    padding: .5rem 0rem;
-}
-
-.credits {
-    font-size: 2rem;
-}
-
-.button {
-    font-size: 1rem;
-    padding: .5rem 0rem;
-}
-
-button {
-    color: #FF6700;
-    border-radius: .5rem;
-    border: 0;
-    margin: 1rem;
-    border: 1px solid #FF6700;
-    background-color: white;
-    padding: .5rem 1.5rem;
-}
-
-button:hover {
-    background: #FF6700;
-    color: #F2F2F2;
-}
-
-mat-card {
-    height: 100%;
-    /* display: flex;
-  justify-content: center;
-  align-items: center; */
-}
-
-
-/*
-mat-card-header mat-card-content{
-  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-} */
+}
+
+.heading {
+  font-size: 1.25rem;
+  padding: 0.5rem 0rem;
+}
+
+.credits {
+  font-size: 2rem;
+}
+
+.button {
+  font-size: 1rem;
+  padding: 0.5rem 0rem;
+}
+
+button {
+  color: #ff6700;
+  border-radius: 0.5rem;
+  border: 0;
+  margin: 1rem;
+  border: 1px solid #ff6700;
+  background-color: white;
+  padding: 0.5rem 1.5rem;
+}
+
+button:hover {
+  background: #ff6700;
+  color: #f2f2f2;
+}
+
+mat-card {
+  height: 100%;
+}
 
 mat-card-header-text {
-    margin: 0rem;
+  margin: 0rem;
 }

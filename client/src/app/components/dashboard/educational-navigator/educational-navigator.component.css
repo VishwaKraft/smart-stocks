@@ -1,10 +1,10 @@
 .example-card {
-    box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
-    width: 60%;
-    padding: 3rem;
+  box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
+  width: 60%;
+  padding: 3rem;
 }
 
 button {
-    background: #FF6700;
-    color: #F2F2F2;
+  background: #ff6700;
+  color: #f2f2f2;
 }

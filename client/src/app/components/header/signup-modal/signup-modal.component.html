@@ -1,53 +1,52 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">Let's build you a profile</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <div>
-            <div class="profile-details">
-                <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="px-5">
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">Let's build you a profile</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div>
+      <div class="profile-details">
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="px-5">
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>First Name</mat-label>
+            <input matInput placeholder="First Name" formControlName="firstName" />
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>First Name</mat-label>
-                        <input matInput placeholder="First Name" formControlName="firstName">
-                    </mat-form-field>
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Last Name</mat-label>
+            <input matInput placeholder="Last Name" formControlName="lastName" />
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Last Name</mat-label>
-                        <input matInput placeholder="Last Name" formControlName="lastName">
-                    </mat-form-field>
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Mobile No.</mat-label>
+            <input matInput placeholder="Phone" formControlName="phoneNo" />
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Mobile No.</mat-label>
-                        <input matInput placeholder="Phone" formControlName="phoneNo">
-                    </mat-form-field>
+          <mat-form-field class="datepicker" appearance="fill">
+            <mat-label>Select Your DOB</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="dob" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
 
-                    <mat-form-field class="datepicker" appearance="fill">
-                        <mat-label>Select Your DOB</mat-label>
-                        <input matInput [matDatepicker]="picker" formControlName="dob">
-                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-datepicker #picker></mat-datepicker>
-                    </mat-form-field>
+          <mat-radio-group aria-label="Select an option" formControlName="gender">
+            <mat-radio-button value="MALE">Male</mat-radio-button>
+            <mat-radio-button value="FEMALE">Female</mat-radio-button>
+          </mat-radio-group>
 
-                    <mat-radio-group aria-label="Select an option" formControlName="gender">
-                        <mat-radio-button value="MALE">Male</mat-radio-button>
-                        <mat-radio-button value="FEMALE">Female</mat-radio-button>
-                    </mat-radio-group>
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Email ID</mat-label>
+            <input matInput placeholder="Email ID" formControlName="email" />
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Email ID</mat-label>
-                        <input matInput placeholder="Email ID" formControlName="email">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Password</mat-label>
-                        <input matInput placeholder="Password ***" formControlName="password" type="password">
-                    </mat-form-field>
-                    <div class="wrapper">
-                        <button mat-raised-button type="submit" [disabled]="!signupForm.valid">Sign Up</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </mat-card-content>
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Password</mat-label>
+            <input matInput placeholder="Password ***" formControlName="password" type="password" />
+          </mat-form-field>
+          <div class="wrapper">
+            <button mat-raised-button type="submit" [disabled]="!signupForm.valid">Sign Up</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>

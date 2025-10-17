@@ -1,68 +1,69 @@
 .header-design {
-    background: #fff;
-    border-bottom: .1rem solid #F2F2F2;
-    position: fixed;
-    top: 0;
-    color: #FF6700;
-    z-index: 2;
+  background: #fff;
+  border-bottom: 0.1rem solid #f2f2f2;
+  position: fixed;
+  top: 0;
+  color: #ff6700;
+  z-index: 2;
 }
 
 a {
-    text-decoration: none;
-    color: #FF6700;
+  text-decoration: none;
+  color: #ff6700;
 }
 
 #appName {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .example-spacer {
-    flex: 1 1 auto;
+  flex: 1 1 auto;
 }
 
 button {
-    color: #FF6700;
+  color: #ff6700;
 }
 
 .custom-btn {
-    background: #FF6700;
-    color: #F2F2F2;
+  background: #ff6700;
+  color: #f2f2f2;
 }
 
 .sidenav {
-    width: 16rem;
+  width: 16rem;
 }
 
 .sidenav button {
-    display: block;
-    padding: 6px 24px;
-    text-align: left;
-    width: 100%;
-    font-size: large;
+  display: block;
+  padding: 6px 24px;
+  text-align: left;
+  width: 100%;
+  font-size: large;
 }
 
 .sidenav .mat-toolbar {
-    background: inherit;
+  background: inherit;
 }
 
 .left::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .material-icons {
-    color: #FF6700;
+  color: #ff6700;
 }
 
 #image {
-    height: 3rem;
+  height: 3rem;
 }
 
 @media only screen and (max-width: 600px) {
-    #image {
-        height: 2.1rem;
-    }
+  #image {
+    height: 2.1rem;
+  }
 }
 
 #profileIcon {
-    font-size: 2rem;
+  font-size: 2rem;
 }
+

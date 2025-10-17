@@ -1,54 +1,52 @@
 <div class="container">
-    <div class="row">
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Credits Remaining
-                    </mat-card-subtitle>
-                    <mat-card-title class="credits">₹ {{ [userCredits] }} </mat-card-title>
-                    <br />
-                    <br />
-                    <mat-card-subtitle class="button">
-                        <button (click)="addCredits()">Add Credits</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Profit/Loss </mat-card-subtitle>
-                    <mat-card-title class="credits">₹ {{ [userProfits] }} </mat-card-title>
-                    <br />
-                    <br />
-                    <mat-card-subtitle class="button">
-                        <button (click)="navigateStockHistory()">View All Orders</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
-
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Current Subscription
-                    </mat-card-subtitle>
-                    <mat-card-title class="credits">Standard</mat-card-title>
-                    <br>
-                    <br>
-                    <mat-card-subtitle>Ends on 31/12/2021</mat-card-subtitle>
-
-                    <mat-card-subtitle class="button">
-                        <button (click)="extendSubscription()">Extend Subscription</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
+  <div class="row">
+    <div class="wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
+      <mat-card class="example-card card-container" style="text-align: center">
+        <mat-card-header>
+          <mat-card-subtitle class="heading">Credits Remaining </mat-card-subtitle>
+          <mat-card-title class="credits">₹ {{ [userCredits] }} </mat-card-title>
+          <br />
+          <br />
+          <mat-card-subtitle class="button">
+            <button (click)="addCredits()">Add Credits</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
+    <div class="wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
+      <mat-card class="example-card card-container" style="text-align: center">
+        <mat-card-header>
+          <mat-card-subtitle class="heading">Profit/Loss </mat-card-subtitle>
+          <mat-card-title class="credits">₹ {{ [userProfits] }} </mat-card-title>
+          <br />
+          <br />
+          <mat-card-subtitle class="button">
+            <button (click)="navigateStockHistory()">View All Orders</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
 
-    <div class="row">
-        <div class="wow fadeInUp col-12" data-wow-duration="3s">
-            <app-stocks-sell-table></app-stocks-sell-table>
-        </div>
+    <div class="wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
+      <mat-card class="example-card card-container" style="text-align: center">
+        <mat-card-header>
+          <mat-card-subtitle class="heading">Current Subscription </mat-card-subtitle>
+          <mat-card-title class="credits">Standard</mat-card-title>
+          <br />
+          <br />
+          <mat-card-subtitle>Ends on 31/12/2021</mat-card-subtitle>
+
+          <mat-card-subtitle class="button">
+            <button (click)="extendSubscription()">Extend Subscription</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
+  </div>
+
+  <div class="row">
+    <div class="wow fadeInUp col-12" data-wow-duration="3s">
+      <app-stocks-sell-table></app-stocks-sell-table>
+    </div>
+  </div>
 </div>

@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
-import { SideNavService } from './services/side-nav.service';
 
 import { NgwWowService } from 'ngx-wow';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   title = 'smart-stocks';
@@ -17,10 +16,8 @@ export class AppComponent {
 
   ngOnInit(): void {
     if (window) {
-      window.console.log = function () { };
-      window.console.error = function () { };
+      window.console.log = function () {};
+      window.console.error = function () {};
     }
   }
-
-
 }

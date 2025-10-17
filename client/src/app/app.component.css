@@ -1,9 +1,10 @@
 body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 mat-toolbar {
-    color: #ff6702;
+  color: #ff6702;
 }
+

@@ -1,44 +1,44 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">About Company</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <div class="mb-3">
-            <p class="info">{{ urlStockDetails.longBusinessSummary }}</p>
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">About Company</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="mb-3">
+      <p class="info">{{ urlStockDetails.longBusinessSummary }}</p>
+    </div>
+    <div class="details">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3 my-3">
+            <p>Company Name :</p>
+          </div>
+          <div class="col-md-4 my-3">
+            <strong>{{ urlStockDetails.longName }}</strong>
+          </div>
+          <div class="col-md-2 my-3">
+            <p>Symbol :</p>
+          </div>
+          <div class="col-md-3 my-3">
+            <strong>{{ urlStockDetails.symbol }}</strong>
+          </div>
         </div>
-        <div class="details">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-3 my-3">
-                        <p>Company Name : </p>
-                    </div>
-                    <div class="col-md-4 my-3">
-                        <strong>{{ urlStockDetails.longName }}</strong>
-                    </div>
-                    <div class="col-md-2 my-3">
-                        <p>Symbol : </p>
-                    </div>
-                    <div class="col-md-3 my-3">
-                        <strong>{{ urlStockDetails.symbol }}</strong>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-3 my-3">
-                        <p>Market Cap : </p>
-                    </div>
-                    <div class="col-md-4 my-3">
-                        <strong>{{ urlStockDetails.marketCap.fmt }}</strong>
-                    </div>
+        <div class="row">
+          <div class="col-md-3 my-3">
+            <p>Market Cap :</p>
+          </div>
+          <div class="col-md-4 my-3">
+            <strong>{{ urlStockDetails.marketCap.fmt }}</strong>
+          </div>
 
-                    <div class="col-md-2 my-3">
-                        <p>Sector : </p>
-                    </div>
-                    <div class="col-md-3 my-3">
-                        <strong>{{ urlStockDetails.sector }}</strong>
-                    </div>
-                </div>
-            </div>
+          <div class="col-md-2 my-3">
+            <p>Sector :</p>
+          </div>
+          <div class="col-md-3 my-3">
+            <strong>{{ urlStockDetails.sector }}</strong>
+          </div>
         </div>
-    </mat-card-content>
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>

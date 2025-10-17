@@ -1,12 +1,12 @@
 .cont {
-    padding: 1rem;
-    background-color: #f4f7f9;
+  padding: 1rem;
+  background-color: #f4f7f9;
 }
 
 app-stock-details-sidebar {
-    position: sticky;
+  position: sticky;
 }
 
 app-about-company {
-    padding: 1rem;
+  padding: 1rem;
 }

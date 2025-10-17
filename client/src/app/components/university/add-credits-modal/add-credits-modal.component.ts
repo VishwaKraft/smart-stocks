@@ -1,11 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  FormControl,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { DashboardService } from 'src/app/services/dashboard.service';
 
@@ -16,21 +10,19 @@ import { DashboardService } from 'src/app/services/dashboard.service';
 })
 export class AddCreditsModalComponent implements OnInit {
   AddCreditsForm: FormGroup = new FormGroup({});
-  defaultCredits:number=1000;
-  defaultAmount:number=this.defaultCredits/10;
+  defaultCredits: number = 1000;
+  defaultAmount: number = this.defaultCredits / 10;
   constructor(
     private _fb: FormBuilder,
     public dialogRef: MatDialogRef<AddCreditsModalComponent>,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
   ) {}
 
   ngOnInit(): void {
     this.AddCreditsForm = this._fb.group({
       noOfCredits: [this.defaultCredits, [Validators.required]],
-      amount: [this.defaultAmount,[Validators.required]],
+      amount: [this.defaultAmount, [Validators.required]],
     });
-
-
   }
 
   onSubmit() {
@@ -38,8 +30,7 @@ export class AddCreditsModalComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  onCreditChange(value){
-this.defaultAmount=value/10;
+  onCreditChange(value) {
+    this.defaultAmount = value / 10;
   }
-
 }
