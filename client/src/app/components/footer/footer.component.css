@@ -1,4 +1,4 @@
-footer{
+footer {
   padding: 2rem 2rem 1rem 2rem;
   text-align: center;
   background: #474747;
@@ -10,11 +10,11 @@ footer{
   font-family: 'Poppins', sans-serif;
 }
 
-.mat-caption{
+.mat-caption {
   font-size: 1.25rem;
 }
 
-a{
+a {
   color: #a8a8a8;
   font-style: normal;
   text-decoration: none;
@@ -23,12 +23,12 @@ a{
   transition: all 0.3s ease;
 }
 
-a:hover{
+a:hover {
   color: #ffffff;
   transform: translateX(5px) scale(1.05);
 }
 
-a::after{
+a::after {
   content: '';
   position: absolute;
   width: 0;
@@ -39,29 +39,29 @@ a::after{
   transition: width 0.3s ease;
 }
 
-a:hover::after{
+a:hover::after {
   width: 100%;
 }
 
 .footer {
-    padding: 2rem;
-    text-align: center;
-    background: #474747;
-    overflow: hidden;
-    position: relative;
-    left: 0;
-    width: -webkit-fill-available;
-    color: white;
+  padding: 2rem;
+  text-align: center;
+  background: #474747;
+  overflow: hidden;
+  position: relative;
+  left: 0;
+  width: -webkit-fill-available;
+  color: white;
 }
 
-.justify{
+.justify {
   text-align: justify;
 }
 
-.left{
+.left {
   text-align: left;
 }
 
-.subListColor{
+.subListColor {
   color: #a8a8a8;
 }

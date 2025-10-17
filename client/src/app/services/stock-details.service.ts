@@ -3,7 +3,6 @@ import { Injectable, OnInit } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { peerStockModel } from '../models/peerStockModel';
 import { predictPriceModel } from '../models/predictPriceModel';
-import { responseModel } from '../models/responseModel';
 import { StockDetailsModel } from '../models/stockDetailsModel';
 import { stockTrendModel } from '../models/stockTrendModel';
 import { PricePredictionResponse } from '../Interface/PricePredictionResponse';
@@ -11,18 +10,36 @@ import { PeopleStockResponse } from '../Interface/PeopleStockResponse';
 import { StockTrendResponse } from '../Interface/StockTrendResponse';
 import { StockDetailResponse } from '../Interface/StockDetailResponse';
 import { GraphDataResponse } from '../Interface/GraphDataResponse';
-import { map, filter, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StockDetailsService {
-
   urlStockDetails: StockDetailsModel = new StockDetailsModel(
-    '', '', '', '', '', '', { fmt: '' }, { fmt: '' }, { fmt: '' },
-    { fmt: '' }, { fmt: '' }, { fmt: '' }, { fmt: '' }, { fmt: '' },
-    { fmt: '' }, { fmt: '' }, { fmt: '' }, '', { fmt: '' }, '', '', { fmt: '' });
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    '',
+    { fmt: '' },
+    '',
+    '',
+    { fmt: '' },
+  );
 
   stockDetailUrl = `${environment.serverUrl}/stock/details?symbol=`;
   peopleStockUrl = `${environment.serverUrl}/stock/recommended-stocks/`;
@@ -40,9 +57,7 @@ export class StockDetailsService {
   priceTrend: boolean;
   stockName: string;
 
-  constructor(private http: HttpClient) {
-
-  }
+  constructor(private http: HttpClient) {}
 
   fetchStockDetails(symbol) {
     this.symbol = symbol;
@@ -52,7 +67,6 @@ export class StockDetailsService {
   fetchGraphData(symbol): Observable<GraphDataResponse> {
     return this.http.get<GraphDataResponse>(this.graphDataUrl + symbol + '?range=1y&interval=1d');
   }
-
 
   fetchStockAbout(symbol): Observable<StockDetailResponse> {
     return this.http.get<StockDetailResponse>(this.stockDetailUrl + symbol);
@@ -91,8 +105,7 @@ export class StockDetailsService {
     if (type == 'line') {
       this.graphType = 'line';
       this.graphChanged.next();
-    }
-    else if (type == 'candle') {
+    } else if (type == 'candle') {
       this.graphType = 'candle';
       this.graphChanged.next();
     }
@@ -107,15 +120,15 @@ export class StockDetailsService {
   }
 
   setPriceTrend() {
-    this.priceTrend = (Number(this.urlStockDetails.currentPrice.fmt) >= Number(this.urlStockDetails.previousClose.fmt)) ? true : false;
-    // console.log(this.urlStockDetails.currentPrice.fmt);
-    // console.log(this.urlStockDetails.previousClose.fmt);
-    // console.log( this.priceTrend);
+    this.priceTrend =
+      Number(this.urlStockDetails.currentPrice.fmt) >=
+      Number(this.urlStockDetails.previousClose.fmt)
+        ? true
+        : false;
     this.graphChanged.next();
   }
 
   getPriceTrend(): boolean {
     return this.priceTrend;
   }
-
 }

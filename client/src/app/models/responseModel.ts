@@ -1,5 +1,3 @@
-import { StockDetailsModel } from "./stockDetailsModel";
-
 export class responseModel {
   constructor(
     public statusCode: number,

@@ -8,9 +8,8 @@ describe('StockOrderHistoryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ StockOrderHistoryComponent ]
-    })
-    .compileComponents();
+      declarations: [StockOrderHistoryComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

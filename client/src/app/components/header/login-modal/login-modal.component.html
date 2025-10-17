@@ -1,26 +1,33 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">Let's Get You In</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <div>
-            <div class="profile-details">
-                <form [formGroup]="LoginForm" (ngSubmit)="onSubmit()" class="px-5">
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">Let's Get You In</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div>
+      <div class="profile-details">
+        <form [formGroup]="LoginForm" (ngSubmit)="onSubmit()" class="px-5">
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="email" formControlName="email" />
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Email</mat-label>
-                        <input matInput placeholder="email" formControlName="email">
-                    </mat-form-field>
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              placeholder="Password"
+              [type]="hide ? 'password' : 'text'"
+              formControlName="password"
+              required
+            />
+            <mat-icon color="warn" matSuffix (click)="hide = !hide">{{
+              hide ? 'visibility_off' : 'visibility'
+            }}</mat-icon>
+          </mat-form-field>
 
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Password</mat-label>
-                        <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
-                        <mat-icon color="warn" matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </mat-form-field>
-
-                    <button mat-raised-button type="submit" [disabled]="!LoginForm.valid">LOGIN</button>
-                </form>
-            </div>
-        </div>
-    </mat-card-content>
+          <button mat-raised-button type="submit" [disabled]="!LoginForm.valid">LOGIN</button>
+        </form>
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>

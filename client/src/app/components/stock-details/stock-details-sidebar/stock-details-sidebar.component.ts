@@ -2,7 +2,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { StockDetailsModel } from 'src/app/models/stockDetailsModel';
 import { StockDetailsService } from 'src/app/services/stock-details.service';
 import { ActivatedRoute } from '@angular/router';
-import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogConfig,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -16,17 +21,39 @@ export class StockDetailsSidebarComponent implements OnInit {
   wishlist: boolean = true;
   noOfUnits: any;
   durationInSeconds = 3;
-  wishlistImage: string = this.wishlist ? "assets/heartFilled.svg" : "assets/heartEmpty.svg";
-  urlStockDetails: StockDetailsModel = new StockDetailsModel("", "", "", "",
-    "", "", { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, { fmt: "" }, "", { fmt: "" }, "", "", { fmt: "" });
-  symbol: string = "";
+  wishlistImage: string = this.wishlist ? 'assets/heartFilled.svg' : 'assets/heartEmpty.svg';
+  urlStockDetails: StockDetailsModel = new StockDetailsModel(
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    { fmt: '' },
+    '',
+    { fmt: '' },
+    '',
+    '',
+    { fmt: '' },
+  );
+  symbol: string = '';
   activatedRoute: ActivatedRoute;
-  id:any;
+  id: any;
   constructor(
     stockDetailsService: StockDetailsService,
     activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
   ) {
     this.stockDetailsService = stockDetailsService;
     this.activatedRoute = activatedRoute;
@@ -35,21 +62,23 @@ export class StockDetailsSidebarComponent implements OnInit {
   ngOnInit(): void {
     this.symbol = this.activatedRoute.snapshot.params['symbol'];
 
-    if (this.symbol != "") {
-        this.stockDetailsService.fetchStockDetails(this.symbol).subscribe((res)=>{
-          this.urlStockDetails= res.data;
-          this.stockDetailsService.setStockDetails(this.urlStockDetails);
-          this.changeLow = this.urlStockDetails.change.fmt.toString().charAt(0) === '-' ? true : false;
-        });
-      }
+    if (this.symbol != '') {
+      this.stockDetailsService.fetchStockDetails(this.symbol).subscribe((res) => {
+        this.urlStockDetails = res.data;
+        this.stockDetailsService.setStockDetails(this.urlStockDetails);
+        this.changeLow =
+          this.urlStockDetails.change.fmt.toString().charAt(0) === '-' ? true : false;
+      });
+    }
 
-      this.id=setInterval(()=>{
-        this.stockDetailsService.fetchStockDetails(this.symbol).subscribe((res)=>{
-          this.urlStockDetails= res.data;
-          this.stockDetailsService.setStockDetails(this.urlStockDetails);
-          this.changeLow = this.urlStockDetails.change.fmt.toString().charAt(0) === '-' ? true : false;
-        });
-      },3000);
+    this.id = setInterval(() => {
+      this.stockDetailsService.fetchStockDetails(this.symbol).subscribe((res) => {
+        this.urlStockDetails = res.data;
+        this.stockDetailsService.setStockDetails(this.urlStockDetails);
+        this.changeLow =
+          this.urlStockDetails.change.fmt.toString().charAt(0) === '-' ? true : false;
+      });
+    }, 3000);
   }
 
   ngOnDestroy() {
@@ -58,11 +87,9 @@ export class StockDetailsSidebarComponent implements OnInit {
     }
   }
 
-
   openDialog(): void {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    //dialogConfig.width = "40%";
     this.dialog.open(DialogOverviewExampleDialogComponent, dialogConfig);
   }
 
@@ -76,7 +103,7 @@ export class StockDetailsSidebarComponent implements OnInit {
 @Component({
   selector: 'dialog-overview-example-dialog',
   templateUrl: 'dialog-overview-example-dialog.html',
-  styleUrls: ['dialog-overview-example-dialog.css']
+  styleUrls: ['dialog-overview-example-dialog.css'],
 })
 export class DialogOverviewExampleDialogComponent implements OnInit {
   noOfUnits: any;
@@ -86,7 +113,9 @@ export class DialogOverviewExampleDialogComponent implements OnInit {
   stockDetailsService: StockDetailsService;
   constructor(
     public dialogRef: MatDialogRef<DialogOverviewExampleDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: number, stockDetailsService: StockDetailsService) {
+    @Inject(MAT_DIALOG_DATA) public data: number,
+    stockDetailsService: StockDetailsService,
+  ) {
     this.stockDetailsService = stockDetailsService;
   }
 
@@ -100,21 +129,23 @@ export class DialogOverviewExampleDialogComponent implements OnInit {
 
   calculateAmount() {
     var numCurPrice = this.curPrice.split(',').join('').toString();
-    this.profit_loss = (parseFloat(numCurPrice) * this.noOfUnits - this.boughtPrice * this.noOfUnits).toFixed(2);
+    this.profit_loss = (
+      parseFloat(numCurPrice) * this.noOfUnits -
+      this.boughtPrice * this.noOfUnits
+    ).toFixed(2);
   }
-
 }
 
 @Component({
   selector: 'buy-component',
-  template: `<span class="example-pizza-party">
- Stock has been added to watchlist!!
-</span>`,
+  template: `<span class="example-pizza-party"> Stock has been added to watchlist!! </span>`,
 
-  styles: [`
-    .example-pizza-party {
-      color: white;
-    }
-  `],
+  styles: [
+    `
+      .example-pizza-party {
+        color: white;
+      }
+    `,
+  ],
 })
-export class BuyComponent { }
+export class BuyComponent {}

@@ -9,11 +9,11 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatRadioModule } from '@angular/material/radio'
+import { MatRadioModule } from '@angular/material/radio';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -42,12 +42,11 @@ const Material = [
   MatDatepickerModule,
   MatFormFieldModule,
   MatNativeDateModule,
-  MatMenuModule
-]
-
+  MatMenuModule,
+];
 
 @NgModule({
   imports: [Material],
-  exports: [Material]
+  exports: [Material],
 })
-export class MaterialModule { }
+export class MaterialModule {}

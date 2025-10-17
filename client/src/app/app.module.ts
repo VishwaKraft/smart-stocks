@@ -15,7 +15,10 @@ import { DiscoverComponent } from './components/dashboard/discover/discover.comp
 import { EducationalNavigatorComponent } from './components/dashboard/educational-navigator/educational-navigator.component';
 import { GraphComponent } from './components/stock-details/graph/graph.component';
 import { StockDetailsComponent } from './components/stock-details/stock-details.component';
-import { BuyComponent, StockDetailsSidebarComponent } from './components/stock-details/stock-details-sidebar/stock-details-sidebar.component';
+import {
+  BuyComponent,
+  StockDetailsSidebarComponent,
+} from './components/stock-details/stock-details-sidebar/stock-details-sidebar.component';
 import { RiskAnalysisComponent } from './components/stock-details/risk-analysis/risk-analysis.component';
 import { AboutCompanyComponent } from './components/stock-details/about-company/about-company.component';
 import { PeerStocksComponent } from './components/stock-details/peer-stocks/peer-stocks.component';
@@ -55,6 +58,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { SubscriptionModalComponent } from './components/university/subscription-modal/subscription-modal.component';
 import { ContactUsComponent } from './components/dashboard/contact-us/contact-us.component';
 import { OurTeamComponent } from './components/dashboard/our-team/our-team.component';
+import { environment } from '../environments/environment';
+import { NGXLoggerModule } from 'ngx-logger';
 
 @NgModule({
   declarations: [
@@ -100,7 +105,7 @@ import { OurTeamComponent } from './components/dashboard/our-team/our-team.compo
     ProfileComponent,
     SubscriptionModalComponent,
     ContactUsComponent,
-    OurTeamComponent
+    OurTeamComponent,
   ],
   imports: [
     BrowserModule,
@@ -115,14 +120,21 @@ import { OurTeamComponent } from './components/dashboard/our-team/our-team.compo
     ReactiveFormsModule,
     MatCardModule,
     ToastrModule.forRoot(),
-    NgbModule
+    NgbModule,
+    NGXLoggerModule.forRoot({
+      level: environment.logLevel,
+      serverLoggingUrl: environment.serverLoggingUrl,
+      serverLogLevel: environment.serverLogLevel,
+    }),
   ],
-  providers: [{
-    provide: HTTP_INTERCEPTORS,
-    useClass: TokenInterceptorService,
-    multi: true
-  }],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TokenInterceptorService,
+      multi: true,
+    },
+  ],
   bootstrap: [AppComponent],
-  entryComponents: [LoginModalComponent]
+  entryComponents: [LoginModalComponent],
 })
-export class AppModule { }
+export class AppModule {}

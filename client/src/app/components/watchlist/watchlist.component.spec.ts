@@ -8,9 +8,8 @@ describe('WatchlistComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ WatchlistComponent ]
-    })
-    .compileComponents();
+      declarations: [WatchlistComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

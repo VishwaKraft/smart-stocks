@@ -1,35 +1,35 @@
 h1 {
-    font-size: 2rem;
+  font-size: 2rem;
 }
 
 .material-icons {
-    width: 3rem;
-    font-size: 3rem;
-    display: "inline-block";
-    border-color: "#ff7902";
-    border-radius: "50%";
-    text-align: "center";
-    line-height: "36px";
-    margin-right: "10px";
-    margin-bottom: "10px";
-    color: #FF6700;
+  width: 3rem;
+  font-size: 3rem;
+  display: 'inline-block';
+  border-color: '#ff7902';
+  border-radius: '50%';
+  text-align: 'center';
+  line-height: '36px';
+  margin-right: '10px';
+  margin-bottom: '10px';
+  color: #ff6700;
 }
 
 .example-full-width {
-    width: 100%;
+  width: 100%;
 }
 
 button {
-    color: #FF6700;
+  color: #ff6700;
 }
 
 .color {
-    color: #FF6700;
+  color: #ff6700;
 }
 
 .example-card {
-    box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
-    padding: 3rem;
-    font-family: 'Poppins', sans-serif;
+  box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+  padding: 3rem;
+  font-family: 'Poppins', sans-serif;
 }

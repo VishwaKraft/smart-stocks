@@ -1,11 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AboutCompanyComponent } from './components/stock-details/about-company/about-company.component';
 import { GraphComponent } from './components/stock-details/graph/graph.component';
 import { UniversityComponent } from './components/university/university.component';
-import { RiskAnalysisComponent } from './components/stock-details/risk-analysis/risk-analysis.component';
-import { StockDetailsSidebarComponent } from './components/stock-details/stock-details-sidebar/stock-details-sidebar.component';
-import { StockDetailsComponent } from './components/stock-details/stock-details.component'
+import { StockDetailsComponent } from './components/stock-details/stock-details.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { WatchlistComponent } from './components/watchlist/watchlist.component';
 import { UserDashboardComponent } from './components/university/user-dashboard/user-dashboard.component';
@@ -26,44 +23,53 @@ import { ProfileComponent } from './components/profile/profile.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: "home", component: DashboardComponent },
-  { path: "stockDetails/:symbol", component: StockDetailsComponent },
-  { path: "graph/:symbol", component: GraphComponent },
-  { path: "signup", component: SignupModalComponent },
-  { path: "userDashboard", component: UserDashboardComponent },
-  { path: "discover", component: WatchlistComponent },
-  { path: "user/profile", canActivate: [AuthGuard], component: ProfileComponent },
+  { path: 'home', component: DashboardComponent },
+  { path: 'stockDetails/:symbol', component: StockDetailsComponent },
+  { path: 'graph/:symbol', component: GraphComponent },
+  { path: 'signup', component: SignupModalComponent },
+  { path: 'userDashboard', component: UserDashboardComponent },
+  { path: 'discover', component: WatchlistComponent },
+  { path: 'user/profile', canActivate: [AuthGuard], component: ProfileComponent },
   {
-    path: "user/sandbox", canActivate: [AuthGuard], component: SandboxComponent, children: [
-      { path: "dashboard", component: UserDashboardComponent },
-      { path: "orders", component: StockOrderHistoryComponent },
-      { path: "credits", component: PaymentHistoryComponent },
-      { path: "stocks", component: MockStocksTableComponent },
-    ]
+    path: 'user/sandbox',
+    canActivate: [AuthGuard],
+    component: SandboxComponent,
+    children: [
+      { path: 'dashboard', component: UserDashboardComponent },
+      { path: 'orders', component: StockOrderHistoryComponent },
+      { path: 'credits', component: PaymentHistoryComponent },
+      { path: 'stocks', component: MockStocksTableComponent },
+    ],
   },
-  { path: "mockStocks", component: MockStocksTableComponent },
+  { path: 'mockStocks', component: MockStocksTableComponent },
   {
-    path: "university", component: UniversityComponent, children: [
-      { path: "", component: LandingComponent },
-      { path: "market-intro", component: MarketIntroComponent },
-    ]
+    path: 'university',
+    component: UniversityComponent,
+    children: [
+      { path: '', component: LandingComponent },
+      { path: 'market-intro', component: MarketIntroComponent },
+    ],
   },
   {
-    path: "discover", component: WatchlistComponent, children: [
-      { path: "top-gainer", component: TopGainerComponent },
-      { path: "top-loser", component: TopLoserComponent },
-      { path: "recommendation", component: RecommendationComponent },
-      { path: "best-month", component: BestMonthComponent },
-      { path: "all-stocks", component: AllStockComponent },
-    ]
+    path: 'discover',
+    component: WatchlistComponent,
+    children: [
+      { path: 'top-gainer', component: TopGainerComponent },
+      { path: 'top-loser', component: TopLoserComponent },
+      { path: 'recommendation', component: RecommendationComponent },
+      { path: 'best-month', component: BestMonthComponent },
+      { path: 'all-stocks', component: AllStockComponent },
+    ],
   },
-  { path: "**", redirectTo: "/home" },
+  { path: '**', redirectTo: '/home' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, {
-    anchorScrolling: 'enabled'
-  })],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forRoot(routes, {
+      anchorScrolling: 'enabled',
+    }),
+  ],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

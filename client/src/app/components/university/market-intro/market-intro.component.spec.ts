@@ -8,9 +8,8 @@ describe('MarketIntroComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MarketIntroComponent ]
-    })
-    .compileComponents();
+      declarations: [MarketIntroComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

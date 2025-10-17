@@ -1,116 +1,160 @@
 <div class="container my-5">
-    <ngb-carousel style="color: white;"  [showNavigationArrows]="true" [showNavigationIndicators]="true" [keyboard]="true" [interval]="100000" [pauseOnHover]="true" [wrap]="true" [activeId]="'sliderOne'">
+  <ngb-carousel
+    style="color: white"
+    [showNavigationArrows]="true"
+    [showNavigationIndicators]="true"
+    [keyboard]="true"
+    [interval]="100000"
+    [pauseOnHover]="true"
+    [wrap]="true"
+    [activeId]="'sliderOne'"
+  >
+    <ng-template ngbSlide id="sliderOne">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container text-center p-5">
+            <h1>Welcome to Smart Stocks University</h1>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderTwo">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <h1>What Is a Share Market?</h1>
+            <p>
+              A share market is a place where shares are publicly issued and traded. A share serves
+              as a document that validates your ownership in a company, and you can sell this
+              document to others. A share market is a place where buyers and sellers meet for this
+              exchange of documents. To facilitate the exchange publicly, a formal marketplace has
+              been developed for investors to buy and sell their shares on.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderThree">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <h1>What is a Share?</h1>
+            <p>
+              In simple words, a share indicates a unit of ownership of the particular company. If
+              you are a shareholder of a company, it implies that you as an investor, hold a
+              percentage of ownership of the issuing company. As a shareholder you stand to benefit
+              in the event of the company’s profits, and also bear the disadvantages of the
+              company’s losses. Shares are also known as stocks, equity, scrips etc. After
+              purchasing them you will be known as a stockholder or a shareholder of the company.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderFour">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <h1>Why shares?</h1>
+            <p>
+              All companies need money to run their business. Sometimes the profit acquired from
+              selling goods or services is not sufficient to meet the working capital requirements.
+              And so, companies invite normal people like you and me to put some money in their
+              company so that they can run it efficiently and in return investors get a share of
+              whatever profit they make.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderFive">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <h1>Difference b/w share market and stock market?</h1>
+            <p>
+              The key difference between share markets and stock markets is that the former only
+              allows one to trade shares. The latter allows you to trade in financial instruments
+              such as derivatives, bonds, mutual funds, as well as the shares of listed companies.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderSix">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <p>
+              We cannot discuss stock market basics without addressing the key financial instruments
+              that are traded on it. There are four categories of financial instruments traded on
+              the stock exchange. They are shares, bonds, derivatives, and mutual funds. They are as
+              follows:
+            </p>
 
-        <ng-template ngbSlide id="sliderOne">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container text-center p-5">
-                        <h1>Welcome to Smart Stocks University </h1>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderTwo">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>What Is a Share Market? </h1>
-                        <p> A share market is a place where shares are publicly issued and traded. A share serves as a document that validates your ownership in a company, and you can sell this document to others. A share market is a place where buyers and
-                            sellers meet for this exchange of documents. To facilitate the exchange publicly, a formal marketplace has been developed for investors to buy and sell their shares on. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderThree">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>What is a Share? </h1>
-                        <p> In simple words, a share indicates a unit of ownership of the particular company. If you are a shareholder of a company, it implies that you as an investor, hold a percentage of ownership of the issuing company. As a shareholder
-                            you stand to benefit in the event of the company’s profits, and also bear the disadvantages of the company’s losses. Shares are also known as stocks, equity, scrips etc. After purchasing them you will be known as a stockholder
-                            or a shareholder of the company. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderFour">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>Why shares? </h1>
-                        <p> All companies need money to run their business. Sometimes the profit acquired from selling goods or services is not sufficient to meet the working capital requirements. And so, companies invite normal people like you and me to
-                            put some money in their company so that they can run it efficiently and in return investors get a share of whatever profit they make. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderFive">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>Difference b/w share market and stock market? </h1>
-                        <p> The key difference between share markets and stock markets is that the former only allows one to trade shares. The latter allows you to trade in financial instruments such as derivatives, bonds, mutual funds, as well as the shares
-                            of listed companies. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderSix">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <p> We cannot discuss stock market basics without addressing the key financial instruments that are traded on it. There are four categories of financial instruments traded on the stock exchange. They are shares, bonds, derivatives,
-                            and mutual funds. They are as follows: </p>
-
-                        <p> <b> Shares: </b> A share is a single unit of ownership in a company or financial asset</p>
-                        <p> <b> Bonds: </b> A bond is loan from an investor to a borrower such as a company or government
-                        </p>
-                        <p> <b> Mutual funds: </b> A mutual fund is a company that brings together money from many people and invests it in stocks, bonds or other assets</p>
-                        <p> <b> Derivatives: </b> A derivative is a contract between two parties which derives its value/price from an underlying asset </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderSeven">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <p> Now that we understand the stock market meaning, one key aspect of stock market basics is that one can trade on one of two market segments. In other words, there are two types of share markets in India. These are primary markets
-                            and secondary markets.
-                        </p>
-                        <p>
-                            A primary share market is a place where a company first gets registered with the goal of raising money and issues a certain amount of shares. The goal of being publicly listed on a primary stock exchange is to raise money. This where a company gets registered
-                            to issue a certain amount of shares and raise money. If the company decides to sell its shares for the first time, this is known as an initial public offering. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderEight">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container text-center p-5">
-                        <h1> Stay tuned to learn more!!
-                        </h1>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderNine">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1> References:
-                        </h1>
-                        <p>
-
-                            https://economictimes.indiatimes.com/ </p>
-                        <p>https://www.investopedia.com </p>
-                        <p> Stock Market Basics - Learn Share Market Basics in India (groww.in)
-                        </p>
-                        <p> Stock Market Courses Free Online for Beginners, Best Share Market Training, Trading Courses – NSE India </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-    </ngb-carousel>
+            <p>
+              <b> Shares: </b> A share is a single unit of ownership in a company or financial asset
+            </p>
+            <p>
+              <b> Bonds: </b> A bond is loan from an investor to a borrower such as a company or
+              government
+            </p>
+            <p>
+              <b> Mutual funds: </b> A mutual fund is a company that brings together money from many
+              people and invests it in stocks, bonds or other assets
+            </p>
+            <p>
+              <b> Derivatives: </b> A derivative is a contract between two parties which derives its
+              value/price from an underlying asset
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderSeven">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <p>
+              Now that we understand the stock market meaning, one key aspect of stock market basics
+              is that one can trade on one of two market segments. In other words, there are two
+              types of share markets in India. These are primary markets and secondary markets.
+            </p>
+            <p>
+              A primary share market is a place where a company first gets registered with the goal
+              of raising money and issues a certain amount of shares. The goal of being publicly
+              listed on a primary stock exchange is to raise money. This where a company gets
+              registered to issue a certain amount of shares and raise money. If the company decides
+              to sell its shares for the first time, this is known as an initial public offering.
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderEight">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container text-center p-5">
+            <h1>Stay tuned to learn more!!</h1>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template ngbSlide id="sliderNine">
+      <div class="picsum-img-wrapper">
+        <div class="d-flex align-items-center board">
+          <div class="container p-5">
+            <h1>References:</h1>
+            <p>https://economictimes.indiatimes.com/</p>
+            <p>https://www.investopedia.com</p>
+            <p>Stock Market Basics - Learn Share Market Basics in India (groww.in)</p>
+            <p>
+              Stock Market Courses Free Online for Beginners, Best Share Market Training, Trading
+              Courses – NSE India
+            </p>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </ngb-carousel>
 </div>

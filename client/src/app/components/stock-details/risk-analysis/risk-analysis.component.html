@@ -1,25 +1,33 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">Risk Analysis</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-
-        <div class="details">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6 align-self-center" fxFlex>
-                        <label>Short Term:&emsp;</label>
-                        <label id="shortTerm"><strong>{{ "RISKY" }}</strong>&emsp;</label><br><br>
-                        <label>Medium Term :&emsp;</label>
-                        <label id="mediumTerm"><strong>{{ "STABLE" }}</strong>&emsp;</label><br><br>
-                        <label>Long Term :&emsp;</label>
-                        <label id="longTerm"><strong>{{ "EFFICIENT" }}</strong>&emsp;</label><br><br>
-                    </div>
-                    <div class="col-md-6" [hidden]='hide' fxFlex>
-                        <canvas id="canvas"></canvas>
-                    </div>
-                </div>
-            </div>
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">Risk Analysis</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="details">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6 align-self-center" fxFlex>
+            <label>Short Term:&emsp;</label>
+            <label id="shortTerm"
+              ><strong>{{ 'RISKY' }}</strong
+              >&emsp;</label
+            ><br /><br />
+            <label>Medium Term :&emsp;</label>
+            <label id="mediumTerm"
+              ><strong>{{ 'STABLE' }}</strong
+              >&emsp;</label
+            ><br /><br />
+            <label>Long Term :&emsp;</label>
+            <label id="longTerm"
+              ><strong>{{ 'EFFICIENT' }}</strong
+              >&emsp;</label
+            ><br /><br />
+          </div>
+          <div class="col-md-6" [hidden]="hide" fxFlex>
+            <canvas id="canvas"></canvas>
+          </div>
         </div>
-    </mat-card-content>
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>

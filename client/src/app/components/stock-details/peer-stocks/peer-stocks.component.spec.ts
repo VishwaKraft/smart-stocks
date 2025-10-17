@@ -8,9 +8,8 @@ describe('PeerStocksComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PeerStocksComponent ]
-    })
-    .compileComponents();
+      declarations: [PeerStocksComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

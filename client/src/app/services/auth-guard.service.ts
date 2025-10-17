@@ -1,22 +1,25 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { UserService } from './user.service';
+import { NGXLogger } from 'ngx-logger';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  // tslint:disable-next-line:variable-name
-  constructor(private _authService: UserService,
-    // tslint:disable-next-line:variable-name
-    private _router: Router) { }
+  constructor(
+    private _authService: UserService,
+    private _router: Router,
+    private logger: NGXLogger,
+  ) {}
 
   canActivate(): boolean {
     if (this._authService.loggedIn()) {
-      console.log('true')
+      this.logger.info('User is authenticated. Access GRANTED to route.');
       return true;
     } else {
-      this._router.navigate([''])
+      this.logger.warn('User is NOT authenticated. Redirecting to login/home.');
+      this._router.navigate(['']);
       return false;
     }
   }

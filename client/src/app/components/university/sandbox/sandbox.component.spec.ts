@@ -8,9 +8,8 @@ describe('SandboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SandboxComponent ]
-    })
-    .compileComponents();
+      declarations: [SandboxComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

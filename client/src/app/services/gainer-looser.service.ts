@@ -5,20 +5,17 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GainerLooserService {
-
   baseUrl = `${environment.modelUrl}/data?type=`;
-  recommendatedFiveUrl = `${environment.serverUrl}/stock/recommended-stocks/`
+  recommendatedFiveUrl = `${environment.serverUrl}/stock/recommended-stocks/`;
   allStocksUrl = `${environment.serverUrl}/stock/all?pageNo=`;
-  topUrl = `${environment.serverUrl}/stock/top?days=`
+  topUrl = `${environment.serverUrl}/stock/top?days=`;
 
   public GainerResponse: GainerResponse;
 
-  constructor(private http: HttpClient) {
-
-  }
+  constructor(private http: HttpClient) {}
 
   getTopGainer(): Observable<GainerResponse> {
     return this.http.get<GainerResponse>(this.baseUrl + 'gainers');
@@ -33,11 +30,10 @@ export class GainerLooserService {
   }
 
   getallStocks(pageNO: any): Observable<any> {
-    return this.http.get<any>(this.allStocksUrl + pageNO + '&size=10')
+    return this.http.get<any>(this.allStocksUrl + pageNO + '&size=10');
   }
 
   getTopInXdays(days: any, params: string): Observable<any> {
-    return this.http.get<any>(this.topUrl + days + '&type=' + params)
+    return this.http.get<any>(this.topUrl + days + '&type=' + params);
   }
-
 }

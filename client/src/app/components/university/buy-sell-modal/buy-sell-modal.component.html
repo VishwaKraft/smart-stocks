@@ -5,39 +5,21 @@
   <mat-card-content>
     <div>
       <div class="profile-details">
-        <form
-          [formGroup]="BuySellForm"
-          (ngSubmit)="onSubmit()"
-          class="example-form"
-        >
-
-
-          <mat-form-field
-            class="example-full-width"
-            appearance="fill"
-            color="warn"
-          >
+        <form [formGroup]="BuySellForm" (ngSubmit)="onSubmit()" class="example-form">
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
             <mat-label>Stock Name</mat-label>
-            <input readonly matInput placeholder="StockName" formControlName="name"/>
+            <input readonly matInput placeholder="StockName" formControlName="name" />
           </mat-form-field>
 
-          <mat-form-field
-            class="example-full-width"
-            appearance="fill"
-            color="warn"
-          >
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
             <mat-label>Current Price</mat-label>
             <input readonly matInput placeholder="currentPrice" formControlName="currPrice" />
           </mat-form-field>
 
-          <mat-form-field
-            class="example-full-width"
-            appearance="fill"
-            color="warn"
-          >
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
             <mat-label>No of Units</mat-label>
             <input
-            min="1"
+              min="1"
               matInput
               type="number"
               placeholder="No of Units"
@@ -45,12 +27,8 @@
             />
           </mat-form-field>
           <div id="wrapper">
-            <button
-              mat-raised-button
-              type="submit"
-              [disabled]="!BuySellForm.valid"
-            >
-              {{stock.type}}
+            <button mat-raised-button type="submit" [disabled]="!BuySellForm.valid">
+              {{ stock.type }}
             </button>
           </div>
         </form>

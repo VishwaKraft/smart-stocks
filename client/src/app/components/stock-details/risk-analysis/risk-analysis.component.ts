@@ -22,12 +22,9 @@ export class RiskAnalysisComponent implements OnInit {
   sell: number = 0;
   strongSell: number = 0;
   chart: any;
-  hide:boolean=false;
-oppHide = !this.hide;
-  constructor(
-    stockDetailsService: StockDetailsService,
-    activatedRoute: ActivatedRoute
-  ) {
+  hide: boolean = false;
+  oppHide = !this.hide;
+  constructor(stockDetailsService: StockDetailsService, activatedRoute: ActivatedRoute) {
     this.stockDetailsService = stockDetailsService;
     this.activatedRoute = activatedRoute;
   }
@@ -43,24 +40,23 @@ oppHide = !this.hide;
         this.strongSell += this.stockTrend[i].strongSell;
       }
 
-      if(this.strongBuy==0 && this.buy==0 && this.hold==0
-        && this.sell==0 && this.strongSell==0 ){
-          this.hide=true;
-          this.oppHide=!this.hide;
-        }
+      if (
+        this.strongBuy == 0 &&
+        this.buy == 0 &&
+        this.hold == 0 &&
+        this.sell == 0 &&
+        this.strongSell == 0
+      ) {
+        this.hide = true;
+        this.oppHide = !this.hide;
+      }
       this.chart = new Chart('canvas', {
         type: 'doughnut',
         data: {
           labels: ['Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
           datasets: [
             {
-              data: [
-                this.strongBuy,
-                this.buy,
-                this.hold,
-                this.sell,
-                this.strongSell,
-              ],
+              data: [this.strongBuy, this.buy, this.hold, this.sell, this.strongSell],
               backgroundColor: [
                 'rgba(0, 100, 0, 0.8)',
                 'rgba(0, 128, 0, 0.6)',
@@ -81,7 +77,6 @@ oppHide = !this.hide;
           },
         },
       });
-
     });
   }
 }

@@ -1,70 +1,75 @@
 <!-- {{this.urlStockDetails.symbol}} -->
 <mat-card class="example-card mb-4 mb-lg-0 mb-0 ms-lg-2">
-    <mat-card-header>
-        <div class="d-flex align-items-center w-100">
-            <div style="flex-grow: 1;">
-                <mat-card-title class="stockName">{{ urlStockDetails.shortName }}
-                </mat-card-title>
-                <mat-card-title class="stockPrice" [style.color]="changeLow ? 'red' : 'green'">₹ {{ urlStockDetails.currentPrice.fmt }}</mat-card-title>
-                <mat-card-title class="stockPriceChange" [style.color]="changeLow ? 'red' : 'green'">{{ urlStockDetails.change.fmt }} ({{ urlStockDetails.changePercentage.fmt }})
-                </mat-card-title>
-            </div>
-            <div class="px-5">
-                <button id="cartButton" (click)="openDialog()">
-                    <mat-icon style="font-size: xx-large;">
-                        calculate
-                    </mat-icon>
-                </button>
-            </div>
+  <mat-card-header>
+    <div class="d-flex align-items-center w-100">
+      <div style="flex-grow: 1">
+        <mat-card-title class="stockName">{{ urlStockDetails.shortName }} </mat-card-title>
+        <mat-card-title class="stockPrice" [style.color]="changeLow ? 'red' : 'green'"
+          >₹ {{ urlStockDetails.currentPrice.fmt }}</mat-card-title
+        >
+        <mat-card-title class="stockPriceChange" [style.color]="changeLow ? 'red' : 'green'"
+          >{{ urlStockDetails.change.fmt }} ({{ urlStockDetails.changePercentage.fmt }})
+        </mat-card-title>
+      </div>
+      <div class="px-5">
+        <button id="cartButton" (click)="openDialog()">
+          <mat-icon style="font-size: xx-large"> calculate </mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-card-header>
 
-
-        </div>
-    </mat-card-header>
-
-    <mat-card-content>
-        <div class="prices">
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>TODAY'S HIGH</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.dayHigh.fmt }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>TODAY'S LOW</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.dayLow.fmt
-                    }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>52 WEEK HIGH</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.fiftyTwoWeekHigh.fmt }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>52 WEEK LOW</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.fiftyTwoWeekLow.fmt }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>P/E RATIO</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.forwardPE.fmt==null?"N/A": urlStockDetails.forwardPE.fmt }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>P/B RATIO</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.priceToBook.fmt }}</label>
-            </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>NO OF SHARES (in Cr)</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.volume.fmt }}</label>
-            </div>
-        </div>
-    </mat-card-content>
+  <mat-card-content>
+    <div class="prices">
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>TODAY'S HIGH</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex
+          >₹ {{ urlStockDetails.dayHigh.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>TODAY'S LOW</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex
+          >₹ {{ urlStockDetails.dayLow.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>52 WEEK HIGH</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex
+          >₹ {{ urlStockDetails.fiftyTwoWeekHigh.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>52 WEEK LOW</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex
+          >₹ {{ urlStockDetails.fiftyTwoWeekLow.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>P/E RATIO</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
+          {{ urlStockDetails.forwardPE.fmt == null ? 'N/A' : urlStockDetails.forwardPE.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>P/B RATIO</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
+          {{ urlStockDetails.priceToBook.fmt }}</label
+        >
+      </div>
+      <br />
+      <div fxLayout="row">
+        <label class="labelName" fxFlex>NO OF SHARES (in Cr)</label>
+        <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
+          {{ urlStockDetails.volume.fmt }}</label
+        >
+      </div>
+    </div>
+  </mat-card-content>
 </mat-card>
+

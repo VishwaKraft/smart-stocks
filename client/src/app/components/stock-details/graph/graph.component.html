@@ -1,14 +1,19 @@
-
 <div id="container">
   <div id="chartContainer"></div>
   <div id="options">
     <mat-label>Graph Type: </mat-label>
 
-     <button mat-button (click)="displayLineGraph()" id="line" class="graphButton">Line </button>
-     <button mat-button (click)="displayCandleGraph()" id="candle" class="graphButton">Candle Stick</button>
-     <a routerLink="/graph/{{symbol}}" [hidden]="!zoomOut" ><button mat-button id="zoom" (click)="handleZoomIn()" class="graphButton">Zoom In</button></a>
-     <a routerLink="/stockDetails/{{symbol}}" [hidden]="zoomOut" ><button mat-button id="zoom" (click)="handleZoomOut()" class="graphButton">Zoom Out</button></a>
+    <button mat-button (click)="displayLineGraph()" id="line" class="graphButton">Line</button>
+    <button mat-button (click)="displayCandleGraph()" id="candle" class="graphButton">
+      Candle Stick
+    </button>
+    <a routerLink="/graph/{{ symbol }}" [hidden]="!zoomOut"
+      ><button mat-button id="zoom" (click)="handleZoomIn()" class="graphButton">Zoom In</button></a
+    >
+    <a routerLink="/stockDetails/{{ symbol }}" [hidden]="zoomOut"
+      ><button mat-button id="zoom" (click)="handleZoomOut()" class="graphButton">
+        Zoom Out
+      </button></a
+    >
   </div>
 </div>
-
-

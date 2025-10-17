@@ -1,49 +1,49 @@
 #main {
-    margin-top: 5%;
-    
+  margin-top: 5%;
 }
 
 #top {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+  display: flex;
+  margin-top: 5%;
+  justify-content: center;
 }
 
 .but {
-    background-color: #ffd1b2;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: #575A89;
+  background-color: #ffd1b2;
+  height: 60px;
+  width: 240px;
+  font-size: medium;
+  font-family: Roboto;
+  border-color: transparent;
+  color: #575a89;
 }
 
 .buta {
-    background-color: #ff6b06;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: #575A89;
+  background-color: #ff6b06;
+  height: 60px;
+  width: 240px;
+  font-size: medium;
+  font-family: Roboto;
+  border-color: transparent;
+  color: #575a89;
 }
 
 .right-icon {
-    margin-right: 15px;
-    margin-left: 15px;
-    height: 55px;
-    width: 50px;
+  margin-right: 15px;
+  margin-left: 15px;
+  height: 55px;
+  width: 50px;
 }
 
 #bottom {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+  display: flex;
+  margin-top: 5%;
+  justify-content: center;
 }
 
 #imageScroll {
-    background-color: #c4c4c4;
-    width: 880px;
-    height: 300px;
+  background-color: #c4c4c4;
+  width: 880px;
+  height: 300px;
 }
+

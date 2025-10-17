@@ -1,21 +1,21 @@
 .example-card {
-    box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
-    width: 80%;
-    margin: 2rem;
-    padding: 3rem;
+  box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+  width: 80%;
+  margin: 2rem;
+  padding: 3rem;
 }
 
 button {
-    background: #FF6700;
-    color: #F2F2F2;
-    margin: 1rem;
+  background: #ff6700;
+  color: #f2f2f2;
+  margin: 1rem;
 }
 
 .fix {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 p {
-    text-align: left;
+  text-align: left;
 }

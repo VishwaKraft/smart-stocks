@@ -1,19 +1,28 @@
 <div class="container my-5">
-    <router-outlet></router-outlet>
+  <router-outlet></router-outlet>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-3">
-            <button routerLink="/university/" routerLinkActive="sld" [routerLinkActiveOptions]="{exact: true}" class="but">Market 101</button>
-        </div>
-        <div class="col-lg-1">
-            <img class="right-icon" src="assets/darrow.png">
-        </div>
-        <div class="col-lg-3">
-            <button routerLink="/university/market-intro" routerLinkActive="sld" class="but">Guidelines</button>
-        </div>
-        <div class="col-lg-1"><img class="right-icon" src="assets/darrow.png"></div>
-        <div class="col-lg-3">
-            <button (click)="redirect()" class="but">Market Sandbox</button>
-        </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-3">
+      <button
+        routerLink="/university/"
+        routerLinkActive="sld"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="but"
+      >
+        Market 101
+      </button>
     </div>
+    <div class="col-lg-1">
+      <img class="right-icon" src="assets/darrow.png" />
+    </div>
+    <div class="col-lg-3">
+      <button routerLink="/university/market-intro" routerLinkActive="sld" class="but">
+        Guidelines
+      </button>
+    </div>
+    <div class="col-lg-1"><img class="right-icon" src="assets/darrow.png" /></div>
+    <div class="col-lg-3">
+      <button (click)="redirect()" class="but">Market Sandbox</button>
+    </div>
+  </div>
 </div>

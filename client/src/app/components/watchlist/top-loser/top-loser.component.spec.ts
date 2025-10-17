@@ -8,9 +8,8 @@ describe('TopLoserComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TopLoserComponent ]
-    })
-    .compileComponents();
+      declarations: [TopLoserComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

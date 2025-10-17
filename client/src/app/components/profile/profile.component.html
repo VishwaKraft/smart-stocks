@@ -1,54 +1,51 @@
 <div class="container my-5">
-    <div class="row">
-        <div class="col-md-4 text-center">
-            <div class="col-md-8">
-                <img id="image" src="assets/profilePic.svg" />
-            </div>
-        </div>
-        <div class="col-md-8">
-            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="px-5">
-                <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                    <mat-label>First Name</mat-label>
-                    <input matInput placeholder="First Name" formControlName="firstName" />
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                    <mat-label>Last Name</mat-label>
-                    <input matInput placeholder="Last Name" formControlName="lastName" />
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                    <mat-label>Mobile No.</mat-label>
-                    <input matInput placeholder="Phone" formControlName="phoneNo" />
-                </mat-form-field>
-
-                <mat-form-field class="datepicker" appearance="fill">
-                    <mat-label>Select Your DOB</mat-label>
-                    <input matInput [matDatepicker]="picker" formControlName="dob" />
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-datepicker #picker></mat-datepicker>
-                </mat-form-field>
-
-                <mat-radio-group aria-label="Select an option" formControlName="gender">
-                    <mat-radio-button value="MALE">Male</mat-radio-button>
-                    <mat-radio-button value="FEMALE">Female</mat-radio-button>
-                </mat-radio-group>
-
-                <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                    <mat-label>Email ID</mat-label>
-                    <input matInput placeholder="Email ID" formControlName="email" readonly />
-                </mat-form-field>
-
-                <div class="wrapper">
-                    <button mat-raised-button type="submit" [disabled]="!profileForm.valid">
-                        Save
-                    </button>
-
-                    <button mat-raised-button (click)="handleBack" id="backButton">
-                        Go Back
-                    </button>
-                </div>
-            </form>
-        </div>
+  <div class="row">
+    <div class="col-md-4 text-center">
+      <div class="col-md-8">
+        <img id="image" src="assets/profilePic.svg" />
+      </div>
     </div>
+    <div class="col-md-8">
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="px-5">
+        <mat-form-field class="example-full-width" appearance="fill" color="warn">
+          <mat-label>First Name</mat-label>
+          <input matInput placeholder="First Name" formControlName="firstName" />
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="fill" color="warn">
+          <mat-label>Last Name</mat-label>
+          <input matInput placeholder="Last Name" formControlName="lastName" />
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width" appearance="fill" color="warn">
+          <mat-label>Mobile No.</mat-label>
+          <input matInput placeholder="Phone" formControlName="phoneNo" />
+        </mat-form-field>
+
+        <mat-form-field class="datepicker" appearance="fill">
+          <mat-label>Select Your DOB</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="dob" />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-radio-group aria-label="Select an option" formControlName="gender">
+          <mat-radio-button value="MALE">Male</mat-radio-button>
+          <mat-radio-button value="FEMALE">Female</mat-radio-button>
+        </mat-radio-group>
+
+        <mat-form-field class="example-full-width" appearance="fill" color="warn">
+          <mat-label>Email ID</mat-label>
+          <input matInput placeholder="Email ID" formControlName="email" readonly />
+        </mat-form-field>
+
+        <div class="wrapper">
+          <button mat-raised-button type="submit" [disabled]="!profileForm.valid">Save</button>
+
+          <button mat-raised-button (click)="(handleBack)" id="backButton">Go Back</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+

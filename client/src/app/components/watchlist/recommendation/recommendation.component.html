@@ -1,48 +1,52 @@
 <mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">{{title}}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <div>
-            <div class="table-responsive">
-                <table mat-table [dataSource]="recommendationTable" matSort>
-                    <ng-container matColumnDef="longName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Company Name </th>
-                        <td mat-cell *matCellDef="let element"> {{element.longName}} </td>
-                    </ng-container>
+  <mat-card-header class="grad">
+    <mat-card-title class="heading">{{ title }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="recommendationTable" matSort>
+          <ng-container matColumnDef="longName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Company Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.longName }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="previousClose">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Previous Price </th>
-                        <td mat-cell *matCellDef="let element"> {{element.previousClose}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="previousClose">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Previous Price</th>
+            <td mat-cell *matCellDef="let element">{{ element.previousClose }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="currentPrice">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Current Price </th>
-                        <td mat-cell *matCellDef="let element"> {{element.currentPrice}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="currentPrice">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Current Price</th>
+            <td mat-cell *matCellDef="let element">{{ element.currentPrice }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="change">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Change</th>
-                        <td mat-cell *matCellDef="let element"> {{element.change}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="change">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Change</th>
+            <td mat-cell *matCellDef="let element">{{ element.change }}</td>
+          </ng-container>
 
-                    <ng-container matColumnDef="changePercentage">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Change(%)</th>
-                        <td mat-cell *matCellDef="let element"> {{element.changePercentage}} </td>
-                    </ng-container>
+          <ng-container matColumnDef="changePercentage">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Change(%)</th>
+            <td mat-cell *matCellDef="let element">{{ element.changePercentage }}</td>
+          </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumnsRecomd"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumnsRecomd;" (click)="clickedRecommendation(row)">
-                    </tr>
-                    <!-- <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
-            </tr> -->
-                </table>
-                <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn">
-                </mat-progress-bar>
-            </div>
-            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="Select page of periodic elements">
-            </mat-paginator>
-        </div>
-    </mat-card-content>
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsRecomd"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumnsRecomd"
+            (click)="clickedRecommendation(row)"
+          ></tr>
+        </table>
+        <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn">
+        </mat-progress-bar>
+      </div>
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page of periodic elements"
+      >
+      </mat-paginator>
+    </div>
+  </mat-card-content>
 </mat-card>

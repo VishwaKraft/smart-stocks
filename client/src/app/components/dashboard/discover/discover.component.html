@@ -1,36 +1,37 @@
 <div class="wow fadeInUp discover-container mb-5" data-wow-duration="3s">
-    <span class="mat-display-3">Discover Stocks in India</span>
-    <div>
-        <a routerLink="/discover/top-gainer">
-            <button mat-raised-button>DISCOVER STOCKS</button>
-        </a>
-        <a routerLink="/discover/top-gainer">
-            <button mat-raised-button>TOP GAINER STOCKS</button>
-        </a>
-        <a routerLink="/discover/top-loser">
-            <button mat-raised-button>TOP LOSERS STOCKS</button>
-        </a>
-        <a routerLink="/discover/recommendation">
-            <button mat-raised-button>RECOMMENDED STOCKS</button>
-        </a>
-    </div>
-    <div>
-        <mat-form-field class="example-full-width" id="searchField" appearance="fill" color=warn>
-            <mat-label>Search Stocks</mat-label>
-            <input matInput placeholder="TATA STEEL" (keyup)="makeSubject($event)" autocomplete="off">
-        </mat-form-field>
-    </div>
-    <div>
-        <ul *ngIf="results">
-            <li *ngFor="let result of results | slice:0:5" class="py-2">
-                <a routerLink="/stockDetails/{{ result.symbol }}">
-                    {{ result.shortName }}
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <a routerLink="/discover/all-stocks">
-        <button mat-raised-button>VIEW ALL STOCKS</button>
+  <span class="mat-display-3">Discover Stocks in India</span>
+  <div>
+    <a routerLink="/discover/top-gainer">
+      <button mat-raised-button>DISCOVER STOCKS</button>
     </a>
+    <a routerLink="/discover/top-gainer">
+      <button mat-raised-button>TOP GAINER STOCKS</button>
+    </a>
+    <a routerLink="/discover/top-loser">
+      <button mat-raised-button>TOP LOSERS STOCKS</button>
+    </a>
+    <a routerLink="/discover/recommendation">
+      <button mat-raised-button>RECOMMENDED STOCKS</button>
+    </a>
+  </div>
+  <div>
+    <mat-form-field class="example-full-width" id="searchField" appearance="fill" color="warn">
+      <mat-label>Search Stocks</mat-label>
+      <input matInput placeholder="TATA STEEL" (keyup)="makeSubject($event)" autocomplete="off" />
+    </mat-form-field>
+  </div>
+  <div>
+    <ul *ngIf="results">
+      <li *ngFor="let result of results | slice: 0 : 5" class="py-2">
+        <a routerLink="/stockDetails/{{ result.symbol }}">
+          {{ result.shortName }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <a routerLink="/discover/all-stocks">
+    <button mat-raised-button>VIEW ALL STOCKS</button>
+  </a>
 </div>
+

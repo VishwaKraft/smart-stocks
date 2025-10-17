@@ -5,23 +5,13 @@
   <mat-card-content>
     <div>
       <div class="profile-details">
-        <form
-          [formGroup]="AddCreditsForm"
-          (ngSubmit)="onSubmit()"
-          class="example-form"
-        >
-
-
-        <mat-form-field
-            class="example-full-width"
-            appearance="fill"
-            color="warn"
-          >
+        <form [formGroup]="AddCreditsForm" (ngSubmit)="onSubmit()" class="example-form">
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
             <mat-label>No of Credits</mat-label>
             <input
-            #credit
-            (keyup)="onCreditChange(credit.value)"
-            [(ngModel)]='defaultCredits'
+              #credit
+              (keyup)="onCreditChange(credit.value)"
+              [(ngModel)]="defaultCredits"
               matInput
               type="number"
               placeholder="No of Credits (min 100)"
@@ -29,22 +19,19 @@
               min="100"
             />
           </mat-form-field>
-          <mat-form-field
-            class="example-full-width"
-            appearance="fill"
-            color="warn"
-          >
+          <mat-form-field class="example-full-width" appearance="fill" color="warn">
             <mat-label>Amount</mat-label>
-            <input readonly matInput placeholder="Amount" formControlName="amount" [(ngModel)]='defaultAmount'>
+            <input
+              readonly
+              matInput
+              placeholder="Amount"
+              formControlName="amount"
+              [(ngModel)]="defaultAmount"
+            />
           </mat-form-field>
 
-
           <div id="wrapper">
-            <button
-              mat-raised-button
-              type="submit"
-              [disabled]="!AddCreditsForm.valid"
-            >
+            <button mat-raised-button type="submit" [disabled]="!AddCreditsForm.valid">
               Pay & Add Credits
             </button>
           </div>
