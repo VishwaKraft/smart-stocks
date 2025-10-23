@@ -1,5 +1,5 @@
-import { TopGainers } from "./TopGainers";
+import { TopGainers } from './TopGainers';
 
 export interface Gainer {
-  exploreCompanyList: TopGainers
+  exploreCompanyList: TopGainers;
 }

@@ -1,5 +1,5 @@
-import { Gainer } from "./Gainer";
+import { Gainer } from './Gainer';
 
 export interface GainerBody {
-  stock: Gainer,
+  stock: Gainer;
 }

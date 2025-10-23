@@ -1,5 +1,5 @@
-import { GainerBody } from "./GainerBody";
+import { GainerBody } from './GainerBody';
 
-export interface GainerResponse{
-  data: GainerBody,
+export interface GainerResponse {
+  data: GainerBody;
 }

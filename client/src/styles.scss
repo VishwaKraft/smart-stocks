@@ -1,62 +1,61 @@
 app-root {
-    font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 // regular style toast
 @import '~ngx-toastr/toastr';
 .table-responsive {
-    display: block;
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  .mat-table {
     width: 100%;
-    overflow-x: auto;
-    .mat-table {
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        display: table;
-        border-collapse: collapse;
-        margin: 0px;
-    }
-    .mat-row,
-    .mat-header-row {
-        display: table-row;
-    }
-    .mat-cell,
-    .mat-header-cell {
-        word-wrap: initial;
-        display: table-cell;
-        padding: 0px 5px;
-        line-break: unset;
-        width: auto;
-        white-space: nowrap;
-        overflow: hidden;
-        vertical-align: middle;
-    }
+    max-width: 100%;
+    margin-bottom: 1rem;
+    display: table;
+    border-collapse: collapse;
+    margin: 0px;
+  }
+  .mat-row,
+  .mat-header-row {
+    display: table-row;
+  }
+  .mat-cell,
+  .mat-header-cell {
+    word-wrap: initial;
+    display: table-cell;
+    padding: 0px 5px;
+    line-break: unset;
+    width: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: middle;
+  }
 }
 
 ::-webkit-scrollbar {
-    height: 5px;
-    width: 5px;
+  height: 5px;
+  width: 5px;
 }
 
- ::-webkit-scrollbar-track {
-    background: transparent;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
- ::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background: #888;
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: #888;
 }
 
- ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
-
 
 /* Importing Bootstrap SCSS file. */
 
 @import '~bootstrap/scss/bootstrap';
 .board {
-    padding: 5rem;
-    background-color: grey;
-    height: 80vh;
+  padding: 5rem;
+  background-color: grey;
+  height: 80vh;
 }

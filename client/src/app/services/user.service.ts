@@ -22,7 +22,7 @@ export class UserService {
     return this.isLoginSubject.asObservable();
   }
 
-  loggedIn(): Boolean {
+  loggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
 

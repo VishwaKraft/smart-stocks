@@ -13,11 +13,11 @@ const RenderHelper = {
 
     var alpha = 1;
 
-    ctx.fillStyle = markerColor ? markerColor : "#000000";
-    ctx.strokeStyle = markerBorderColor ? markerBorderColor : "#000000";
+    ctx.fillStyle = markerColor ? markerColor : '#000000';
+    ctx.strokeStyle = markerBorderColor ? markerBorderColor : '#000000';
     ctx.lineWidth = markerBorderThickness ? markerBorderThickness : 0;
 
-    if (markerType === "circle") {
+    if (markerType === 'circle') {
       ctx.moveTo(x, y);
       ctx.beginPath();
 
@@ -29,12 +29,12 @@ const RenderHelper = {
         if (!markerBorderColor) {
           alpha = ctx.globalAlpha;
           ctx.globalAlpha = 0.15;
-          ctx.strokeStyle = "black";
+          ctx.strokeStyle = 'black';
           ctx.stroke();
           ctx.globalAlpha = alpha;
         } else ctx.stroke();
       }
-    } else if (markerType === "square") {
+    } else if (markerType === 'square') {
       ctx.beginPath();
       ctx.rect(x - markerSize / 2, y - markerSize / 2, markerSize, markerSize);
 
@@ -44,12 +44,12 @@ const RenderHelper = {
         if (!markerBorderColor) {
           alpha = ctx.globalAlpha;
           ctx.globalAlpha = 0.15;
-          ctx.strokeStyle = "black";
+          ctx.strokeStyle = 'black';
           ctx.stroke();
           ctx.globalAlpha = alpha;
         } else ctx.stroke();
       }
-    } else if (markerType === "triangle") {
+    } else if (markerType === 'triangle') {
       ctx.beginPath();
       ctx.moveTo(x - markerSize / 2, y + markerSize / 2);
       ctx.lineTo(x + markerSize / 2, y + markerSize / 2);
@@ -62,13 +62,13 @@ const RenderHelper = {
         if (!markerBorderColor) {
           alpha = ctx.globalAlpha;
           ctx.globalAlpha = 0.15;
-          ctx.strokeStyle = "black";
+          ctx.strokeStyle = 'black';
           ctx.stroke();
           ctx.globalAlpha = alpha;
         } else ctx.stroke();
       }
       ctx.beginPath();
-    } else if (markerType === "cross") {
+    } else if (markerType === 'cross') {
       ctx.strokeStyle = markerColor;
       markerBorderThickness = markerSize / 4;
       ctx.lineWidth = markerBorderThickness;

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { peerStockModel } from '../models/peerStockModel';
 import { predictPriceModel } from '../models/predictPriceModel';

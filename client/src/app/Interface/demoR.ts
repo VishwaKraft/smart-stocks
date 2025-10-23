@@ -1,5 +1,5 @@
-import { Demo } from "./demo";
+import { Demo } from './demo';
 
-export interface DemoR{
-  results: Demo[],
+export interface DemoR {
+  results: Demo[];
 }

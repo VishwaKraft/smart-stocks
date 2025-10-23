@@ -1,4 +1,4 @@
-export interface Demo{
-  name: string,
-  latest: string
+export interface Demo {
+  name: string;
+  latest: string;
 }

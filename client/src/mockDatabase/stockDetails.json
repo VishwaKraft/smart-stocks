@@ -1,16 +1,18 @@
 {
-  "stock":[{
-            "name": "TATA STEEL",
-            "symbol": "TATASTEEL>NS",
-            "currentPrice": 1843.89,
-            "changeAmount": -120,
-            "changePercentAge": -0.2,
-            "todayHigh":2000,
-            "todayLow":1000,
-            "52hign":5210,
-            "52low":902,
-            "pe":20.8,
-            "pb":3.23,
-            "noOfShares": 1223010
-          }]
+  "stock": [
+    {
+      "name": "TATA STEEL",
+      "symbol": "TATASTEEL>NS",
+      "currentPrice": 1843.89,
+      "changeAmount": -120,
+      "changePercentAge": -0.2,
+      "todayHigh": 2000,
+      "todayLow": 1000,
+      "52hign": 5210,
+      "52low": 902,
+      "pe": 20.8,
+      "pb": 3.23,
+      "noOfShares": 1223010
+    }
+  ]
 }

@@ -1,10 +1,10 @@
-import { SearchResponse } from "./SearchResponse";
+import { SearchResponse } from './SearchResponse';
 
-export interface Response{
-  statusCode: number,
-  status: string,
-  message:string,
-  timeStamp: string,
-  errors: any,
-  data: SearchResponse[]
+export interface Response {
+  statusCode: number;
+  status: string;
+  message: string;
+  timeStamp: string;
+  errors: any;
+  data: SearchResponse[];
 }

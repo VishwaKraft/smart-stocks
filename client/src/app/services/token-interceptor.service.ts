@@ -5,8 +5,8 @@ import { UserService } from './user.service';
 export class TokenInterceptorService implements HttpInterceptor {
   constructor(private injector: Injector) {}
   intercept(req, next) {
-    let authService = this.injector.get(UserService);
-    let tokenizedReq = req.clone({
+    const authService = this.injector.get(UserService);
+    const tokenizedReq = req.clone({
       headers:
         authService.getToken() !== null
           ? req.headers.set('Authorization', authService.getToken())
@@ -15,4 +15,3 @@ export class TokenInterceptorService implements HttpInterceptor {
     return next.handle(tokenizedReq);
   }
 }
-

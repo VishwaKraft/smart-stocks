@@ -1,7 +1,7 @@
-import { Company } from "./Company";
-import { Stat } from "./Stats";
+import { Company } from './Company';
+import { Stat } from './Stats';
 
 export interface TopGainer {
-  company: Company,
-  stats: Stat
+  company: Company;
+  stats: Stat;
 }
