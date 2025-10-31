@@ -19,6 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
 
 const Material = [
   MatListModule,
@@ -42,7 +44,9 @@ const Material = [
   MatDatepickerModule,
   MatFormFieldModule,
   MatNativeDateModule,
-  MatMenuModule
+  MatMenuModule,
+  MatSelectModule,
+  MatChipsModule
 ]
 
 

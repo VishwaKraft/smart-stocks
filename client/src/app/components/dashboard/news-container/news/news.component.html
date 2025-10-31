@@ -1,19 +1,32 @@
 <div class="wow slideInLeft fix" data-wow-duration="2s">
     <mat-card class="example-card">
         <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn"></mat-progress-bar>
-        <mat-card-content *ngIf="!requireLoader">
-            <span class="mat-headline"> {{latestNews[index].title}}.</span>
-            <br /> <br />
-            <p>
-                {{latestNews[index].description}}.
-            </p>
-            <div align="left" *ngIf="latestNews[index].author">
-                <b>Source: </b> {{latestNews[index].author}}
+        <mat-card-content *ngIf="!requireLoader && latestNews && latestNews.length > 0">
+            <div class="news-layout">
+                <!-- News Image on Left -->
+                <div *ngIf="latestNews[index].urlToImage" class="news-image-section">
+                    <img [src]="latestNews[index].urlToImage" [alt]="latestNews[index].title" 
+                         class="news-image" onerror="this.style.display='none'">
+                </div>
+                <!-- News Content on Right -->
+                <div class="news-content-section">
+                    <span class="mat-headline">{{latestNews[index].title}}.</span>
+                    <br /> <br />
+                    <p>
+                        {{latestNews[index].description}}.
+                    </p>
+                    <div align="left" *ngIf="latestNews[index].author">
+                        <b>Source: </b> {{latestNews[index].author}}
+                    </div>
+                    <div align="right">
+                        <button mat-raised-button *ngIf="index != 0" (click)="prevNews()">Prev</button>
+                        <button mat-raised-button *ngIf="index != (maxindex-1)" (click)="nextNews()">Next</button>
+                    </div>
+                </div>
             </div>
-            <div align="right">
-                <button mat-raised-button *ngIf="index != 0" (click)="prevNews()">Prev</button>
-                <button mat-raised-button *ngIf="index != (maxindex-1)" (click)="nextNews()">Next</button>
-            </div>
+        </mat-card-content>
+        <mat-card-content *ngIf="!requireLoader && errorMessage" class="error-message">
+            <p>{{ errorMessage }}</p>
         </mat-card-content>
     </mat-card>
 </div>

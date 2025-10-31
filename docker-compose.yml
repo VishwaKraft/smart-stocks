@@ -1,0 +1,64 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: smart-stocks-db
+    environment:
+      POSTGRES_DB: smartstocks
+      POSTGRES_USER: smartuser
+      POSTGRES_PASSWORD: smartpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartuser -d smartstocks"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: smart-stocks-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartstocks
+      SPRING_DATASOURCE_USERNAME: smartuser
+      SPRING_DATASOURCE_PASSWORD: smartpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server/src:/app/src
+    restart: unless-stopped
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: smart-stocks-frontend
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    volumes:
+      - ./client/src:/app/src
+      - ./client/assets:/app/src/assets
+      - /app/node_modules
+    restart: unless-stopped
+    command: npm start -- --host 0.0.0.0 --disable-host-check
+
+volumes:
+  postgres_data:
+    driver: local
+

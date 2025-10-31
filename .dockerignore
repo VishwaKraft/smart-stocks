@@ -1,0 +1,19 @@
+# Docker ignore file
+node_modules
+target
+.git
+.gitignore
+*.md
+*.log
+.DS_Store
+.vscode
+.idea
+
+# Client specific
+client/dist
+client/node_modules
+
+# Server specific
+server/target
+server/.mvn/wrapper/maven-wrapper.jar
+

@@ -45,8 +45,11 @@ public class StockController {
     @Value("${upstream.details.url}")
     private String detailsUrl;
 
-    @Value("${upstream.news.url}")
-    private String newsUrl;
+    @Value("${upstream.news.baseurl}")
+    private String newsBaseUrl;
+    
+    @Value("${upstream.news.apikey}")
+    private String newsApiKey;
 
     @Value("${upstream.search.url}")
     private String searchUrl;
@@ -211,18 +214,53 @@ public class StockController {
         return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);
     }
 
-    @GetMapping("/news")
-    public ResponseEntity getNews() throws IOException {
-        ResponseEntity<JsonNode> response = this.restTemplate.exchange(newsUrl, HttpMethod.GET, headers, JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
-        List<NewsDto> ans = new LinkedList<>();
-        if(!response.getBody().get("articles").isNull() && !response.getBody().get("articles").isEmpty()) {
-            ans = mapper.readerFor(new TypeReference<List<NewsDto>>(){})
-                    .readValue(response.getBody().get("articles"));
-        }
-        RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
-                ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);
+    @GetMapping("/news-types")
+    public ResponseEntity getNewsTypes() {
+        List<NewsTypeDto> newsTypes = new LinkedList<>();
+        newsTypes.add(new NewsTypeDto("business", "Business", "Business and financial news"));
+        newsTypes.add(new NewsTypeDto("technology", "Technology", "Technology and innovation news"));
+        newsTypes.add(new NewsTypeDto("general", "General", "General news"));
+        newsTypes.add(new NewsTypeDto("health", "Health", "Health and medical news"));
+        newsTypes.add(new NewsTypeDto("science", "Science", "Science and research news"));
+        newsTypes.add(new NewsTypeDto("sports", "Sports", "Sports news"));
+        newsTypes.add(new NewsTypeDto("entertainment", "Entertainment", "Entertainment news"));
+        
+        RootResponseDto<List<NewsTypeDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
+                ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, newsTypes);
         return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);
+    }
+
+    @GetMapping("/news")
+    public ResponseEntity getNews(@RequestParam(value = "type", required = false, defaultValue = "business") String type) throws IOException {
+        try {
+            // Validate news type
+            List<String> validTypes = Arrays.asList("business", "technology", "general", "health", "science", "sports", "entertainment");
+            if (!validTypes.contains(type.toLowerCase())) {
+                Map<String, String> errors = new HashMap<>();
+                errors.put("error", "Invalid news type: " + type + ". Valid types are: " + String.join(", ", validTypes));
+                RootResponseDto<String> errorResponse = new RootResponseDto<>(400, HttpStatus.BAD_REQUEST,
+                        ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
+                return new ResponseEntity<>(errorResponse, new HttpHeaders(), 400);
+            }
+            
+            String newsUrl = newsBaseUrl + "?category=" + type + "&apiKey=" + newsApiKey;
+            ResponseEntity<JsonNode> response = this.restTemplate.exchange(newsUrl, HttpMethod.GET, headers, JsonNode.class);
+            ObjectMapper mapper = new ObjectMapper();
+            List<NewsDto> ans = new LinkedList<>();
+            if(!response.getBody().get("articles").isNull() && !response.getBody().get("articles").isEmpty()) {
+                ans = mapper.readerFor(new TypeReference<List<NewsDto>>(){})
+                        .readValue(response.getBody().get("articles"));
+            }
+            RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
+                    ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);
+            return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);
+        } catch (Exception e) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", "Failed to fetch news: " + e.getMessage());
+            RootResponseDto<String> errorResponse = new RootResponseDto<>(500, HttpStatus.INTERNAL_SERVER_ERROR,
+                    ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
+            return new ResponseEntity<>(errorResponse, new HttpHeaders(), 500);
+        }
     }
 
     @GetMapping("/recommended-stocks/{symbol}")

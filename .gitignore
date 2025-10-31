@@ -1,1 +1,5 @@
 /model/.venv
+
+# Docker
+docker-compose.override.yml
+.docker/
