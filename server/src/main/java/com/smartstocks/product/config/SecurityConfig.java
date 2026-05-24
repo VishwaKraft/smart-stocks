@@ -55,7 +55,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/events").permitAll()
                 .antMatchers("/tracking/**").permitAll()
-                .antMatchers("/stock/**", "/user/token", "/user/signup", "/swagger-ui/**", "/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
+                .antMatchers(
+                        "/stock/**",
+                        "/user/token",
+                        "/user/signup",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs/swagger-config",
+                        "/v3/api-docs",
+                        "/actuator/**",
+                        "/actuator/health",
+                        "/actuator/info"
+                ).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
