@@ -24,6 +24,7 @@ services:
       dockerfile: Dockerfile
     container_name: smart-stocks-backend
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartstocks
       SPRING_DATASOURCE_USERNAME: smartuser
       SPRING_DATASOURCE_PASSWORD: smartpass

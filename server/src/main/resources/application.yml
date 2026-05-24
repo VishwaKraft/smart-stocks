@@ -1,11 +1,8 @@
 spring:
   datasource:
-    url: "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres"
-    username: "postgres.nmzidzfsrwmvhxhbgfzs"
-    password: "hwACdgl2ISiQ5t43"
-    # url: "jdbc:postgresql://localhost:5432/smartstocks"
-    # username: "smartuser"
-    # password: "smartpass"
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/smartstocks}
+    username: ${SPRING_DATASOURCE_USERNAME:smartuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:smartpass}
     driverClassName: "org.postgresql.Driver"
 
   jpa:
