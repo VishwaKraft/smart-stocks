@@ -4,6 +4,7 @@ import com.smartstocks.product.dto.EventLogRequestDto;
 import com.smartstocks.product.dto.EventLogResponseDto;
 import com.smartstocks.product.dto.RootResponseDto;
 import com.smartstocks.product.service.IEventLogService;
+import com.smartstocks.product.util.HttpRequestUtils;
 import com.smartstocks.product.util.ResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,8 +37,9 @@ public class EventLogController {
             Principal principal) {
         EventLogResponseDto saved = eventLogService.logEvent(
                 request,
-                resolveClientIp(httpRequest),
+                HttpRequestUtils.resolveClientIp(httpRequest),
                 httpRequest.getHeader("User-Agent"),
+                HttpRequestUtils.extractHeaders(httpRequest),
                 principal
         );
         RootResponseDto<EventLogResponseDto> response = new RootResponseDto<>(
@@ -57,13 +59,5 @@ public class EventLogController {
         RootResponseDto<List<EventLogResponseDto>> response = new RootResponseDto<>(
                 200, HttpStatus.OK, ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, events.getContent());
         return new ResponseEntity<>(response, new HttpHeaders(), 200);
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }

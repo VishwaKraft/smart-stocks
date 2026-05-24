@@ -2,6 +2,7 @@ package com.smartstocks.product.controllers;
 
 import com.smartstocks.product.dto.EventLogRequestDto;
 import com.smartstocks.product.service.IEventLogService;
+import com.smartstocks.product.util.HttpRequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
@@ -47,8 +48,9 @@ public class EmailTrackingController {
 
         eventLogService.logEvent(
                 request,
-                resolveClientIp(httpRequest),
+                HttpRequestUtils.resolveClientIp(httpRequest),
                 httpRequest.getHeader("User-Agent"),
+                HttpRequestUtils.extractHeaders(httpRequest),
                 principal
         );
 
@@ -81,13 +83,5 @@ public class EmailTrackingController {
         });
 
         return eventInfo;
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }
