@@ -8,7 +8,7 @@ COPY src src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create the final Docker image using OpenJDK 11
-FROM openjdk:11-jdk-slim
+FROM eclipse-temurin:11-jre-jammy
 VOLUME /tmp
 
 # Copy the JAR from the build stage
