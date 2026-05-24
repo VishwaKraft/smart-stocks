@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EventLogServiceImpl implements IEventLogService {
@@ -27,10 +29,15 @@ public class EventLogServiceImpl implements IEventLogService {
     private IUserService userService;
 
     @Override
-    public EventLogResponseDto logEvent(EventLogRequestDto request, String ipAddress, String userAgent, Principal principal) {
+    public EventLogResponseDto logEvent(
+            EventLogRequestDto request,
+            String ipAddress,
+            String userAgent,
+            Map<String, String> requestHeaders,
+            Principal principal) {
         EventLog eventLog = new EventLog();
         eventLog.setEventType(request.getEventType());
-        eventLog.setEventInfo(request.getEventInfo());
+        eventLog.setEventInfo(mergeEventInfo(request.getEventInfo(), requestHeaders));
         eventLog.setUserId(resolveUserId(request.getUserId(), principal));
         eventLog.setIpAddress(firstNonBlank(request.getIpAddress(), ipAddress));
         eventLog.setUserAgent(firstNonBlank(request.getUserAgent(), userAgent, ""));
@@ -103,5 +110,13 @@ public class EventLogServiceImpl implements IEventLogService {
             }
         }
         return null;
+    }
+
+    private Map<String, Object> mergeEventInfo(Map<String, Object> eventInfo, Map<String, String> requestHeaders) {
+        Map<String, Object> merged = eventInfo != null ? new HashMap<>(eventInfo) : new HashMap<>();
+        if (requestHeaders != null && !requestHeaders.isEmpty()) {
+            merged.put("headers", requestHeaders);
+        }
+        return merged;
     }
 }
