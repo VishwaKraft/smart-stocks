@@ -58,17 +58,8 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         }
         catch (JwtException e) {
-            Map<String, String> errors = new HashMap<>();
-            errors.put("error", "You are unauthorized");
-            RootResponseDto<String> myResponse = new RootResponseDto<>(403, HttpStatus.UNAUTHORIZED,
-                    ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-            response.setContentType("application/json");
-            response.setStatus(403);
-            response.getWriter().write(mapper.writeValueAsString(myResponse));
-            return;
+            SecurityContextHolder.clearContext();
+            chain.doFilter(request, response);
         }
         catch (Exception e) {
             Map<String, String> errors = new HashMap<>();
