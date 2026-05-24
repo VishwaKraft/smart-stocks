@@ -4,10 +4,13 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:smartuser}
     password: ${SPRING_DATASOURCE_PASSWORD:smartpass}
     driverClassName: "org.postgresql.Driver"
+    hikari:
+      data-source-properties:
+        prepareThreshold: 0
 
   jpa:
     hibernate:
-      ddl-auto: "update"
+      ddl-auto: "none"
     show-sql: "false"
     properties:
       hibernate:
