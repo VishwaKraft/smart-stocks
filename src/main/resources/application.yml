@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: "jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
-    username: "postgres.fqxyocolbkxjsohpxvpg"
-    password: "wavsox-guhrah-6kidJi"
+    url: "jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres"
+    username: "postgres.nmzidzfsrwmvhxhbgfzs"
+    password: "hwACdgl2ISiQ5t43"
     # url: "jdbc:postgresql://localhost:5432/smartstocks"
     # username: "smartuser"
     # password: "smartpass"
