@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Not Found</title>
+    <link rel="stylesheet" th:href="@{/css/short-links/style.css}">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            font-size: 72px;
+            margin: 0;
+            color: #8e24aa;
+        }
+        h2 {
+            font-size: 24px;
+            margin: 10px 0 20px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #0073e6;
+            font-size: 16px;
+            border: 1px solid #0073e6;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        a:hover {
+            background-color: #0073e6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<h1>404</h1>
+<h2>Oops! This link was not found or has expired.</h2>
+<a th:href="@{/short-links}">Go back to Home</a>
+</body>
+</html>
