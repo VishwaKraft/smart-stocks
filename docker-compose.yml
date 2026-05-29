@@ -28,7 +28,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartstocks
       SPRING_DATASOURCE_USERNAME: smartuser
       SPRING_DATASOURCE_PASSWORD: smartpass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_PORT: 8080
     ports:
       - "8080:8080"

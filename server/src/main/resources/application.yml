@@ -10,8 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: "none"
-    show-sql: "false"
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         temp:
@@ -34,6 +34,10 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  short-link:
+    base-url: ${SHORT_LINK_BASE_URL:http://localhost:8080/s/}
 
 # OpenTelemetry Configuration
 otel:

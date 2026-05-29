@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartstocks.product.dto.*;
 import com.smartstocks.product.models.SearchTable;
 import com.smartstocks.product.repository.StockRepository;
+import com.smartstocks.product.service.INewsService;
 import com.smartstocks.product.service.ISerachTableService;
 import com.smartstocks.product.util.ResponseMessage;
 import com.smartstocks.product.util.UtilityMethods;
@@ -45,12 +46,6 @@ public class StockController {
     @Value("${upstream.details.url}")
     private String detailsUrl;
 
-    @Value("${upstream.news.baseurl}")
-    private String newsBaseUrl;
-    
-    @Value("${upstream.news.apikey}")
-    private String newsApiKey;
-
     @Value("${upstream.search.url}")
     private String searchUrl;
 
@@ -62,6 +57,9 @@ public class StockController {
 
     @Autowired
     private ISerachTableService searchTableService;
+
+    @Autowired
+    private INewsService newsService;
 
     @Autowired
     private StockRepository stockRepository;
@@ -243,14 +241,7 @@ public class StockController {
                 return new ResponseEntity<>(errorResponse, new HttpHeaders(), 400);
             }
             
-            String newsUrl = newsBaseUrl + "?category=" + type + "&apiKey=" + newsApiKey;
-            ResponseEntity<JsonNode> response = this.restTemplate.exchange(newsUrl, HttpMethod.GET, headers, JsonNode.class);
-            ObjectMapper mapper = new ObjectMapper();
-            List<NewsDto> ans = new LinkedList<>();
-            if(!response.getBody().get("articles").isNull() && !response.getBody().get("articles").isEmpty()) {
-                ans = mapper.readerFor(new TypeReference<List<NewsDto>>(){})
-                        .readValue(response.getBody().get("articles"));
-            }
+            List<NewsDto> ans = newsService.fetchAndStoreNews(type.toLowerCase());
             RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
                     ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);
             return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);

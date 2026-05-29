@@ -46,7 +46,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring()
                 .antMatchers(HttpMethod.POST, "/events")
-                .antMatchers("/tracking/**");
+                .antMatchers("/tracking/**")
+                .antMatchers("/s/**")
+                .antMatchers("/short-links")
+                .antMatchers("/css/**", "/js/**", "/images/**")
+                .antMatchers("/api/links/**");
     }
 
     @Override
@@ -55,6 +59,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/events").permitAll()
                 .antMatchers("/tracking/**").permitAll()
+                .antMatchers("/s/**").permitAll()
+                .antMatchers("/short-links").permitAll()
+                .antMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .antMatchers("/api/links/**").permitAll()
                 .antMatchers(
                         "/stock/**",
                         "/user/token",
