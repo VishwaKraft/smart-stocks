@@ -43,8 +43,7 @@ public class ShortLinkRedirectController {
         ShortLink link = shortLinkService.getLinkByShortId(shortId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Link not found"));
 
-        String originalUrl = shortLinkService.resolveOriginalUrl(shortId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.GONE, "Link expired"));
+        String originalUrl = link.getOriginalUrl();
 
         logClickEvent(shortId, link, userId, campaign, httpRequest, principal);
         shortLinkService.incrementClickCountAsync(shortId);
@@ -54,7 +53,7 @@ public class ShortLinkRedirectController {
 
     @ExceptionHandler(ResponseStatusException.class)
     public String handleRedirectError(ResponseStatusException ex) {
-        if (ex.getStatus() == HttpStatus.NOT_FOUND || ex.getStatus() == HttpStatus.GONE) {
+        if (ex.getStatus() == HttpStatus.NOT_FOUND) {
             return "short-links/notFound";
         }
         throw ex;

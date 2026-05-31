@@ -86,7 +86,6 @@ public class ShortLinkServiceImpl implements IShortLinkService {
     @Override
     public Optional<String> resolveOriginalUrl(String shortId) {
         return shortLinkRepository.findByShortId(shortId)
-                .filter(this::isActive)
                 .map(ShortLink::getOriginalUrl);
     }
 
@@ -95,10 +94,6 @@ public class ShortLinkServiceImpl implements IShortLinkService {
     public CompletableFuture<Void> incrementClickCountAsync(String shortId) {
         shortLinkRepository.incrementClickCountByShortId(shortId);
         return CompletableFuture.completedFuture(null);
-    }
-
-    private boolean isActive(ShortLink link) {
-        return link.getExpiresAt() == null || link.getExpiresAt().isAfter(LocalDateTime.now());
     }
 
     private ShortLinkDto toDto(ShortLink link) {
