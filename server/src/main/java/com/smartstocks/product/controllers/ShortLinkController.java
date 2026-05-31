@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.List;
 
 @RestController
@@ -32,9 +31,7 @@ public class ShortLinkController {
     private String shortLinkBaseUrl;
 
     @PostMapping("/shorten")
-    public ResponseEntity<String> shortenLink(
-            @RequestParam String originalUrl,
-            @RequestParam(required = false) Long ttlInMinutes) {
+    public ResponseEntity<String> shortenLink(@RequestParam String originalUrl) {
         try {
             URI uri = new URI(originalUrl);
             if (uri.getScheme() == null || uri.getHost() == null) {
@@ -44,8 +41,7 @@ public class ShortLinkController {
             return ResponseEntity.badRequest().body("Invalid URL format");
         }
 
-        Duration ttl = ttlInMinutes != null ? Duration.ofMinutes(ttlInMinutes) : null;
-        String shortenedUrl = shortLinkService.shortenLink(originalUrl, ttl);
+        String shortenedUrl = shortLinkService.shortenLink(originalUrl, null);
         return ResponseEntity.ok(shortenedUrl);
     }
 

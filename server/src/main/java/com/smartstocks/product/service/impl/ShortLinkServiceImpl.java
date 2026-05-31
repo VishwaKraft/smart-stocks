@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class ShortLinkServiceImpl implements IShortLinkService {
 
     private static final int SHORT_ID_LENGTH = 6;
-    private static final int DEFAULT_TTL_MINUTES = 300;
 
     private final ShortLinkRepository shortLinkRepository;
     private final String baseUrl;
@@ -41,9 +40,7 @@ public class ShortLinkServiceImpl implements IShortLinkService {
             shortId = generateRandomShortId();
         } while (shortLinkRepository.existsByShortId(shortId));
 
-        LocalDateTime expiresAt = ttl == null
-                ? LocalDateTime.now().plusMinutes(DEFAULT_TTL_MINUTES)
-                : LocalDateTime.now().plus(ttl);
+        LocalDateTime expiresAt = ttl == null ? null : LocalDateTime.now().plus(ttl);
 
         ShortLink link = new ShortLink();
         link.setOriginalUrl(originalUrl);

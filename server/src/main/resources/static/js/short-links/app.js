@@ -71,10 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 createdAtP.textContent = `Created at: ${new Date(link.createdAt).toLocaleString()}`;
                 createdAtP.style.margin = "2px 0";
 
-                const expiresAtP = document.createElement("p");
-                expiresAtP.textContent = `Expires at: ${new Date(link.expiresAt).toLocaleString()}`;
-                expiresAtP.style.margin = "2px 0";
-
                 const qrDiv = document.createElement("div");
                 qrDiv.style.margin = "5px 0";
                 qrDiv.className = "dropdown";
@@ -115,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 detailsDiv.appendChild(clickCountP);
                 detailsDiv.appendChild(originalUrlP);
                 detailsDiv.appendChild(createdAtP);
-                detailsDiv.appendChild(expiresAtP);
                 detailsDiv.appendChild(qrDiv);
 
                 dropdownSpan.addEventListener("click", () => {
@@ -181,7 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const originalUrl = document.getElementById("originalUrl").value.trim();
-        const ttlInMinutes = document.getElementById("ttlInMinutes").value;
 
         if (!originalUrl) {
             alert("Please enter a URL");
@@ -191,7 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const params = new URLSearchParams();
             params.append("originalUrl", originalUrl);
-            if (ttlInMinutes) params.append("ttlInMinutes", ttlInMinutes);
 
             const response = await fetch(`${apiLinksUrl}/shorten`, {
                 method: "POST",
