@@ -37,7 +37,7 @@ export class DashboardService {
 
   buyStock(buyOrder: { symbol: string, units: number }) {
     this.http.put(this.buyStockUrl, [buyOrder]).subscribe(data => {
-      this.toastr.success("Stock Bought !!", "", {
+      this.toastr.success("Stock added to inventory", "", {
         closeButton: true,
         "positionClass": "toast-bottom-right",
       })
@@ -54,7 +54,7 @@ export class DashboardService {
 
   sellStock(sellOrder: { symbol: string, units: number }) {
     this.http.put(this.sellStockUrl, [sellOrder]).subscribe(data => {
-      this.toastr.success("Stock Sold !!", "", {
+      this.toastr.success("Stock removed from inventory", "", {
         closeButton: true,
         "positionClass": "toast-bottom-right",
       })
@@ -71,7 +71,7 @@ export class DashboardService {
 
   addCredits(credit: number) {
     this.http.put(this.creditsUrl, { value: credit }).subscribe(data => {
-      this.toastr.success("Credit Added !!", "", {
+      this.toastr.success("Budget funds added", "", {
         closeButton: true,
         "positionClass": "toast-bottom-right",
       })

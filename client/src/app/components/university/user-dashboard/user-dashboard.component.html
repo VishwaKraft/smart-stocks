@@ -1,54 +1,72 @@
-<div class="container">
-    <div class="row">
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Credits Remaining
-                    </mat-card-subtitle>
-                    <mat-card-title class="credits">₹ {{ [userCredits] }} </mat-card-title>
-                    <br />
-                    <br />
-                    <mat-card-subtitle class="button">
-                        <button (click)="addCredits()">Add Credits</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Profit/Loss </mat-card-subtitle>
-                    <mat-card-title class="credits">₹ {{ [userProfits] }} </mat-card-title>
-                    <br />
-                    <br />
-                    <mat-card-subtitle class="button">
-                        <button (click)="navigateStockHistory()">View All Orders</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
+<div class="container inventory-dashboard">
+  <div class="page-header">
+    <h2 class="page-title">Inventory Overview</h2>
+    <p class="page-subtitle">Track stock levels, value, and reorder alerts in one place</p>
+  </div>
 
-        <div class=" wow fadeInUp col-md-4 mb-5" data-wow-duration="3s">
-            <mat-card class="example-card card-container" style="text-align: center">
-                <mat-card-header>
-                    <mat-card-subtitle class="heading">Current Subscription
-                    </mat-card-subtitle>
-                    <mat-card-title class="credits">Standard</mat-card-title>
-                    <br>
-                    <br>
-                    <mat-card-subtitle>Ends on 31/12/2021</mat-card-subtitle>
-
-                    <mat-card-subtitle class="button">
-                        <button (click)="extendSubscription()">Extend Subscription</button>
-                    </mat-card-subtitle>
-                </mat-card-header>
-            </mat-card>
-        </div>
+  <div class="row">
+    <div class="wow fadeInUp col-md-3 col-sm-6 mb-4" data-wow-duration="3s">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-subtitle class="card-label">Available Budget</mat-card-subtitle>
+          <mat-card-title class="card-value">₹ {{ availableBudget || '0.00' }}</mat-card-title>
+          <mat-card-subtitle class="card-action">
+            <button (click)="addBudget()">Add Funds</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
 
-    <div class="row">
-        <div class="wow fadeInUp col-12" data-wow-duration="3s">
-            <app-stocks-sell-table></app-stocks-sell-table>
-        </div>
+    <div class="wow fadeInUp col-md-3 col-sm-6 mb-4" data-wow-duration="3s">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-subtitle class="card-label">Inventory Value</mat-card-subtitle>
+          <mat-card-title class="card-value">₹ {{ inventorySummary.totalValue | number:'1.2-2' }}</mat-card-title>
+          <mat-card-subtitle class="card-meta">{{ inventorySummary.totalUnits | number:'1.0-0' }} units across {{ inventorySummary.skuCount }} SKUs</mat-card-subtitle>
+          <mat-card-subtitle class="card-action">
+            <button (click)="viewMovements()">View Movements</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
     </div>
+
+    <div class="wow fadeInUp col-md-3 col-sm-6 mb-4" data-wow-duration="3s">
+      <mat-card class="summary-card" [class.alert-card]="inventorySummary.lowStockCount > 0">
+        <mat-card-header>
+          <mat-card-subtitle class="card-label">Low Stock Alerts</mat-card-subtitle>
+          <mat-card-title class="card-value" [class.text-warning]="inventorySummary.lowStockCount > 0">
+            {{ inventorySummary.lowStockCount }}
+          </mat-card-title>
+          <mat-card-subtitle class="card-meta">Items at or below reorder level</mat-card-subtitle>
+          <mat-card-subtitle class="card-action">
+            <button (click)="openCatalog()">Restock Items</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
+
+    <div class="wow fadeInUp col-md-3 col-sm-6 mb-4" data-wow-duration="3s">
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-subtitle class="card-label">Active SKUs</mat-card-subtitle>
+          <mat-card-title class="card-value">{{ inventorySummary.skuCount }}</mat-card-title>
+          <mat-card-subtitle class="card-meta">
+            <span *ngIf="inventorySummary.outOfStockCount > 0" class="text-danger">
+              {{ inventorySummary.outOfStockCount }} out of stock
+            </span>
+            <span *ngIf="inventorySummary.outOfStockCount === 0">All items tracked</span>
+          </mat-card-subtitle>
+          <mat-card-subtitle class="card-action">
+            <button (click)="openCatalog()">Browse Catalog</button>
+          </mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="wow fadeInUp col-12" data-wow-duration="3s">
+      <app-stocks-sell-table></app-stocks-sell-table>
+    </div>
+  </div>
 </div>

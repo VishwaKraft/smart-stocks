@@ -1,6 +1,6 @@
 <mat-card class="example-card">
   <mat-card-header class="grad">
-    <mat-card-title class="heading">Add Credits</mat-card-title>
+    <mat-card-title class="heading">Add Budget Funds</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <div>
@@ -11,20 +11,19 @@
           class="example-form"
         >
 
-
         <mat-form-field
             class="example-full-width"
             appearance="fill"
             color="warn"
           >
-            <mat-label>No of Credits</mat-label>
+            <mat-label>Budget Amount (₹)</mat-label>
             <input
             #credit
             (keyup)="onCreditChange(credit.value)"
             [(ngModel)]='defaultCredits'
               matInput
               type="number"
-              placeholder="No of Credits (min 100)"
+              placeholder="Minimum ₹100"
               formControlName="noOfCredits"
               min="100"
             />
@@ -34,10 +33,9 @@
             appearance="fill"
             color="warn"
           >
-            <mat-label>Amount</mat-label>
+            <mat-label>Payment Amount (₹)</mat-label>
             <input readonly matInput placeholder="Amount" formControlName="amount" [(ngModel)]='defaultAmount'>
           </mat-form-field>
-
 
           <div id="wrapper">
             <button
@@ -45,7 +43,7 @@
               type="submit"
               [disabled]="!AddCreditsForm.valid"
             >
-              Pay & Add Credits
+              Pay & Add Funds
             </button>
           </div>
         </form>

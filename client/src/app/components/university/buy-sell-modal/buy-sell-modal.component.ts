@@ -30,11 +30,10 @@ export class BuySellModalComponent implements OnInit {
   }
 
   onSubmit() {
-    if(this.stock.type=="Buy"){
-      this.dashboardService.buyStock({symbol:this.BuySellForm.value.name,units:this.BuySellForm.value.noOfUnits});
-    }
-    else if(this.stock.type=="Sell"){
-      this.dashboardService.sellStock({symbol:this.BuySellForm.value.name,units:this.BuySellForm.value.noOfUnits});
+    if (this.stock.type === 'Buy' || this.stock.type === 'Stock In') {
+      this.dashboardService.buyStock({ symbol: this.BuySellForm.value.name, units: this.BuySellForm.value.noOfUnits });
+    } else if (this.stock.type === 'Sell' || this.stock.type === 'Stock Out') {
+      this.dashboardService.sellStock({ symbol: this.BuySellForm.value.name, units: this.BuySellForm.value.noOfUnits });
     }
     this.dialogRef.close();
   }

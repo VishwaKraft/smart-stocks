@@ -1,6 +1,6 @@
 <mat-card class="example-card">
   <mat-card-header class="grad">
-    <mat-card-title class="heading">Stock Order History</mat-card-title>
+    <mat-card-title class="heading">Stock Movement History</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <div class="table-responsive">
@@ -11,31 +11,33 @@
         </ng-container>
 
         <ng-container matColumnDef="stockName">
-          <th class="center" mat-header-cell *matHeaderCellDef>Stock Name</th>
+          <th class="center" mat-header-cell *matHeaderCellDef>Product / SKU</th>
           <td class="center" mat-cell *matCellDef="let element">{{ element.symbol }}</td>
         </ng-container>
 
         <ng-container matColumnDef="noOfUnits">
-          <th class="center" mat-header-cell *matHeaderCellDef>No. of Units</th>
+          <th class="center" mat-header-cell *matHeaderCellDef>Quantity</th>
           <td class="center" mat-cell *matCellDef="let element">{{ element.units }}</td>
         </ng-container>
 
         <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <th mat-header-cell *matHeaderCellDef>Movement</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.type}}
+            <span class="movement-badge" [ngClass]="element.type === 'Buy' ? 'movement-in' : 'movement-out'">
+              {{ element.type === 'Buy' ? 'Stock In' : 'Stock Out' }}
+            </span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="price">
-          <th mat-header-cell *matHeaderCellDef>Price</th>
+          <th mat-header-cell *matHeaderCellDef>Unit Cost (₹)</th>
           <td mat-cell *matCellDef="let element">
             {{ element.price }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="profit_loss">
-          <th class="center" mat-header-cell *matHeaderCellDef>Profit/Loss</th>
+          <th class="center" mat-header-cell *matHeaderCellDef>Cost Impact (₹)</th>
           <td class="center" mat-cell *matCellDef="let element">{{ element.profit }}</td>
         </ng-container>
 

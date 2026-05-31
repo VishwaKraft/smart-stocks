@@ -36,7 +36,7 @@ export class MockStocksTableComponent implements OnInit {
   }
 
   buyStock(stock:MockStock){
-    this.dashboardService.setStock({type:"Buy",name:stock.companyName,currPrice:stock.price});
+    this.dashboardService.setStock({type:"Stock In",name:stock.companyName,currPrice:stock.price});
     const dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.width = "30%";

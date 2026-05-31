@@ -22,19 +22,19 @@ export class SandboxComponent implements OnInit, OnDestroy {
     this.sideNavService.sideNav = true;
     this.sideNavService.sideNavSubject.next(this.sideNavService.sideNav);
     this.sideNavService.sideNavItems = [{
-      text: "Dashboard",
+      text: "Inventory Overview",
       link: "/user/sandbox/dashboard"
     },
     {
-      text: "Orders History",
+      text: "Stock Movements",
       link: "/user/sandbox/orders"
     },
     {
-      text: "Credits History",
+      text: "Budget History",
       link: "/user/sandbox/credits"
     },
     {
-      text: "Company",
+      text: "Product Catalog",
       link: "/user/sandbox/stocks"
     }];
     this.sideNavService.sideNavItemsSubject.next(this.sideNavService.sideNavItems);

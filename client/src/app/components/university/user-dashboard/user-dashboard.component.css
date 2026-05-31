@@ -1,62 +1,89 @@
-#addCredits {
-    text-align: center;
+.inventory-dashboard {
+  padding-bottom: 2rem;
 }
 
-.alignCenter {
-    text-align: center;
+.page-header {
+  margin-bottom: 1.5rem;
 }
 
-.card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
 }
 
-.heading {
-    font-size: 1.25rem;
-    padding: .5rem 0rem;
+.page-subtitle {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-.credits {
-    font-size: 2rem;
+.summary-card {
+  height: 100%;
+  text-align: center;
+  border-radius: 0.75rem;
+  transition: box-shadow 0.2s ease;
 }
 
-.button {
-    font-size: 1rem;
-    padding: .5rem 0rem;
+.summary-card:hover {
+  box-shadow: 0 4px 12px rgba(255, 103, 0, 0.15);
+}
+
+.alert-card {
+  border-left: 4px solid #ff6700;
+}
+
+.card-label {
+  font-size: 0.875rem;
+  color: #666;
+  padding: 0.5rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  padding: 0.25rem 0;
+}
+
+.card-meta {
+  font-size: 0.8rem;
+  color: #888;
+  padding: 0.25rem 0;
+}
+
+.card-action {
+  padding: 0.5rem 0 0.75rem;
+}
+
+.text-warning {
+  color: #e65100 !important;
+}
+
+.text-danger {
+  color: #c62828;
 }
 
 button {
-    color: #FF6700;
-    border-radius: .5rem;
-    border: 0;
-    margin: 1rem;
-    border: 1px solid #FF6700;
-    background-color: white;
-    padding: .5rem 1.5rem;
+  color: #FF6700;
+  border-radius: 0.5rem;
+  border: 1px solid #FF6700;
+  background-color: white;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
 button:hover {
-    background: #FF6700;
-    color: #F2F2F2;
+  background: #FF6700;
+  color: #F2F2F2;
 }
-
-mat-card {
-    height: 100%;
-    /* display: flex;
-  justify-content: center;
-  align-items: center; */
-}
-
-
-/*
-mat-card-header mat-card-content{
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
 
 mat-card-header-text {
-    margin: 0rem;
+  margin: 0;
+  width: 100%;
 }
