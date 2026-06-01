@@ -1,8 +1,7 @@
 package com.smartstocks.product.controllers;
 
-import com.smartstocks.product.dto.EventLogRequestDto;
 import com.smartstocks.product.models.ShortLink;
-import com.smartstocks.product.service.IEventLogService;
+import com.smartstocks.product.service.ILinkClickTrackingService;
 import com.smartstocks.product.service.IShortLinkService;
 import com.smartstocks.product.util.HttpRequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +23,11 @@ import java.util.Map;
 @RequestMapping("/s")
 public class ShortLinkRedirectController {
 
-    private static final String EVENT_TYPE = "short_link_click";
-
     @Autowired
     private IShortLinkService shortLinkService;
 
     @Autowired
-    private IEventLogService eventLogService;
+    private ILinkClickTrackingService linkClickTrackingService;
 
     @GetMapping("/{shortId}")
     public String redirectToOriginal(
@@ -45,7 +42,17 @@ public class ShortLinkRedirectController {
 
         String originalUrl = link.getOriginalUrl();
 
-        logClickEvent(shortId, link, userId, campaign, httpRequest, principal);
+        linkClickTrackingService.trackClick(
+                shortId,
+                originalUrl,
+                userId,
+                campaign,
+                buildMetadata(shortId, link, campaign, httpRequest),
+                HttpRequestUtils.resolveClientIp(httpRequest),
+                httpRequest.getHeader("User-Agent"),
+                HttpRequestUtils.extractHeaders(httpRequest),
+                principal
+        );
         shortLinkService.incrementClickCountAsync(shortId);
 
         return "redirect:" + originalUrl;
@@ -59,47 +66,26 @@ public class ShortLinkRedirectController {
         throw ex;
     }
 
-    private void logClickEvent(
-            String shortId,
-            ShortLink link,
-            Long userId,
-            String campaign,
-            HttpServletRequest httpRequest,
-            Principal principal) {
-        EventLogRequestDto request = new EventLogRequestDto();
-        request.setEventType(EVENT_TYPE);
-        request.setUserId(userId);
-        request.setEventInfo(buildEventInfo(shortId, link, campaign, httpRequest));
-
-        eventLogService.logEvent(
-                request,
-                HttpRequestUtils.resolveClientIp(httpRequest),
-                httpRequest.getHeader("User-Agent"),
-                HttpRequestUtils.extractHeaders(httpRequest),
-                principal
-        );
-    }
-
-    private Map<String, Object> buildEventInfo(
+    private Map<String, Object> buildMetadata(
             String shortId,
             ShortLink link,
             String campaign,
             HttpServletRequest request) {
-        Map<String, Object> eventInfo = new HashMap<>();
-        eventInfo.put("short_id", shortId);
-        eventInfo.put("original_url", link.getOriginalUrl());
-        eventInfo.put("source", "url_shortener");
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("short_id", shortId);
+        metadata.put("original_url", link.getOriginalUrl());
+        metadata.put("source", "url_shortener");
 
         if (campaign != null && !campaign.isBlank()) {
-            eventInfo.put("campaign", campaign);
+            metadata.put("campaign", campaign);
         }
 
         request.getParameterMap().forEach((key, values) -> {
-            if (values.length > 0 && !eventInfo.containsKey(key)) {
-                eventInfo.put(key, values[0]);
+            if (values.length > 0 && !metadata.containsKey(key)) {
+                metadata.put(key, values[0]);
             }
         });
 
-        return eventInfo;
+        return metadata;
     }
 }

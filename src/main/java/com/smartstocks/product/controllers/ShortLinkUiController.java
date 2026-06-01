@@ -16,6 +16,7 @@ public class ShortLinkUiController {
         String baseUrl = shortLinkBaseUrl.endsWith("/") ? shortLinkBaseUrl : shortLinkBaseUrl + "/";
         model.addAttribute("shortLinkBaseUrl", baseUrl);
         model.addAttribute("apiLinksUrl", "/api/links");
+        model.addAttribute("apiCampaignsUrl", "/api/campaigns");
         return "short-links/index";
     }
 }
