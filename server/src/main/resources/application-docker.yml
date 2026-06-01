@@ -21,4 +21,6 @@ server:
 app:
   short-link:
     base-url: ${SHORT_LINK_BASE_URL:http://localhost:8080/s/}
+  tracking:
+    base-url: ${TRACKING_BASE_URL:http://localhost:8080/tracking}
 

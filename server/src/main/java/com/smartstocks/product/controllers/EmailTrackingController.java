@@ -1,7 +1,8 @@
 package com.smartstocks.product.controllers;
 
-import com.smartstocks.product.dto.EventLogRequestDto;
-import com.smartstocks.product.service.IEventLogService;
+import com.smartstocks.product.models.Campaign;
+import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.service.IEmailOpenTrackingService;
 import com.smartstocks.product.util.HttpRequestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/tracking")
@@ -28,26 +30,30 @@ import java.util.Map;
 public class EmailTrackingController {
 
     private static final String PIXEL_IMAGE_PATH = "static/tracking/email_stocks.png";
-    private static final String EVENT_TYPE = "email_open";
 
     @Autowired
-    private IEventLogService eventLogService;
+    private IEmailOpenTrackingService emailOpenTrackingService;
+
+    @Autowired
+    private ICampaignService campaignService;
 
     @GetMapping(value = "/email_stocks.png", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> trackEmailOpen(
             @RequestParam(value = "user_id", required = false) Long userId,
             @RequestParam(value = "campaign", required = false) String campaign,
+            @RequestParam(value = "campaign_id", required = false) Long campaignId,
             @RequestParam(value = "email_id", required = false) String emailId,
             HttpServletRequest httpRequest,
             Principal principal) throws IOException {
 
-        EventLogRequestDto request = new EventLogRequestDto();
-        request.setEventType(EVENT_TYPE);
-        request.setUserId(userId);
-        request.setEventInfo(buildEventInfo(httpRequest, campaign, emailId));
+        Optional<Campaign> resolvedCampaign = resolveCampaign(campaignId, campaign);
 
-        eventLogService.logEvent(
-                request,
+        emailOpenTrackingService.trackOpen(
+                userId,
+                resolvedCampaign.map(Campaign::getId).orElse(null),
+                resolvedCampaign.map(Campaign::getCampaignCode).orElse(campaign),
+                emailId,
+                buildMetadata(httpRequest, resolvedCampaign, campaign, emailId),
                 HttpRequestUtils.resolveClientIp(httpRequest),
                 httpRequest.getHeader("User-Agent"),
                 HttpRequestUtils.extractHeaders(httpRequest),
@@ -64,24 +70,47 @@ public class EmailTrackingController {
         return ResponseEntity.ok().headers(headers).body(imageBytes);
     }
 
-    private Map<String, Object> buildEventInfo(HttpServletRequest request, String campaign, String emailId) {
-        Map<String, Object> eventInfo = new HashMap<>();
-        eventInfo.put("image", "email_stocks.png");
-        eventInfo.put("source", "email_pixel");
+    private Optional<Campaign> resolveCampaign(Long campaignId, String campaignCode) {
+        if (campaignId != null) {
+            Optional<Campaign> byId = campaignService.findById(campaignId);
+            if (byId.isPresent()) {
+                return byId;
+            }
+        }
+        if (campaignCode != null && !campaignCode.isBlank()) {
+            return campaignService.findByCampaignCode(campaignCode);
+        }
+        return Optional.empty();
+    }
 
-        if (campaign != null && !campaign.isBlank()) {
-            eventInfo.put("campaign", campaign);
+    private Map<String, Object> buildMetadata(
+            HttpServletRequest request,
+            Optional<Campaign> resolvedCampaign,
+            String campaignParam,
+            String emailId) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("image", "email_stocks.png");
+        metadata.put("source", "email_pixel");
+
+        resolvedCampaign.ifPresent(c -> {
+            metadata.put("campaign_id", c.getId());
+            metadata.put("campaign", c.getCampaignCode());
+            metadata.put("campaign_name", c.getName());
+        });
+
+        if (!resolvedCampaign.isPresent() && campaignParam != null && !campaignParam.isBlank()) {
+            metadata.put("campaign", campaignParam);
         }
         if (emailId != null && !emailId.isBlank()) {
-            eventInfo.put("email_id", emailId);
+            metadata.put("email_id", emailId);
         }
 
         request.getParameterMap().forEach((key, values) -> {
-            if (values.length > 0 && !eventInfo.containsKey(key)) {
-                eventInfo.put(key, values[0]);
+            if (values.length > 0 && !metadata.containsKey(key)) {
+                metadata.put(key, values[0]);
             }
         });
 
-        return eventInfo;
+        return metadata;
     }
 }
