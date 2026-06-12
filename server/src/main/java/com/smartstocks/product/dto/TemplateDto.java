@@ -1,6 +1,6 @@
 package com.smartstocks.product.dto;
 
-import com.smartstocks.product.models.EmailProviderType;
+import com.smartstocks.product.models.RendererType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,15 +12,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CampaignDto {
+public class TemplateDto {
 
     private Long id;
-    private String campaignCode;
     private String name;
-    private String description;
-    private EmailProviderType emailProviderType;
-    private String trackingPixelUrl;
-    private long openCount;
+    private String subject;
+    private String htmlBody;
+    private RendererType rendererType;
+    private Boolean isActive;
+    private Long createdBy;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
-

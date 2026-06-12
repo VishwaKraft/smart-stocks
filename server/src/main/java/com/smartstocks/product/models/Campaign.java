@@ -30,6 +30,11 @@ public class Campaign {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    /** Email delivery provider to use when executing activities for this campaign */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private EmailProviderType emailProviderType;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
