@@ -1,5 +1,6 @@
 package com.smartstocks.product.dto;
 
+import com.smartstocks.product.models.EmailProviderType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,8 @@ public class CreateCampaignRequestDto {
     private String description;
 
     private String campaignCode;
+
+    /** Optional: email delivery provider for this campaign */
+    private EmailProviderType emailProviderType;
 }
+

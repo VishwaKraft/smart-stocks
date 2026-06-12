@@ -51,7 +51,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/short-links")
                 .antMatchers("/css/**", "/js/**", "/images/**")
                 .antMatchers("/api/links/**")
-                .antMatchers("/api/campaigns/**");
+                .antMatchers("/api/campaigns/**")
+                .antMatchers("/api/templates/**")
+                .antMatchers("/api/activities/**");
     }
 
     @Override
@@ -65,6 +67,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .antMatchers("/api/links/**").permitAll()
                 .antMatchers("/api/campaigns/**").permitAll()
+                .antMatchers("/api/templates/**").permitAll()
+                .antMatchers("/api/activities/**").permitAll()
                 .antMatchers(
                         "/stock/**",
                         "/user/token",

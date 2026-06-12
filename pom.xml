@@ -14,6 +14,7 @@
 	<description>HU20 Smart Stocks</description>
 	<properties>
 		<java.version>11</java.version>
+		<lombok.version>1.18.36</lombok.version>
 	</properties>
 	<dependencies>
 
@@ -115,6 +116,31 @@
 			<groupId>io.opentelemetry.instrumentation</groupId>
 			<artifactId>opentelemetry-spring-boot-starter</artifactId>
 			<version>2.0.0-alpha</version>
+		</dependency>
+		<!-- ===== Template Rendering Engines ===== -->
+		<!-- Handlebars renderer -->
+		<dependency>
+			<groupId>com.github.jknack</groupId>
+			<artifactId>handlebars</artifactId>
+			<version>4.3.1</version>
+		</dependency>
+		<!-- Mustache renderer -->
+		<dependency>
+			<groupId>com.github.spullara.mustache.java</groupId>
+			<artifactId>compiler</artifactId>
+			<version>0.9.10</version>
+		</dependency>
+		<!-- Velocity renderer -->
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-engine-core</artifactId>
+			<version>2.3</version>
+		</dependency>
+		<!-- JavaMail (SMTP provider) -->
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>1.6.7</version>
 		</dependency>
 	</dependencies>
 

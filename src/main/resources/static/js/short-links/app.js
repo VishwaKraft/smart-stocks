@@ -1,685 +1,809 @@
+/* ============================================================
+   Smart Stocks – Campaign Manager  |  app.js
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("deleteModal");
-    const deleteModalMessage = document.getElementById("deleteModalMessage");
-    const confirmDeleteBtn = document.getElementById("confirmDelete");
-    const cancelDeleteBtn = document.getElementById("cancelDelete");
-    const shortenForm = document.getElementById("shortenForm");
-    const campaignForm = document.getElementById("campaignForm");
-    const resultDiv = document.getElementById("shortUrlResult");
-    const campaignResultDiv = document.getElementById("campaignResult");
-    const linksContainer = document.getElementById("linksContainer");
-    const campaignsContainer = document.getElementById("campaignsContainer");
-    const shortenerPanel = document.getElementById("shortenerPanel");
-    const campaignPanel = document.getElementById("campaignPanel");
-    const editorPanel = document.getElementById("editorPanel");
-    const sidebarLists = document.getElementById("sidebarLists");
-    const editorSidebar = document.getElementById("editorSidebar");
-    const sidebarListTitle = document.getElementById("sidebarListTitle");
-    const sectionNavButtons = document.querySelectorAll(".section-nav-btn");
-    const htmlSource = document.getElementById("htmlSource");
-    const htmlPreview = document.getElementById("htmlPreview");
-    const editorCampaignSelect = document.getElementById("editorCampaignSelect");
-    const editorLinkSelect = document.getElementById("editorLinkSelect");
 
-    const HTML_DRAFT_KEY = "smartstocks-email-html-draft";
-    const DEFAULT_EMAIL_TEMPLATE = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Email</title>
-</head>
-<body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:32px;">
-          <tr>
-            <td>
-              <h1 style="margin:0 0 16px;font-size:24px;color:#333;">Hello</h1>
-              <p style="margin:0 0 16px;font-size:16px;line-height:1.5;color:#555;">Your email content goes here.</p>
-              <p style="margin:0;font-size:16px;line-height:1.5;color:#555;">
-                <a href="#" style="color:#8e24aa;">Call to action</a>
-              </p>
-            </td>
-          </tr>
-        </table>
+    /* ── API URL constants ────────────────────────────────── */
+    const apiLinksUrl      = (window.API_LINKS_URL      || "/api/links").replace(/\/$/, "");
+    const apiCampaignsUrl  = (window.API_CAMPAIGNS_URL  || "/api/campaigns").replace(/\/$/, "");
+    const apiTemplatesUrl  = (window.API_TEMPLATES_URL  || "/api/templates").replace(/\/$/, "");
+    const apiActivitiesUrl = (window.API_ACTIVITIES_URL || "/api/activities").replace(/\/$/, "");
+
+    const shortLinkBaseUrl = (() => {
+        const u = window.SHORT_LINK_BASE_URL || "/s/";
+        return u.endsWith("/") ? u : u + "/";
+    })();
+
+    /* ── DOM refs ─────────────────────────────────────────── */
+    const sectionNavButtons     = document.querySelectorAll(".section-nav-btn");
+    const shortenerPanel        = document.getElementById("shortenerPanel");
+    const campaignPanel         = document.getElementById("campaignPanel");
+    const templatePanel         = document.getElementById("templatePanel");
+    const activityPanel         = document.getElementById("activityPanel");
+    const modal                 = document.getElementById("deleteModal");
+    const deleteModalMessage    = document.getElementById("deleteModalMessage");
+    const confirmDeleteBtn      = document.getElementById("confirmDelete");
+    const cancelDeleteBtn       = document.getElementById("cancelDelete");
+    const toastEl               = document.getElementById("toast");
+    const tplPreviewCol         = document.getElementById("tplPreviewCol");
+
+    /* ── State ────────────────────────────────────────────── */
+    let deleteContext      = null;
+    let cachedCampaigns    = [];
+    let cachedTemplates    = [];
+    let tplPreviewTimer       = null;
+    let tplPreviewVisible     = false;
+
+    const DEFAULT_EMAIL_TEMPLATE = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffe6ee;padding:40px 20px">
+  <tbody><tr>
+    <td align="center"><br><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffffff;border-radius:20px">
+    <tbody><tr>
+      <td align="center" style="padding:50px 40px">
+
+        <div style="font-size:42px;line-height:1"><img data-emoji="🌸" class="an1" alt="🌸" aria-label="🌸" draggable="false" src="https://fonts.gstatic.com/s/e/notoemoji/17.0/1f338/72.png" loading="lazy"></div>
+
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:28px;color:#e75480;font-weight:bold;margin-top:20px">
+          Just a Thought
+        </div>
+
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.9;color:#555555;margin-top:30px">
+          Silence can fill a moment,
+          <br><br>
+          but talking and staying connected
+          are how people who care about each other
+          keep each other close.
+        </div>
+
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.9;color:#555555;margin-top:25px">
+          We don't always need perfect words,
+          only a little effort to understand,
+          a little patience to listen,
+          and a reason to stay.
+        </div>
+
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.9;color:#555555;margin-top:25px">
+          Because even the smallest conversation
+          can make a distance feel shorter.
+        </div>
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;line-height:1.9;color:#555555;margin-top:25px"><br></div>
+
+        <a href="https://smart-stocks-1c68.onrender.com/s/hvVkGQ" style="color:#8e24aa" target="_blank">Dont Click Here</a>
+
+        <div style="font-size:22px;color:#e75480;margin-top:35px">
+          <img data-emoji="❤️" class="an1" alt="❤️" aria-label="❤️" draggable="false" src="https://fonts.gstatic.com/s/e/notoemoji/17.0/2764_fe0f/72.png" loading="lazy">
+        </div>
+
       </td>
     </tr>
-  </table>
-</body>
-</html>`;
+  </tbody></table>
 
-    let deleteContext = null;
-    let cachedCampaigns = [];
-    let cachedLinks = [];
-    let previewDebounceTimer = null;
-    let editorInitialized = false;
+</td></tr>
+</tbody></table>`;
 
-    const shortLinkBaseUrl = normalizeTrailingSlash(
-        window.SHORT_LINK_BASE_URL || "/s/"
-    );
-    const apiLinksUrl = (window.API_LINKS_URL || "/api/links").replace(/\/$/, "");
-    const apiCampaignsUrl = (window.API_CAMPAIGNS_URL || "/api/campaigns").replace(/\/$/, "");
-
-    function normalizeTrailingSlash(url) {
-        return url.endsWith("/") ? url : url + "/";
+    /* ======================================================
+       TOAST
+    ====================================================== */
+    function showToast(msg, type = "default") {
+        toastEl.textContent = msg;
+        toastEl.className = "toast show" + (type !== "default" ? " toast-" + type : "");
+        clearTimeout(toastEl._timer);
+        toastEl._timer = setTimeout(() => {
+            toastEl.classList.remove("show");
+        }, 3000);
     }
 
-    function shortUrlFor(shortId) {
-        return shortLinkBaseUrl + shortId;
-    }
-
+    /* ======================================================
+       SECTION SWITCHING
+    ====================================================== */
     function switchSection(section) {
-        const isShortener = section === "shortener";
-        const isCampaigns = section === "campaigns";
-        const isEditor = section === "editor";
+        const panels = {
+            shortener: shortenerPanel,
+            campaigns: campaignPanel,
+            templates: templatePanel,
+            activities: activityPanel
+        };
 
-        sectionNavButtons.forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.section === section);
+        sectionNavButtons.forEach(btn =>
+            btn.classList.toggle("active", btn.dataset.section === section));
+
+        Object.entries(panels).forEach(([key, el]) => {
+            if (el) el.hidden = key !== section;
         });
 
-        document.body.classList.toggle("editor-active", isEditor);
-
-        shortenerPanel.hidden = !isShortener;
-        campaignPanel.hidden = !isCampaigns;
-        editorPanel.hidden = !isEditor;
-
-        sidebarLists.hidden = isEditor;
-        editorSidebar.hidden = !isEditor;
-
-        if (!isEditor) {
-            htmlPreview.removeAttribute("srcdoc");
-        }
-
-        linksContainer.hidden = !isShortener;
-        campaignsContainer.hidden = !isCampaigns;
-
-        if (isShortener) {
-            sidebarListTitle.textContent = "My shortened URLs";
-            loadLinks();
-        } else if (isCampaigns) {
-            sidebarListTitle.textContent = "My campaigns";
-            loadCampaigns();
-        } else if (isEditor) {
-            initEditor();
+        if (section === "shortener") {
+            loadShortLinksTable();
+        } else if (section === "campaigns") {
+            loadCampaignTable();
+        } else if (section === "templates") {
+            loadTemplateTable();
+        } else if (section === "activities") {
+            loadActivityTable();
+            loadCampaignDropdowns();
+            loadTemplateDropdowns();
         }
     }
 
-    sectionNavButtons.forEach(btn => {
-        btn.addEventListener("click", () => switchSection(btn.dataset.section));
+    sectionNavButtons.forEach(btn => btn.addEventListener("click", () => switchSection(btn.dataset.section)));
+
+    /* ======================================================
+       UTILITY: fetch helpers
+    ====================================================== */
+    async function apiFetch(url, opts = {}) {
+        const res = await fetch(url, {
+            headers: { "Content-Type": "application/json" },
+            ...opts
+        });
+        if (!res.ok) {
+            const msg = await res.text().catch(() => "Unknown error");
+            throw new Error(msg || `HTTP ${res.status}`);
+        }
+        const ct = res.headers.get("content-type") || "";
+        return ct.includes("application/json") ? res.json() : res.text();
+    }
+
+    function fmtDate(isoStr) {
+        if (!isoStr) return "—";
+        return new Date(isoStr).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function escHtml(str) {
+        if (!str) return "";
+        return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    /* ======================================================
+       SHORT LINKS
+    ====================================================== */
+    document.getElementById("shortenForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const originalUrl = document.getElementById("originalUrl").value.trim();
+        if (!originalUrl) return;
+        try {
+            const params = new URLSearchParams({ originalUrl });
+            const res = await fetch(`${apiLinksUrl}/shorten`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: params.toString()
+            });
+            if (res.ok) {
+                const short = await res.text();
+                const shortId = short.split("/").filter(Boolean).pop();
+                document.getElementById("shortUrlResult").innerHTML =
+                    `<p>Shortened: <a href="${shortLinkBaseUrl + shortId}" target="_blank">${shortLinkBaseUrl + shortId}</a></p>`;
+                e.target.reset();
+                loadShortLinksTable();
+            } else {
+                document.getElementById("shortUrlResult").innerHTML = `<p class="error">Error shortening URL</p>`;
+            }
+        } catch (err) { document.getElementById("shortUrlResult").innerHTML = `<p class="error">${err.message}</p>`; }
     });
 
-    async function loadLinks() {
+    /* ── Short links table ────────────────────────────────── */
+    async function loadShortLinksTable() {
+        const tbody = document.getElementById("linksTableBody");
+        const table = document.getElementById("linksTable");
+        const empty = document.getElementById("linksEmpty");
+        if (!tbody || !table || !empty) return;
         try {
-            const response = await fetch(apiLinksUrl);
-            if (!response.ok) throw new Error("Failed to fetch links");
+            const links = await apiFetch(apiLinksUrl);
+            tbody.innerHTML = "";
+            if (links.length === 0) {
+                table.hidden = true;
+                empty.hidden = false;
+                return;
+            }
+            empty.hidden = true;
+            table.hidden = false;
+            links.forEach(l => {
+                const fullShort = shortLinkBaseUrl + l.shortId;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="truncate" style="max-width:260px" title="${escHtml(l.originalUrl)}"><a href="${escHtml(l.originalUrl)}" target="_blank">${escHtml(l.originalUrl)}</a></td>
+                    <td><a href="${escHtml(fullShort)}" target="_blank">${escHtml(fullShort)}</a></td>
+                    <td>${l.clickCount ?? 0}</td>
+                    <td>${fmtDate(l.createdAt)}</td>
+                    <td class="table-actions">
+                        <button class="secondary-btn btn-xs" data-copy-link="${escHtml(fullShort)}">Copy</button>
+                        <button class="danger-btn" data-delete-link="${escHtml(l.shortId)}" data-delete-name="${escHtml(fullShort)}">Delete</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
 
-            const links = await response.json();
-            linksContainer.innerHTML = "";
+            // Copy
+            tbody.querySelectorAll("[data-copy-link]").forEach(btn => {
+                btn.addEventListener("click", () => copyToClipboard(btn.dataset.copyLink, btn));
+            });
 
-            links.forEach(link => {
-                const shortId = link.shortId || link.shortLink.split("/").filter(Boolean).pop();
-                const div = document.createElement("div");
-                div.className = "sidebar-item";
+            // Delete
+            tbody.querySelectorAll("[data-delete-link]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "link", id: btn.dataset.deleteLink };
+                    deleteModalMessage.textContent = `Delete short link "${btn.dataset.deleteName}"?`;
+                    modal.style.display = "flex";
+                });
+            });
+        } catch (err) { console.error("loadShortLinksTable:", err); }
+    }
 
-                const a = document.createElement("a");
-                a.href = shortUrlFor(shortId);
-                a.textContent = link.shortLink || shortUrlFor(shortId);
+    /* ======================================================
+       CAMPAIGNS
+    ====================================================== */
+    async function refreshCampaignCache() {
+        try {
+            cachedCampaigns = await apiFetch(apiCampaignsUrl);
+        } catch (err) {
+            console.error("refreshCampaignCache:", err);
+        }
+    }
 
-                const deleteSpan = document.createElement("span");
-                deleteSpan.className = "delete";
-                deleteSpan.setAttribute("data-type", "link");
-                deleteSpan.setAttribute("data-id", shortId);
-                deleteSpan.textContent = "🗑️";
+    document.getElementById("campaignForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const payload = {
+            name:              document.getElementById("campaignName").value.trim(),
+            campaignCode:      document.getElementById("campaignCode").value.trim() || null,
+            description:       document.getElementById("campaignDescription").value.trim() || null,
+            emailProviderType: document.getElementById("campaignEmailProvider").value || null
+        };
+        if (!payload.name) return;
+        try {
+            const campaign = await apiFetch(apiCampaignsUrl, { method: "POST", body: JSON.stringify(payload) });
+            renderCampaignResult(campaign);
+            e.target.reset();
+            refreshCampaignCache();
+            loadCampaignTable();
+            showToast("Campaign created!", "success");
+        } catch (err) {
+            document.getElementById("campaignResult").innerHTML = `<p class="error">${err.message}</p>`;
+        }
+    });
 
-                const dropdownSpan = document.createElement("span");
-                dropdownSpan.className = "dropdown";
-                dropdownSpan.textContent = "▼";
-                dropdownSpan.style.cursor = "pointer";
-                dropdownSpan.style.marginLeft = "5px";
+    /* ── Campaign listing table ───────────────────────────── */
+    async function loadCampaignTable() {
+        const tbody = document.getElementById("campaignTableBody");
+        const table = document.getElementById("campaignTable");
+        const empty = document.getElementById("campaignEmpty");
+        if (!tbody || !table || !empty) return;
+        try {
+            const campaigns = await apiFetch(apiCampaignsUrl);
+            cachedCampaigns = campaigns;
+            tbody.innerHTML = "";
+            if (campaigns.length === 0) {
+                table.hidden = true;
+                empty.hidden = false;
+                return;
+            }
+            empty.hidden = true;
+            table.hidden = false;
+            campaigns.forEach(c => {
+                const providerBadge = c.emailProviderType
+                    ? `<span class="badge badge-default">${escHtml(c.emailProviderType)}</span>`
+                    : '<span class="muted">—</span>';
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(c.name)}</strong></td>
+                    <td class="truncate" style="max-width:180px">${escHtml(c.description || "—")}</td>
+                    <td>${providerBadge}</td>
+                    <td>${c.openCount ?? 0}</td>
+                    <td>${fmtDate(c.createdAt)}</td>
+                    <td class="table-actions">
+                        ${c.trackingPixelUrl ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
+                        <button class="danger-btn" data-delete-campaign="${c.id}" data-delete-name="${escHtml(c.name)}">Delete</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
 
-                const detailsDiv = document.createElement("div");
-                detailsDiv.className = "sidebar-details";
-                detailsDiv.style.display = "none";
+            // Copy pixel
+            tbody.querySelectorAll("[data-copy-pixel]").forEach(btn => {
+                btn.addEventListener("click", () => copyToClipboard(btn.dataset.copyPixel, btn));
+            });
 
-                const clickCountP = document.createElement("p");
-                clickCountP.textContent = `This link has been clicked ${link.clickCount} times.`;
+            // Delete
+            tbody.querySelectorAll("[data-delete-campaign]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "campaign", id: btn.dataset.deleteCampaign };
+                    deleteModalMessage.textContent = `Delete campaign "${btn.dataset.deleteName}"?`;
+                    modal.style.display = "flex";
+                });
+            });
+        } catch (err) { console.error("loadCampaignTable:", err); }
+    }
 
-                const originalUrlP = document.createElement("p");
-                originalUrlP.textContent = `Original URL: ${link.originalUrl}`;
-                originalUrlP.className = "muted truncate";
+    /* ======================================================
+       TEMPLATES
+    ====================================================== */
+    const templateFormWrapper = document.getElementById("templateFormWrapper");
+    const templateForm        = document.getElementById("templateForm");
+    const templateEditId      = document.getElementById("templateEditId");
+    const templateFormTitle   = document.getElementById("templateFormTitle");
+    const templateTable       = document.getElementById("templateTable");
+    const templateTableBody   = document.getElementById("templateTableBody");
+    const templateEmpty       = document.getElementById("templateEmpty");
+    const tplHtmlBody         = document.getElementById("tplHtmlBody");
+    const tplHtmlPreview      = document.getElementById("tplHtmlPreview");
 
-                const createdAtP = document.createElement("p");
-                createdAtP.textContent = `Created at: ${new Date(link.createdAt).toLocaleString()}`;
+    document.getElementById("newTemplateBtn").addEventListener("click", () => {
+        templateEditId.value = "";
+        templateFormTitle.textContent = "New Template";
+        templateForm.reset();
+        tplHtmlBody.value = DEFAULT_EMAIL_TEMPLATE;
+        tplPreviewCol.hidden = true;
+        tplPreviewVisible = false;
+        document.getElementById("tplPreviewToggle").textContent = "👁 Show Preview";
+        templateFormWrapper.hidden = false;
+        templateFormWrapper.scrollIntoView({ behavior: "smooth" });
+    });
 
-                const qrDiv = document.createElement("div");
-                qrDiv.className = "dropdown";
+    document.getElementById("tplCancelBtn").addEventListener("click", () => {
+        templateFormWrapper.hidden = true;
+        templateForm.reset();
+    });
 
-                const qrButton = document.createElement("button");
-                qrButton.textContent = "Show QR Code";
-                qrButton.type = "button";
-                qrButton.className = "dropdown-toggle";
+    document.getElementById("tplFormatBtn").addEventListener("click", () => {
+        tplHtmlBody.value = formatHtml(tplHtmlBody.value);
+        scheduleTplPreview();
+    });
 
-                const qrImg = document.createElement("img");
-                qrImg.style.display = "none";
-                qrImg.style.marginTop = "5px";
-                qrImg.style.width = "120px";
+    document.getElementById("tplPreviewToggle").addEventListener("click", () => {
+        tplPreviewVisible = !tplPreviewVisible;
+        tplPreviewCol.hidden = !tplPreviewVisible;
+        document.getElementById("tplPreviewToggle").textContent = tplPreviewVisible ? "👁 Hide Preview" : "👁 Show Preview";
+        if (tplPreviewVisible) tplHtmlPreview.srcdoc = tplHtmlBody.value;
+    });
 
-                qrButton.addEventListener("click", async () => {
-                    if (qrImg.style.display === "none") {
-                        try {
-                            const qrResponse = await fetch(`${apiLinksUrl}/qr/${shortId}`);
-                            if (qrResponse.ok) {
-                                const blob = await qrResponse.blob();
-                                qrImg.src = URL.createObjectURL(blob);
-                                qrImg.style.display = "block";
-                                qrButton.textContent = "Hide QR Code";
-                            }
-                        } catch (err) {
-                            console.error("Error fetching QR:", err);
+    tplHtmlBody.addEventListener("input", scheduleTplPreview);
+
+    function scheduleTplPreview() {
+        clearTimeout(tplPreviewTimer);
+        tplPreviewTimer = setTimeout(() => {
+            if (tplPreviewVisible) tplHtmlPreview.srcdoc = tplHtmlBody.value;
+        }, 300);
+    }
+
+    templateForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const id   = templateEditId.value;
+        const body = {
+            name:     document.getElementById("tplName").value.trim(),
+            subject:  document.getElementById("tplSubject").value.trim(),
+            htmlBody: tplHtmlBody.value
+        };
+        if (!body.name || !body.subject || !body.htmlBody) {
+            showToast("Please fill all required fields", "error");
+            return;
+        }
+        try {
+            if (id) {
+                await apiFetch(`${apiTemplatesUrl}/${id}`, { method: "PUT", body: JSON.stringify({ ...body, isActive: true }) });
+                showToast("Template updated!", "success");
+            } else {
+                await apiFetch(apiTemplatesUrl, { method: "POST", body: JSON.stringify(body) });
+                showToast("Template created!", "success");
+            }
+            templateFormWrapper.hidden = true;
+            templateForm.reset();
+            loadTemplateTable();
+        } catch (err) {
+            showToast("Error: " + err.message, "error");
+        }
+    });
+
+    async function loadTemplateTable() {
+        try {
+            const templates = await apiFetch(`${apiTemplatesUrl}?includeInactive=false`);
+            cachedTemplates = templates;
+            templateTableBody.innerHTML = "";
+            if (templates.length === 0) {
+                templateTable.hidden = true;
+                templateEmpty.hidden = false;
+                return;
+            }
+            templateEmpty.hidden = true;
+            templateTable.hidden = false;
+            templates.forEach(t => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(t.name)}</strong></td>
+                    <td class="truncate">${escHtml(t.subject)}</td>
+                    <td>${t.isActive ? '<span class="badge badge-active">Active</span>' : '<span class="badge badge-cancelled">Inactive</span>'}</td>
+                    <td>${fmtDate(t.createdAt)}</td>
+                    <td class="table-actions">
+                        <button class="secondary-btn btn-xs" data-edit-tpl="${t.id}">Edit</button>
+                        <button class="danger-btn" data-delete-tpl="${t.id}" data-delete-name="${escHtml(t.name)}">Delete</button>
+                    </td>`;
+                templateTableBody.appendChild(tr);
+            });
+
+            // Edit
+            templateTableBody.querySelectorAll("[data-edit-tpl]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const tpl = cachedTemplates.find(t => t.id == btn.dataset.editTpl);
+                    if (!tpl) return;
+                    templateEditId.value = tpl.id;
+                    templateFormTitle.textContent = "Edit Template";
+                    document.getElementById("tplName").value    = tpl.name;
+                    document.getElementById("tplSubject").value = tpl.subject;
+                    tplHtmlBody.value = tpl.htmlBody;
+                    tplPreviewCol.hidden = true;
+                    tplPreviewVisible = false;
+                    document.getElementById("tplPreviewToggle").textContent = "👁 Show Preview";
+                    templateFormWrapper.hidden = false;
+                    templateFormWrapper.scrollIntoView({ behavior: "smooth" });
+                });
+            });
+
+            // Soft-delete
+            templateTableBody.querySelectorAll("[data-delete-tpl]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "template", id: btn.dataset.deleteTpl };
+                    deleteModalMessage.textContent = `Delete template "${btn.dataset.deleteName}"?`;
+                    modal.style.display = "flex";
+                });
+            });
+        } catch (err) {
+            console.error("loadTemplateTable:", err);
+        }
+    }
+
+    /* ======================================================
+       ACTIVITIES
+    ====================================================== */
+    const activityFormWrapper = document.getElementById("activityFormWrapper");
+    const activityForm        = document.getElementById("activityForm");
+    const activityEditId      = document.getElementById("activityEditId");
+    const activityFormTitle   = document.getElementById("activityFormTitle");
+    const activityTable       = document.getElementById("activityTable");
+    const activityTableBody   = document.getElementById("activityTableBody");
+    const activityEmpty       = document.getElementById("activityEmpty");
+    const actScheduleType     = document.getElementById("actScheduleType");
+    const actRecurrence       = document.getElementById("actRecurrence");
+    const oneTimeFields       = document.getElementById("oneTimeFields");
+    const recurringFields     = document.getElementById("recurringFields");
+    const weeklyFields        = document.getElementById("weeklyFields");
+    const monthlyFields       = document.getElementById("monthlyFields");
+
+    // Schedule type visibility
+    actScheduleType.addEventListener("change", () => {
+        oneTimeFields.hidden   = actScheduleType.value !== "ONE_TIME";
+        recurringFields.hidden = actScheduleType.value !== "RECURRING";
+    });
+
+    actRecurrence.addEventListener("change", () => {
+        weeklyFields.hidden  = actRecurrence.value !== "WEEKLY";
+        monthlyFields.hidden = actRecurrence.value !== "MONTHLY";
+    });
+
+    document.getElementById("newActivityBtn").addEventListener("click", () => {
+        activityEditId.value = "";
+        activityFormTitle.textContent = "New Activity";
+        activityForm.reset();
+        oneTimeFields.hidden = true;
+        recurringFields.hidden = true;
+        weeklyFields.hidden = true;
+        monthlyFields.hidden = true;
+        activityFormWrapper.hidden = false;
+        activityFormWrapper.scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("actCancelBtn").addEventListener("click", () => {
+        activityFormWrapper.hidden = true;
+        activityForm.reset();
+    });
+
+    async function loadCampaignDropdowns() {
+        try {
+            if (cachedCampaigns.length === 0) cachedCampaigns = await apiFetch(apiCampaignsUrl);
+            const sel = document.getElementById("actCampaign");
+            sel.innerHTML = '<option value="">— select —</option>';
+            cachedCampaigns.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.id;
+                opt.textContent = c.name;
+                sel.appendChild(opt);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadTemplateDropdowns() {
+        try {
+            if (cachedTemplates.length === 0) cachedTemplates = await apiFetch(apiTemplatesUrl);
+            const sel = document.getElementById("actTemplate");
+            if (!sel) return;
+            sel.innerHTML = '<option value="">— select —</option>';
+            cachedTemplates.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.id;
+                opt.textContent = t.name;
+                sel.appendChild(opt);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    activityForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const id = activityEditId.value;
+        const schedType = actScheduleType.value;
+
+        const checkedDays = [...document.querySelectorAll("#weeklyFields input[type=checkbox]:checked")]
+            .map(cb => cb.value);
+
+        const payload = {
+            campaignId:    Number(document.getElementById("actCampaign").value) || null,
+            templateId:    Number(document.getElementById("actTemplate").value) || null,
+            activityName:  document.getElementById("actName").value.trim() || null,
+            scheduleType:  schedType,
+            recurrenceType: actRecurrence.value || null,
+            executionDatetime: document.getElementById("actExecDatetime").value || null,
+            executionTime:     document.getElementById("actExecTime").value || null,
+            weekdays:          checkedDays.length ? checkedDays : null,
+            dayOfMonth:        document.getElementById("actDayOfMonth").value ? Number(document.getElementById("actDayOfMonth").value) : null,
+            startDate:         document.getElementById("actStartDate").value || null,
+            endDate:           document.getElementById("actEndDate").value || null,
+            timezone:          document.getElementById("actTimezone").value || "UTC",
+            status:            document.getElementById("actStatus").value || "ACTIVE"
+        };
+
+        if (!payload.campaignId || !payload.templateId || !payload.scheduleType) {
+            showToast("Campaign, Template and Schedule Type are required", "error");
+            return;
+        }
+
+        try {
+            if (id) {
+                await apiFetch(`${apiActivitiesUrl}/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+                showToast("Activity updated!", "success");
+            } else {
+                await apiFetch(apiActivitiesUrl, { method: "POST", body: JSON.stringify(payload) });
+                showToast("Activity scheduled!", "success");
+            }
+            activityFormWrapper.hidden = true;
+            activityForm.reset();
+            oneTimeFields.hidden = true;
+            recurringFields.hidden = true;
+            loadActivityTable();
+        } catch (err) {
+            showToast("Error: " + err.message, "error");
+        }
+    });
+
+    async function loadActivityTable() {
+        try {
+            const activities = await apiFetch(apiActivitiesUrl);
+            activityTableBody.innerHTML = "";
+            if (activities.length === 0) {
+                activityTable.hidden = true;
+                activityEmpty.hidden = false;
+                return;
+            }
+            activityEmpty.hidden = true;
+            activityTable.hidden = false;
+            activities.forEach(a => {
+                const schedLabel = a.scheduleType === "ONE_TIME"
+                    ? `One-time – ${fmtDate(a.executionDatetime)}`
+                    : `${a.recurrenceType || ""}${a.executionTime ? " @ " + a.executionTime : ""}`;
+                const statusBadge = {
+                    ACTIVE: "badge-active", PAUSED: "badge-paused",
+                    COMPLETED: "badge-completed", CANCELLED: "badge-cancelled"
+                }[a.status] || "badge-default";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(a.activityName || "—")}</strong></td>
+                    <td>${escHtml(a.campaignName)}</td>
+                    <td>${escHtml(a.templateName)}</td>
+                    <td>${escHtml(schedLabel)}</td>
+                    <td>${fmtDate(a.nextExecutionAt)}</td>
+                    <td><span class="badge ${statusBadge}">${a.status}</span></td>
+                    <td class="table-actions">
+                        <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
+                        <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
+                        <button class="danger-btn" data-cancel-act="${a.id}">Cancel</button>
+                    </td>`;
+                activityTableBody.appendChild(tr);
+            });
+
+            // Edit
+            activityTableBody.querySelectorAll("[data-edit-act]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    try {
+                        const a = await apiFetch(`${apiActivitiesUrl}/${btn.dataset.editAct}`);
+                        activityEditId.value = a.id;
+                        activityFormTitle.textContent = "Edit Activity";
+                        document.getElementById("actCampaign").value   = a.campaignId;
+                        document.getElementById("actTemplate").value   = a.templateId;
+                        document.getElementById("actName").value       = a.activityName || "";
+                        actScheduleType.value = a.scheduleType;
+                        oneTimeFields.hidden   = a.scheduleType !== "ONE_TIME";
+                        recurringFields.hidden = a.scheduleType !== "RECURRING";
+                        if (a.executionDatetime) {
+                            document.getElementById("actExecDatetime").value = a.executionDatetime.slice(0,16);
                         }
-                    } else {
-                        qrImg.style.display = "none";
-                        qrButton.textContent = "Show QR Code";
-                    }
+                        if (a.recurrenceType) actRecurrence.value = a.recurrenceType;
+                        weeklyFields.hidden  = a.recurrenceType !== "WEEKLY";
+                        monthlyFields.hidden = a.recurrenceType !== "MONTHLY";
+                        if (a.executionTime) document.getElementById("actExecTime").value = a.executionTime;
+                        if (a.dayOfMonth)    document.getElementById("actDayOfMonth").value = a.dayOfMonth;
+                        if (a.startDate)     document.getElementById("actStartDate").value = a.startDate;
+                        if (a.endDate)       document.getElementById("actEndDate").value   = a.endDate;
+                        document.getElementById("actTimezone").value = a.timezone || "UTC";
+                        document.getElementById("actStatus").value   = a.status   || "ACTIVE";
+                        // Weekdays
+                        document.querySelectorAll("#weeklyFields input[type=checkbox]").forEach(cb => {
+                            cb.checked = (a.weekdays || []).includes(cb.value);
+                        });
+                        activityFormWrapper.hidden = false;
+                        activityFormWrapper.scrollIntoView({ behavior: "smooth" });
+                    } catch (err) { showToast("Error loading activity: " + err.message, "error"); }
                 });
-
-                qrDiv.appendChild(qrButton);
-                qrDiv.appendChild(qrImg);
-
-                detailsDiv.appendChild(clickCountP);
-                detailsDiv.appendChild(originalUrlP);
-                detailsDiv.appendChild(createdAtP);
-                detailsDiv.appendChild(qrDiv);
-
-                dropdownSpan.addEventListener("click", () => {
-                    detailsDiv.style.display =
-                        detailsDiv.style.display === "none" ? "block" : "none";
-                });
-
-                div.appendChild(a);
-                div.appendChild(deleteSpan);
-                div.appendChild(dropdownSpan);
-                div.appendChild(detailsDiv);
-
-                linksContainer.appendChild(div);
             });
 
-            attachDeleteEvents();
-            if (!editorPanel.hidden) {
-                cachedLinks = links;
-                populateEditorLinkSelect();
-            }
-        } catch (err) {
-            console.error("Error loading links:", err);
-        }
+            // Execution logs
+            activityTableBody.querySelectorAll("[data-logs-act]").forEach(btn => {
+                btn.addEventListener("click", () => openLogsModal(btn.dataset.logsAct));
+            });
+
+            // Cancel
+            activityTableBody.querySelectorAll("[data-cancel-act]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "activity", id: btn.dataset.cancelAct };
+                    deleteModalMessage.textContent = "Cancel this activity? It will stop running.";
+                    modal.style.display = "flex";
+                });
+            });
+        } catch (err) { console.error("loadActivityTable:", err); }
     }
 
-    async function loadCampaigns() {
+    /* ── Execution logs inline viewer ─────────────────────── */
+    async function openLogsModal(activityId) {
         try {
-            const response = await fetch(apiCampaignsUrl);
-            if (!response.ok) throw new Error("Failed to fetch campaigns");
+            const logs = await apiFetch(`${apiActivitiesUrl}/${activityId}/executions`);
+            const existing = document.getElementById("logsModal");
+            if (existing) existing.remove();
 
-            const campaigns = await response.json();
-            campaignsContainer.innerHTML = "";
+            const overlay = document.createElement("div");
+            overlay.id = "logsModal";
+            overlay.className = "modal";
+            overlay.style.display = "flex";
 
-            campaigns.forEach(campaign => {
-                const div = document.createElement("div");
-                div.className = "sidebar-item";
+            const content = document.createElement("div");
+            content.className = "modal-content";
+            content.style.cssText = "width:680px;max-width:95vw;text-align:left;max-height:80vh;overflow-y:auto;";
 
-                const title = document.createElement("span");
-                title.className = "campaign-title";
-                title.textContent = campaign.name;
+            const heading = document.createElement("h3");
+            heading.textContent = "Execution Logs";
+            heading.style.cssText = "margin:0 0 16px;font-size:16px;";
+            content.appendChild(heading);
 
-                const deleteSpan = document.createElement("span");
-                deleteSpan.className = "delete";
-                deleteSpan.setAttribute("data-type", "campaign");
-                deleteSpan.setAttribute("data-id", campaign.id);
-                deleteSpan.textContent = "🗑️";
-
-                const dropdownSpan = document.createElement("span");
-                dropdownSpan.className = "dropdown";
-                dropdownSpan.textContent = "▼";
-                dropdownSpan.style.cursor = "pointer";
-                dropdownSpan.style.marginLeft = "5px";
-
-                const detailsDiv = document.createElement("div");
-                detailsDiv.className = "sidebar-details";
-                detailsDiv.style.display = "none";
-
-                const codeP = document.createElement("p");
-                codeP.textContent = `Code: ${campaign.campaignCode}`;
-
-                const opensP = document.createElement("p");
-                opensP.textContent = `Email opens: ${campaign.openCount}`;
-
-                const createdAtP = document.createElement("p");
-                createdAtP.textContent = `Created at: ${new Date(campaign.createdAt).toLocaleString()}`;
-
-                const pixelBlock = buildCopyableUrlBlock(
-                    "Tracking pixel URL",
-                    campaign.trackingPixelUrl
-                );
-
-                const htmlBlock = buildCopyableUrlBlock(
-                    "Email HTML",
-                    buildEmailImgTag(campaign.trackingPixelUrl)
-                );
-
-                detailsDiv.appendChild(codeP);
-                detailsDiv.appendChild(opensP);
-                if (campaign.description) {
-                    const descP = document.createElement("p");
-                    descP.textContent = campaign.description;
-                    descP.className = "muted";
-                    detailsDiv.appendChild(descP);
-                }
-                detailsDiv.appendChild(createdAtP);
-                detailsDiv.appendChild(pixelBlock);
-                detailsDiv.appendChild(htmlBlock);
-
-                dropdownSpan.addEventListener("click", () => {
-                    detailsDiv.style.display =
-                        detailsDiv.style.display === "none" ? "block" : "none";
+            if (logs.length === 0) {
+                content.insertAdjacentHTML("beforeend", "<p style='color:#999;'>No executions yet.</p>");
+            } else {
+                const table = document.createElement("table");
+                table.className = "data-table";
+                table.style.marginBottom = "0";
+                table.innerHTML = `<thead><tr>
+                    <th>Started</th><th>Status</th><th>Recipients</th><th>Response</th>
+                </tr></thead>`;
+                const tbody = document.createElement("tbody");
+                logs.forEach(log => {
+                    const statusBadge = {
+                        SUCCESS: "badge-active", FAILED: "badge-cancelled", PARTIAL_SUCCESS: "badge-paused"
+                    }[log.status] || "badge-default";
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${fmtDate(log.startedAt)}</td>
+                        <td><span class="badge ${statusBadge}">${log.status}</span></td>
+                        <td>${log.recipientCount ?? "—"}</td>
+                        <td class="truncate" style="max-width:200px">${escHtml(log.providerResponse || log.errorMessage || "—")}</td>`;
+                    tbody.appendChild(tr);
                 });
-
-                div.appendChild(title);
-                div.appendChild(deleteSpan);
-                div.appendChild(dropdownSpan);
-                div.appendChild(detailsDiv);
-
-                campaignsContainer.appendChild(div);
-            });
-
-            attachDeleteEvents();
-            if (!editorPanel.hidden) {
-                cachedCampaigns = campaigns;
-                populateEditorCampaignSelect();
+                table.appendChild(tbody);
+                content.appendChild(table);
             }
-        } catch (err) {
-            console.error("Error loading campaigns:", err);
-        }
+
+            const closeBtn = document.createElement("button");
+            closeBtn.className = "secondary-btn";
+            closeBtn.textContent = "Close";
+            closeBtn.style.marginTop = "16px";
+            closeBtn.onclick = () => overlay.remove();
+            content.appendChild(closeBtn);
+
+            overlay.appendChild(content);
+            overlay.onclick = ev => { if (ev.target === overlay) overlay.remove(); };
+            document.body.appendChild(overlay);
+        } catch (err) { showToast("Error loading logs: " + err.message, "error"); }
     }
 
-    function buildEmailImgTag(pixelUrl) {
-        return `<img src="${pixelUrl}" width="1" height="1" alt="" style="display:none;" />`;
-    }
-
-    function initEditor() {
-        if (!editorInitialized) {
-            const savedDraft = localStorage.getItem(HTML_DRAFT_KEY);
-            htmlSource.value = savedDraft || DEFAULT_EMAIL_TEMPLATE;
-
-            htmlSource.addEventListener("input", () => {
-                persistHtmlDraft();
-                schedulePreviewUpdate();
-            });
-
-            document.getElementById("editorFormatBtn").addEventListener("click", formatHtmlSource);
-            document.getElementById("editorCopyBtn").addEventListener("click", copyEditorHtml);
-            document.getElementById("editorDownloadBtn").addEventListener("click", downloadEditorHtml);
-            document.getElementById("editorClearBtn").addEventListener("click", resetEditorTemplate);
-            document.getElementById("insertPixelBtn").addEventListener("click", insertSelectedPixel);
-            document.getElementById("insertLinkBtn").addEventListener("click", insertSelectedLink);
-
-            editorInitialized = true;
-        }
-
-        updatePreview();
-        loadEditorResources();
-    }
-
-    function persistHtmlDraft() {
-        localStorage.setItem(HTML_DRAFT_KEY, htmlSource.value);
-    }
-
-    function schedulePreviewUpdate() {
-        clearTimeout(previewDebounceTimer);
-        previewDebounceTimer = setTimeout(updatePreview, 250);
-    }
-
-    function updatePreview() {
-        htmlPreview.srcdoc = htmlSource.value;
-    }
-
-    async function loadEditorResources() {
+    /* ======================================================
+       DELETE / CANCEL MODAL
+    ====================================================== */
+    confirmDeleteBtn.addEventListener("click", async () => {
+        if (!deleteContext) return;
+        const { type, id } = deleteContext;
         try {
-            const [campaignsRes, linksRes] = await Promise.all([
-                fetch(apiCampaignsUrl),
-                fetch(apiLinksUrl),
-            ]);
+            let url;
+            if (type === "template") url = `${apiTemplatesUrl}/${id}`;
+            else if (type === "activity") url = `${apiActivitiesUrl}/${id}`;
+            else if (type === "link") url = `${apiLinksUrl}/${id}`;
+            else if (type === "campaign") url = `${apiCampaignsUrl}/${id}`;
 
-            if (campaignsRes.ok) {
-                cachedCampaigns = await campaignsRes.json();
-                populateEditorCampaignSelect();
-            }
-            if (linksRes.ok) {
-                cachedLinks = await linksRes.json();
-                populateEditorLinkSelect();
-            }
-        } catch (err) {
-            console.error("Error loading editor resources:", err);
-        }
-    }
+            await fetch(url, { method: "DELETE" });
 
-    function populateEditorCampaignSelect() {
-        editorCampaignSelect.innerHTML = '<option value="">Select a campaign…</option>';
-        cachedCampaigns.forEach(campaign => {
-            const option = document.createElement("option");
-            option.value = campaign.id;
-            option.textContent = campaign.name;
-            option.dataset.pixelUrl = campaign.trackingPixelUrl;
-            editorCampaignSelect.appendChild(option);
-        });
-    }
+            if (type === "template") loadTemplateTable();
+            else if (type === "activity") loadActivityTable();
+            else if (type === "link") loadShortLinksTable();
+            else if (type === "campaign") { loadCampaignTable(); refreshCampaignCache(); }
 
-    function populateEditorLinkSelect() {
-        editorLinkSelect.innerHTML = '<option value="">Select a short link…</option>';
-        cachedLinks.forEach(link => {
-            const shortId = link.shortId || link.shortLink.split("/").filter(Boolean).pop();
-            const shortUrl = link.shortLink || shortUrlFor(shortId);
-            const option = document.createElement("option");
-            option.value = shortId;
-            option.textContent = shortUrl;
-            option.dataset.shortUrl = shortUrl;
-            option.dataset.originalUrl = link.originalUrl;
-            editorLinkSelect.appendChild(option);
-        });
-    }
+            showToast("Deleted successfully", "success");
+        } catch (err) { showToast("Error: " + err.message, "error"); }
+        finally { modal.style.display = "none"; deleteContext = null; }
+    });
 
-    function insertAtCursor(textarea, text) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = textarea.value.substring(0, start);
-        const after = textarea.value.substring(end);
-        textarea.value = before + text + after;
-        const cursor = start + text.length;
-        textarea.selectionStart = cursor;
-        textarea.selectionEnd = cursor;
-        textarea.focus();
-        persistHtmlDraft();
-        schedulePreviewUpdate();
-    }
+    cancelDeleteBtn.addEventListener("click",  () => { modal.style.display = "none"; deleteContext = null; });
+    window.addEventListener("click", ev       => { if (ev.target === modal) { modal.style.display = "none"; deleteContext = null; } });
 
-    function insertBeforeClosingBody(html) {
-        const closingBody = htmlSource.value.lastIndexOf("</body>");
-        if (closingBody !== -1) {
-            const before = htmlSource.value.substring(0, closingBody);
-            const after = htmlSource.value.substring(closingBody);
-            htmlSource.value = before + html + "\n" + after;
-        } else {
-            htmlSource.value += "\n" + html;
-        }
-        persistHtmlDraft();
-        schedulePreviewUpdate();
-        htmlSource.focus();
-    }
-
-    function insertSelectedPixel() {
-        const selected = editorCampaignSelect.selectedOptions[0];
-        if (!selected || !selected.dataset.pixelUrl) {
-            alert("Select a campaign first");
-            return;
-        }
-        insertBeforeClosingBody(buildEmailImgTag(selected.dataset.pixelUrl));
-    }
-
-    function insertSelectedLink() {
-        const selected = editorLinkSelect.selectedOptions[0];
-        if (!selected || !selected.dataset.shortUrl) {
-            alert("Select a short link first");
-            return;
-        }
-        const label = selected.dataset.originalUrl || "Link";
-        const anchor = `<a href="${selected.dataset.shortUrl}" style="color:#8e24aa;">${label}</a>`;
-        insertAtCursor(htmlSource, anchor);
-    }
-
-    function formatHtmlSource() {
-        htmlSource.value = formatHtml(htmlSource.value);
-        persistHtmlDraft();
-        schedulePreviewUpdate();
-    }
-
-    function formatHtml(html) {
-        const lines = html.replace(/>\s+</g, "><").split(/>\s*</);
-        if (lines.length <= 1) {
-            return html.trim();
-        }
-
-        let formatted = "";
-        let indent = 0;
-        const voidTags = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|!DOCTYPE)/i;
-
-        lines.forEach((chunk, index) => {
-            let line = chunk;
-            if (index > 0) line = "<" + line;
-            if (index < lines.length - 1) line += ">";
-
-            const isClosing = /^<\//.test(line.trim());
-            const isOpening = /^<[^/!][^>]*[^/]>$/.test(line.trim()) && !voidTags.test(line.trim());
-            const isSelfClosing = /\/>$/.test(line.trim()) || voidTags.test(line.trim());
-
-            if (isClosing) indent = Math.max(indent - 1, 0);
-            formatted += "  ".repeat(indent) + line.trim() + "\n";
-            if (isOpening && !isSelfClosing) indent += 1;
-        });
-
-        return formatted.trim();
-    }
-
-    async function copyEditorHtml() {
-        const btn = document.getElementById("editorCopyBtn");
-        await copyToClipboard(htmlSource.value, btn);
-    }
-
-    function downloadEditorHtml() {
-        const blob = new Blob([htmlSource.value], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = "email.html";
-        anchor.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function resetEditorTemplate() {
-        if (!confirm("Reset the editor to the default template? Your current draft will be replaced.")) {
-            return;
-        }
-        htmlSource.value = DEFAULT_EMAIL_TEMPLATE;
-        persistHtmlDraft();
-        schedulePreviewUpdate();
-    }
-
-    function buildCopyableUrlBlock(label, value) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "copy-block";
-
-        const labelEl = document.createElement("label");
-        labelEl.textContent = label;
-
+    /* ======================================================
+       UTILITIES
+    ====================================================== */
+    function buildCopyRow(label, value) {
+        const wrap = document.createElement("div");
+        wrap.className = "copy-block";
+        const lbl = document.createElement("label");
+        lbl.textContent = label;
         const row = document.createElement("div");
         row.className = "copy-row";
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.readOnly = true;
-        input.value = value;
-
-        const copyBtn = document.createElement("button");
-        copyBtn.type = "button";
-        copyBtn.textContent = "Copy";
-        copyBtn.addEventListener("click", () => copyToClipboard(value, copyBtn));
-
-        row.appendChild(input);
-        row.appendChild(copyBtn);
-        wrapper.appendChild(labelEl);
-        wrapper.appendChild(row);
-        return wrapper;
+        const inp = document.createElement("input");
+        inp.type = "text"; inp.readOnly = true; inp.value = value;
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.textContent = "Copy";
+        btn.addEventListener("click", () => copyToClipboard(value, btn));
+        row.append(inp, btn);
+        wrap.append(lbl, row);
+        return wrap;
     }
 
     function renderCampaignResult(campaign) {
-        campaignResultDiv.innerHTML = "";
-        campaignResultDiv.className = "campaign-result";
-
-        const heading = document.createElement("h3");
-        heading.textContent = `Campaign "${campaign.name}" created`;
-
-        const codeP = document.createElement("p");
-        codeP.textContent = `Campaign code: ${campaign.campaignCode}`;
-
-        campaignResultDiv.appendChild(heading);
-        campaignResultDiv.appendChild(codeP);
-        campaignResultDiv.appendChild(
-            buildCopyableUrlBlock("Tracking pixel URL", campaign.trackingPixelUrl)
-        );
-        campaignResultDiv.appendChild(
-            buildCopyableUrlBlock("Email HTML snippet", buildEmailImgTag(campaign.trackingPixelUrl))
-        );
+        const div = document.getElementById("campaignResult");
+        div.innerHTML = "";
+        div.className = "campaign-result";
+        const h = document.createElement("h3");
+        h.textContent = `Campaign "${campaign.name}" created`;
+        div.appendChild(h);
+        if (campaign.trackingPixelUrl) div.appendChild(buildCopyRow("Tracking pixel URL", campaign.trackingPixelUrl));
     }
 
-    async function copyToClipboard(text, button) {
+    async function copyToClipboard(text, btn) {
         try {
             await navigator.clipboard.writeText(text);
-            const original = button.textContent;
-            button.textContent = "Copied!";
-            setTimeout(() => {
-                button.textContent = original;
-            }, 1500);
-        } catch (err) {
-            console.error("Copy failed:", err);
-            alert("Could not copy to clipboard");
-        }
+            const orig = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+        } catch { alert("Could not copy"); }
     }
 
-    function attachDeleteEvents() {
-        document.querySelectorAll(".delete").forEach(button => {
-            button.onclick = () => {
-                deleteContext = {
-                    type: button.getAttribute("data-type"),
-                    id: button.getAttribute("data-id"),
-                };
-                deleteModalMessage.textContent =
-                    deleteContext.type === "campaign"
-                        ? "Are you sure you want to delete this campaign?"
-                        : "Are you sure you want to delete this link?";
-                modal.style.display = "flex";
-            };
+    function formatHtml(html) {
+        const lines = html.replace(/>\s+</g, "><").split(/></).map((c, i, a) => {
+            if (i > 0) c = "<" + c;
+            if (i < a.length - 1) c += ">";
+            return c;
         });
+        let out = "", indent = 0;
+        const voids = /^(area|base|br|col|embed|hr|img|input|link|meta|source|track|!DOCTYPE)/i;
+        lines.forEach(line => {
+            const isClose   = /^<\//.test(line.trim());
+            const isOpen    = /^<[^/!][^>]*[^/]>$/.test(line.trim()) && !voids.test(line.trim());
+            const isSelf    = /\/>$/.test(line.trim()) || voids.test(line.trim());
+            if (isClose) indent = Math.max(indent - 1, 0);
+            out += "  ".repeat(indent) + line.trim() + "\n";
+            if (isOpen && !isSelf) indent++;
+        });
+        return out.trim();
     }
 
-    confirmDeleteBtn.addEventListener("click", async () => {
-        if (!deleteContext) return;
+    /* ======================================================
+       BOOTSTRAP
+    ====================================================== */
+    // Pre-load templates for campaign and activity forms
+    loadTemplateDropdowns();
+    refreshCampaignCache();
 
-        const url =
-            deleteContext.type === "campaign"
-                ? `${apiCampaignsUrl}/${deleteContext.id}`
-                : `${apiLinksUrl}/${deleteContext.id}`;
-
-        try {
-            const response = await fetch(url, { method: "DELETE" });
-            if (response.ok) {
-                if (deleteContext.type === "campaign") {
-                    await loadCampaigns();
-                } else {
-                    await loadLinks();
-                }
-            } else {
-                console.error("Failed to delete item");
-            }
-        } catch (err) {
-            console.error("Error:", err);
-        } finally {
-            modal.style.display = "none";
-            deleteContext = null;
-        }
-    });
-
-    cancelDeleteBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        deleteContext = null;
-    });
-
-    window.addEventListener("click", event => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-            deleteContext = null;
-        }
-    });
-
-    shortenForm.addEventListener("submit", async e => {
-        e.preventDefault();
-
-        const originalUrl = document.getElementById("originalUrl").value.trim();
-        if (!originalUrl) {
-            alert("Please enter a URL");
-            return;
-        }
-
-        try {
-            const params = new URLSearchParams();
-            params.append("originalUrl", originalUrl);
-
-            const response = await fetch(`${apiLinksUrl}/shorten`, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString(),
-            });
-
-            if (response.ok) {
-                const shortUrl = await response.text();
-                const shortId = shortUrl.split("/").filter(Boolean).pop();
-                resultDiv.innerHTML = `<p>Shortened URL: <a href="${shortUrlFor(shortId)}" target="_blank">${shortUrlFor(shortId)}</a></p>`;
-                shortenForm.reset();
-                await loadLinks();
-            } else {
-                resultDiv.innerHTML = `<p class="error">Error shortening URL</p>`;
-            }
-        } catch (err) {
-            console.error("Error:", err);
-            resultDiv.innerHTML = `<p class="error">Error: ${err.message}</p>`;
-        }
-    });
-
-    campaignForm.addEventListener("submit", async e => {
-        e.preventDefault();
-
-        const name = document.getElementById("campaignName").value.trim();
-        const campaignCode = document.getElementById("campaignCode").value.trim();
-        const description = document.getElementById("campaignDescription").value.trim();
-
-        if (!name) {
-            alert("Please enter a campaign name");
-            return;
-        }
-
-        const payload = { name };
-        if (campaignCode) payload.campaignCode = campaignCode;
-        if (description) payload.description = description;
-
-        try {
-            const response = await fetch(apiCampaignsUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                const campaign = await response.json();
-                renderCampaignResult(campaign);
-                campaignForm.reset();
-                await loadCampaigns();
-            } else {
-                const message = await response.text();
-                campaignResultDiv.innerHTML = `<p class="error">${message || "Error creating campaign"}</p>`;
-            }
-        } catch (err) {
-            console.error("Error:", err);
-            campaignResultDiv.innerHTML = `<p class="error">Error: ${err.message}</p>`;
-        }
-    });
-
+    loadShortLinksTable();
     switchSection("shortener");
 });

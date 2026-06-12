@@ -48,6 +48,10 @@ public class CampaignServiceImpl implements ICampaignService {
         campaign.setName(request.getName().trim());
         campaign.setDescription(trimToNull(request.getDescription()));
 
+        if (request.getEmailProviderType() != null) {
+            campaign.setEmailProviderType(request.getEmailProviderType());
+        }
+
         Campaign saved = campaignRepository.save(campaign);
         return toDto(saved);
     }
@@ -100,6 +104,25 @@ public class CampaignServiceImpl implements ICampaignService {
                 .toUriString();
     }
 
+    @Override
+    public String injectTrackingPixel(String htmlBody, String campaignCode) {
+        if (htmlBody == null || htmlBody.isBlank() || campaignCode == null || campaignCode.isBlank()) {
+            return htmlBody;
+        }
+
+        String pixelUrl = buildTrackingPixelUrl(campaignCode);
+        String pixelTag = String.format(
+                "<img src=\"%s\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;\" />",
+                pixelUrl);
+
+        String lower = htmlBody.toLowerCase(Locale.ROOT);
+        int bodyClose = lower.lastIndexOf("</body>");
+        if (bodyClose >= 0) {
+            return htmlBody.substring(0, bodyClose) + pixelTag + "\n" + htmlBody.substring(bodyClose);
+        }
+        return htmlBody + "\n" + pixelTag;
+    }
+
     private CampaignDto toDto(Campaign campaign) {
         long openCount = emailOpenEventRepository.countByCampaignId(campaign.getId());
         if (openCount == 0) {
@@ -111,6 +134,7 @@ public class CampaignServiceImpl implements ICampaignService {
                 .campaignCode(campaign.getCampaignCode())
                 .name(campaign.getName())
                 .description(campaign.getDescription())
+                .emailProviderType(campaign.getEmailProviderType())
                 .trackingPixelUrl(buildTrackingPixelUrl(campaign.getCampaignCode()))
                 .openCount(openCount)
                 .createdAt(campaign.getCreatedAt())
