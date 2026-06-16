@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/campaigns")
@@ -46,5 +47,36 @@ public class CampaignController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok("Campaign deleted successfully");
+    }
+
+    @PostMapping("/{id}/google-token")
+    public ResponseEntity<?> saveGoogleToken(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String token = payload.get("access_token");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body("access_token is required");
+        }
+        try {
+            campaignService.saveGoogleToken(id, token);
+            return ResponseEntity.ok("Token saved");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id}/google-code")
+    public ResponseEntity<?> saveGoogleCode(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String code = payload.get("code");
+        String redirectUri = payload.get("redirect_uri");
+        if (code == null || code.isBlank() || redirectUri == null || redirectUri.isBlank()) {
+            return ResponseEntity.badRequest().body("code and redirect_uri are required");
+        }
+        try {
+            campaignService.saveGoogleAuthCode(id, code, redirectUri);
+            return ResponseEntity.ok("Code exchanged and tokens saved");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to exchange code: " + e.getMessage());
+        }
     }
 }

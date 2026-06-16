@@ -52,7 +52,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         activity.setEndDate(request.getEndDate());
         activity.setDayOfMonth(request.getDayOfMonth());
         activity.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
-        activity.setStatus(request.getStatus() != null ? request.getStatus() : ActivityStatus.ACTIVE);
+        activity.setStatus(request.getStatus() != null ? request.getStatus() : ActivityStatus.NEW);
         activity.setNextExecutionAt(computeNextExecution(activity, LocalDateTime.now()));
 
         CampaignActivity saved = activityRepository.save(activity);
@@ -133,6 +133,42 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             activityRepository.save(activity);
             return true;
         }).orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public void testTrigger(Long id) {
+        CampaignActivity activity = activityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+
+        Campaign campaign = activity.getCampaign();
+        if (campaign.getEmailProviderType() == EmailProviderType.GMAIL) {
+            String accessToken = campaign.getGoogleAccessToken();
+            if (accessToken == null || accessToken.isEmpty()) {
+                throw new IllegalStateException("Gmail is not authorized for this campaign.");
+            }
+
+            com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+            
+            // Dummy test payload
+            com.smartstocks.product.service.renderer.RenderedTemplate rendered = new com.smartstocks.product.service.renderer.RenderedTemplate(
+                    "Test Trigger: " + activity.getActivityName(),
+                    "This is a test email triggered from Smart Stocks campaign manager."
+            );
+            com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
+                    rendered,
+                    java.util.Collections.singletonList("test@example.com")
+            );
+
+            if (result.isSuccess()) {
+                activity.setStatus(ActivityStatus.READY);
+                activityRepository.save(activity);
+            } else {
+                throw new RuntimeException("Test email failed: " + result.getErrorMessage());
+            }
+        } else {
+            throw new UnsupportedOperationException("Test trigger currently only supports GMAIL.");
+        }
     }
 
     // -----------------------------------------------------------------------

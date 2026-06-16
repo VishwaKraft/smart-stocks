@@ -95,4 +95,19 @@ public class CampaignActivityController {
     public ResponseEntity<List<ExecutionLogDto>> getExecutionLogs(@PathVariable Long id) {
         return ResponseEntity.ok(executionLogService.getLogsForActivity(id));
     }
+
+    /**
+     * POST /api/activities/{id}/test-trigger
+     */
+    @PostMapping("/{id}/test-trigger")
+    public ResponseEntity<?> testTrigger(@PathVariable Long id) {
+        try {
+            activityService.testTrigger(id);
+            return ResponseEntity.ok("Test trigger executed successfully");
+        } catch (IllegalArgumentException | IllegalStateException | UnsupportedOperationException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body("Test failed: " + ex.getMessage());
+        }
+    }
 }

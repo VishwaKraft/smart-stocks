@@ -21,6 +21,10 @@ public interface ICampaignService {
 
     boolean deleteCampaign(Long id);
 
+    void saveGoogleToken(Long id, String accessToken);
+
+    void saveGoogleAuthCode(Long id, String code, String redirectUri);
+
     String buildTrackingPixelUrl(String campaignCode);
 
     /**

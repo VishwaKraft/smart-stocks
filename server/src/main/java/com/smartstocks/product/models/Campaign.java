@@ -35,6 +35,12 @@ public class Campaign {
     @Column(length = 20)
     private EmailProviderType emailProviderType;
 
+    @Column(length = 2048)
+    private String googleAccessToken;
+
+    @Column(length = 2048)
+    private String googleRefreshToken;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

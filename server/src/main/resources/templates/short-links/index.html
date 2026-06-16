@@ -88,6 +88,7 @@
                         <option value="SENDGRID">SendGrid</option>
                         <option value="MAILGUN">Mailgun</option>
                         <option value="SMTP">SMTP</option>
+                        <option value="GMAIL">Gmail (OAuth)</option>
                     </select>
                 </div>
             </div>
@@ -161,11 +162,6 @@
                             <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
                                       placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;"></textarea>
                         </div>
-                        <div class="editor-col" id="tplPreviewCol" hidden>
-                            <span class="editor-col-label">Live Preview</span>
-                            <iframe id="tplHtmlPreview" class="full-html-preview"
-                                    title="Template Preview" sandbox=""></iframe>
-                        </div>
                     </div>
                 </div>
 
@@ -198,7 +194,7 @@
     <section id="activityPanel" class="panel" hidden>
         <div class="panel-header">
             <div>
-                <h2>Campaign Activities</h2>
+                <h2>Activities</h2>
                 <p class="panel-hint">Schedule one-time or recurring email sends. Each send automatically includes the campaign tracking pixel.</p>
             </div>
             <button type="button" id="newActivityBtn" class="primary-btn">+ New Activity</button>
@@ -350,6 +346,17 @@
             <tbody id="activityTableBody"></tbody>
         </table>
     </section>
+</div>
+
+<!-- ===================== PREVIEW MODAL ===================== -->
+<div id="previewModal" class="modal">
+    <div class="modal-content" style="width: 90vw; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 12px;">
+        <div style="padding: 16px 24px; border-bottom: 1px solid #e8ecf0; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; border-radius: 12px 12px 0 0;">
+            <h3 style="margin: 0; font-size: 16px; color: #1a1a2e;">Template Preview</h3>
+            <button id="closePreviewModal" class="secondary-btn btn-xs">Close</button>
+        </div>
+        <iframe id="modalHtmlPreview" style="flex: 1; width: 100%; border: none; background: #fff;" sandbox=""></iframe>
+    </div>
 </div>
 
 <!-- ===================== DELETE MODAL ===================== -->
