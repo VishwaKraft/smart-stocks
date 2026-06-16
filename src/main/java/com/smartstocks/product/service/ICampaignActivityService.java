@@ -19,4 +19,6 @@ public interface ICampaignActivityService {
     CampaignActivityDto updateActivity(Long id, CreateActivityRequestDto request);
 
     boolean deleteActivity(Long id);
+
+    void testTrigger(Long id);
 }

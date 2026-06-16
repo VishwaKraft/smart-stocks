@@ -25,14 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmDeleteBtn      = document.getElementById("confirmDelete");
     const cancelDeleteBtn       = document.getElementById("cancelDelete");
     const toastEl               = document.getElementById("toast");
-    const tplPreviewCol         = document.getElementById("tplPreviewCol");
 
     /* ── State ────────────────────────────────────────────── */
     let deleteContext      = null;
     let cachedCampaigns    = [];
     let cachedTemplates    = [];
     let tplPreviewTimer       = null;
-    let tplPreviewVisible     = false;
 
     const DEFAULT_EMAIL_TEMPLATE = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffe6ee;padding:40px 20px">
   <tbody><tr>
@@ -286,10 +284,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${c.openCount ?? 0}</td>
                     <td>${fmtDate(c.createdAt)}</td>
                     <td class="table-actions">
+                        ${c.emailProviderType === 'GMAIL' ? `<button class="primary-btn btn-xs" data-auth-gmail="${c.id}">Sign in with Gmail</button>` : ''}
                         ${c.trackingPixelUrl ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
                         <button class="danger-btn" data-delete-campaign="${c.id}" data-delete-name="${escHtml(c.name)}">Delete</button>
                     </td>`;
                 tbody.appendChild(tr);
+            });
+
+            // Gmail Auth
+            tbody.querySelectorAll("[data-auth-gmail]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const campaignId = btn.dataset.authGmail;
+                    const clientId = window.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+                    const redirectUri = window.location.origin + window.location.pathname;
+                    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&access_type=offline&prompt=consent&state=${campaignId}`;
+                    window.location.href = authUrl;
+                });
             });
 
             // Copy pixel
@@ -326,9 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
         templateFormTitle.textContent = "New Template";
         templateForm.reset();
         tplHtmlBody.value = DEFAULT_EMAIL_TEMPLATE;
-        tplPreviewCol.hidden = true;
-        tplPreviewVisible = false;
-        document.getElementById("tplPreviewToggle").textContent = "👁 Show Preview";
         templateFormWrapper.hidden = false;
         templateFormWrapper.scrollIntoView({ behavior: "smooth" });
     });
@@ -344,10 +351,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("tplPreviewToggle").addEventListener("click", () => {
-        tplPreviewVisible = !tplPreviewVisible;
-        tplPreviewCol.hidden = !tplPreviewVisible;
-        document.getElementById("tplPreviewToggle").textContent = tplPreviewVisible ? "👁 Hide Preview" : "👁 Show Preview";
-        if (tplPreviewVisible) tplHtmlPreview.srcdoc = tplHtmlBody.value;
+        const previewModal = document.getElementById("previewModal");
+        const modalHtmlPreview = document.getElementById("modalHtmlPreview");
+        modalHtmlPreview.srcdoc = tplHtmlBody.value;
+        previewModal.style.display = "flex";
+    });
+
+    document.getElementById("closePreviewModal").addEventListener("click", () => {
+        document.getElementById("previewModal").style.display = "none";
     });
 
     tplHtmlBody.addEventListener("input", scheduleTplPreview);
@@ -355,7 +366,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function scheduleTplPreview() {
         clearTimeout(tplPreviewTimer);
         tplPreviewTimer = setTimeout(() => {
-            if (tplPreviewVisible) tplHtmlPreview.srcdoc = tplHtmlBody.value;
+            const previewModal = document.getElementById("previewModal");
+            if (previewModal && previewModal.style.display === "flex") {
+                document.getElementById("modalHtmlPreview").srcdoc = tplHtmlBody.value;
+            }
         }, 300);
     }
 
@@ -423,9 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("tplName").value    = tpl.name;
                     document.getElementById("tplSubject").value = tpl.subject;
                     tplHtmlBody.value = tpl.htmlBody;
-                    tplPreviewCol.hidden = true;
-                    tplPreviewVisible = false;
-                    document.getElementById("tplPreviewToggle").textContent = "👁 Show Preview";
                     templateFormWrapper.hidden = false;
                     templateFormWrapper.scrollIntoView({ behavior: "smooth" });
                 });
@@ -593,6 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${fmtDate(a.nextExecutionAt)}</td>
                     <td><span class="badge ${statusBadge}">${a.status}</span></td>
                     <td class="table-actions">
+                        <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}">Test Trigger</button>
                         <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
                         <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
                         <button class="danger-btn" data-cancel-act="${a.id}">Cancel</button>
@@ -646,6 +658,37 @@ document.addEventListener("DOMContentLoaded", () => {
                     deleteContext = { type: "activity", id: btn.dataset.cancelAct };
                     deleteModalMessage.textContent = "Cancel this activity? It will stop running.";
                     modal.style.display = "flex";
+                });
+            });
+
+            // Test trigger
+            activityTableBody.querySelectorAll("[data-test-trigger-act]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    if (btn.textContent === "Test Trigger") {
+                        const actId = btn.dataset.testTriggerAct;
+                        try {
+                            btn.disabled = true;
+                            btn.textContent = "Sending...";
+                            const res = await apiFetch(`${apiActivitiesUrl}/${actId}/test-trigger`, { method: "POST" });
+                            showToast("Test mail triggered successfully!", "success");
+                            btn.textContent = "Request for Approval";
+                            btn.classList.remove("secondary-btn");
+                            btn.classList.add("primary-btn");
+                            btn.disabled = false;
+                            
+                            const badge = btn.closest("tr").querySelector(".badge");
+                            if (badge) {
+                                badge.textContent = "READY";
+                                badge.className = "badge badge-success";
+                            }
+                        } catch (err) {
+                            showToast("Test failed: " + err.message, "error");
+                            btn.textContent = "Test Trigger";
+                            btn.disabled = false;
+                        }
+                    } else if (btn.textContent === "Request for Approval") {
+                        showToast("Approval requested!", "success");
+                    }
                 });
             });
         } catch (err) { console.error("loadActivityTable:", err); }
@@ -800,10 +843,33 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ======================================================
        BOOTSTRAP
     ====================================================== */
+    // Check for Google OAuth code
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code') && urlParams.has('state')) {
+        const code = urlParams.get('code');
+        const campaignId = urlParams.get('state');
+        const redirectUri = window.location.origin + window.location.pathname;
+
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+
+        apiFetch(`${apiCampaignsUrl}/${campaignId}/google-code`, {
+            method: "POST",
+            body: JSON.stringify({ code: code, redirect_uri: redirectUri })
+        }).then(() => {
+            showToast("Gmail authorized successfully!", "success");
+            switchSection("campaigns");
+        }).catch(err => {
+            showToast("Failed to save Gmail token: " + err.message, "error");
+        });
+    }
+
     // Pre-load templates for campaign and activity forms
     loadTemplateDropdowns();
     refreshCampaignCache();
 
     loadShortLinksTable();
-    switchSection("shortener");
+    if (!urlParams.has('code')) {
+        switchSection("shortener");
+    }
 });

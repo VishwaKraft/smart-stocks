@@ -18,6 +18,11 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import java.util.Map;
 
 @Service
 public class CampaignServiceImpl implements ICampaignService {
@@ -28,6 +33,12 @@ public class CampaignServiceImpl implements ICampaignService {
     private final CampaignRepository campaignRepository;
     private final EmailOpenEventRepository emailOpenEventRepository;
     private final String trackingBaseUrl;
+
+    @Value("${google.oauth.client-id:}")
+    private String googleClientId;
+
+    @Value("${google.oauth.client-secret:}")
+    private String googleClientSecret;
 
     public CampaignServiceImpl(
             CampaignRepository campaignRepository,
@@ -93,6 +104,48 @@ public class CampaignServiceImpl implements ICampaignService {
                     return true;
                 })
                 .orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public void saveGoogleToken(Long id, String accessToken) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+        campaign.setGoogleAccessToken(accessToken);
+        campaignRepository.save(campaign);
+    }
+
+    @Override
+    @Transactional
+    public void saveGoogleAuthCode(Long id, String code, String redirectUri) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", googleClientId);
+        map.add("client_secret", googleClientSecret);
+        map.add("code", code);
+        map.add("grant_type", "authorization_code");
+        map.add("redirect_uri", redirectUri);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity("https://oauth2.googleapis.com/token", request, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            String accessToken = (String) response.getBody().get("access_token");
+            String refreshToken = (String) response.getBody().get("refresh_token");
+            campaign.setGoogleAccessToken(accessToken);
+            if (refreshToken != null) {
+                campaign.setGoogleRefreshToken(refreshToken);
+            }
+            campaignRepository.save(campaign);
+        } else {
+            throw new RuntimeException("Failed to exchange auth code for Google tokens");
+        }
     }
 
     @Override

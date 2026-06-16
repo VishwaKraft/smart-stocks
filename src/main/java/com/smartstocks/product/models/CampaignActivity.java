@@ -64,7 +64,7 @@ public class CampaignActivity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ActivityStatus status = ActivityStatus.ACTIVE;
+    private ActivityStatus status = ActivityStatus.NEW;
 
     private LocalDateTime nextExecutionAt;
 
