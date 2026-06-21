@@ -25,6 +25,8 @@ public interface ICampaignService {
 
     void saveGoogleAuthCode(Long id, String code, String redirectUri);
 
+    String refreshGoogleAccessToken(Long id);
+
     String buildTrackingPixelUrl(String campaignCode);
 
     /**

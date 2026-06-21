@@ -32,6 +32,10 @@ public class CampaignActivity {
     @JoinColumn(name = "template_id", nullable = false)
     private Template template;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segment_id")
+    private Segment segment;
+
     @Column(length = 255)
     private String activityName;
 

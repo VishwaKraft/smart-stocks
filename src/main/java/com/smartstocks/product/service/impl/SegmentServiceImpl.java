@@ -10,6 +10,7 @@ import com.smartstocks.product.models.Segment;
 import com.smartstocks.product.models.SegmentUser;
 import com.smartstocks.product.repository.SegmentRepository;
 import com.smartstocks.product.repository.SegmentUserRepository;
+import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ISegmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ public class SegmentServiceImpl implements ISegmentService {
     private final SegmentRepository segmentRepository;
     private final SegmentUserRepository segmentUserRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final CampaignEventLogger eventLogger;
 
     private AmazonS3 s3Client;
 
@@ -78,6 +80,12 @@ public class SegmentServiceImpl implements ISegmentService {
         segment.setSegmentType("CSV");
         segment.setS3Path("s3://" + awsBucketName + "/" + s3Key);
         segment = segmentRepository.save(segment);
+
+        Map<String, Object> eventInfo = new java.util.HashMap<>();
+        eventInfo.put("segmentId", segment.getId());
+        eventInfo.put("segmentName", segment.getName());
+        eventInfo.put("s3Path", segment.getS3Path());
+        eventLogger.log("SEGMENT_CREATED", eventInfo);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String headerLine = reader.readLine();
@@ -156,7 +164,13 @@ public class SegmentServiceImpl implements ISegmentService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute SQL query: " + e.getMessage(), e);
         }
-        
+
+        Map<String, Object> eventInfo = new java.util.HashMap<>();
+        eventInfo.put("segmentId", segment.getId());
+        eventInfo.put("segmentName", segment.getName());
+        eventInfo.put("type", "SQL");
+        eventLogger.log("SEGMENT_CREATED", eventInfo);
+
         return segment;
     }
 

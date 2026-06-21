@@ -6,8 +6,11 @@ import com.smartstocks.product.models.*;
 import com.smartstocks.product.repository.CampaignActivityRepository;
 import com.smartstocks.product.repository.CampaignActivityWeekdayRepository;
 import com.smartstocks.product.repository.CampaignRepository;
+import com.smartstocks.product.repository.SegmentRepository;
 import com.smartstocks.product.repository.TemplateRepository;
+import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignActivityService;
+import com.smartstocks.product.service.ICampaignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +19,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,10 +34,19 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final CampaignActivityWeekdayRepository weekdayRepository;
     private final CampaignRepository campaignRepository;
     private final TemplateRepository templateRepository;
+    private final SegmentRepository segmentRepository;
+    private final CampaignEventLogger eventLogger;
+    private final ICampaignService campaignService;
 
     @Override
     @Transactional
     public CampaignActivityDto createActivity(CreateActivityRequestDto request) {
+        if (request.getActivityName() != null && !request.getActivityName().isEmpty()) {
+            if (activityRepository.existsByActivityName(request.getActivityName())) {
+                throw new IllegalArgumentException("Activity name already exists.");
+            }
+        }
+
         Campaign campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
@@ -40,9 +54,17 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
                 .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
 
+        // Segment is mandatory
+        if (request.getSegmentId() == null) {
+            throw new IllegalArgumentException("Segment is required.");
+        }
+        Segment segment = segmentRepository.findById(request.getSegmentId())
+                .orElseThrow(() -> new IllegalArgumentException("Segment not found: " + request.getSegmentId()));
+
         CampaignActivity activity = new CampaignActivity();
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
         activity.setScheduleType(request.getScheduleType());
         activity.setRecurrenceType(request.getRecurrenceType());
@@ -61,6 +83,15 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         if (request.getWeekdays() != null && !request.getWeekdays().isEmpty()) {
             persistWeekdays(saved, request.getWeekdays());
         }
+
+        // Emit audit event
+        Map<String, Object> info = new HashMap<>();
+        info.put("activityId", saved.getId());
+        info.put("activityName", saved.getActivityName());
+        info.put("campaignId", saved.getCampaign().getId());
+        info.put("segmentId", saved.getSegment() != null ? saved.getSegment().getId() : null);
+        info.put("scheduleType", saved.getScheduleType());
+        eventLogger.log("ACTIVITY_CREATED", info);
 
         return toDto(saved);
     }
@@ -93,6 +124,12 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         CampaignActivity activity = activityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
 
+        if (request.getActivityName() != null && !request.getActivityName().isEmpty()) {
+            if (activityRepository.existsByActivityNameAndIdNot(request.getActivityName(), id)) {
+                throw new IllegalArgumentException("Activity name already exists.");
+            }
+        }
+
         Campaign campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
@@ -100,8 +137,15 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
                 .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
 
+        Segment segment = null;
+        if (request.getSegmentId() != null) {
+            segment = segmentRepository.findById(request.getSegmentId())
+                    .orElseThrow(() -> new IllegalArgumentException("Segment not found: " + request.getSegmentId()));
+        }
+
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
         activity.setScheduleType(request.getScheduleType());
         activity.setRecurrenceType(request.getRecurrenceType());
@@ -122,7 +166,16 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             persistWeekdays(activity, request.getWeekdays());
         }
 
-        return toDto(activityRepository.save(activity));
+        CampaignActivity updatedActivity = activityRepository.save(activity);
+
+        // Emit audit event
+        Map<String, Object> info = new HashMap<>();
+        info.put("activityId", updatedActivity.getId());
+        info.put("activityName", updatedActivity.getActivityName());
+        info.put("segmentId", updatedActivity.getSegment() != null ? updatedActivity.getSegment().getId() : null);
+        eventLogger.log("ACTIVITY_UPDATED", info);
+
+        return toDto(updatedActivity);
     }
 
     @Override
@@ -160,15 +213,78 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
             );
 
+            if (result.isAuthError()) {
+                // Refresh token and retry
+                accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
+                gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+                result = gmailProvider.send(
+                        rendered,
+                        emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
+                );
+            }
+
             if (result.isSuccess()) {
                 activity.setStatus(ActivityStatus.READY);
                 activityRepository.save(activity);
+
+                // Emit test fire event
+                Map<String, Object> info = new HashMap<>();
+                info.put("activityId", id);
+                info.put("activityName", activity.getActivityName());
+                info.put("recipients", emailIds);
+                info.put("gmailResponse", result.getProviderResponse());
+                eventLogger.log("ACTIVITY_TEST_FIRED", info);
             } else {
                 throw new RuntimeException("Test email failed: " + result.getErrorMessage());
             }
         } else {
             throw new UnsupportedOperationException("Test trigger currently only supports GMAIL.");
         }
+    }
+
+    @Override
+    @Transactional
+    public CampaignActivityDto cloneActivity(Long id, String newName) {
+        if (newName != null && !newName.isEmpty() && activityRepository.existsByActivityName(newName)) {
+            throw new IllegalArgumentException("Activity name already exists.");
+        }
+
+        CampaignActivity original = activityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+
+        CampaignActivity clone = new CampaignActivity();
+        clone.setCampaign(original.getCampaign());
+        clone.setTemplate(original.getTemplate());
+        clone.setSegment(original.getSegment());
+        clone.setActivityName(newName);
+        clone.setScheduleType(original.getScheduleType());
+        clone.setRecurrenceType(original.getRecurrenceType());
+        clone.setExecutionDatetime(original.getExecutionDatetime());
+        clone.setExecutionTime(original.getExecutionTime());
+        clone.setStartDate(original.getStartDate());
+        clone.setEndDate(original.getEndDate());
+        clone.setDayOfMonth(original.getDayOfMonth());
+        clone.setTimezone(original.getTimezone());
+        clone.setStatus(ActivityStatus.NEW);
+        clone.setNextExecutionAt(computeNextExecution(clone, LocalDateTime.now()));
+
+        CampaignActivity saved = activityRepository.save(clone);
+
+        List<Weekday> weekdays = weekdayRepository.findAllByActivityId(id).stream()
+                .map(CampaignActivityWeekday::getWeekday)
+                .collect(Collectors.toList());
+        if (!weekdays.isEmpty()) {
+            persistWeekdays(saved, weekdays);
+        }
+
+        // Emit audit event
+        Map<String, Object> info = new HashMap<>();
+        info.put("originalActivityId", id);
+        info.put("newActivityId", saved.getId());
+        info.put("newActivityName", saved.getActivityName());
+        eventLogger.log("ACTIVITY_CLONED", info);
+
+        return toDto(saved);
     }
 
     // -----------------------------------------------------------------------
@@ -246,6 +362,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .campaignName(a.getCampaign().getName())
                 .templateId(a.getTemplate().getId())
                 .templateName(a.getTemplate().getName())
+                .segmentId(a.getSegment() != null ? a.getSegment().getId() : null)
+                .segmentName(a.getSegment() != null ? a.getSegment().getName() : null)
                 .activityName(a.getActivityName())
                 .scheduleType(a.getScheduleType())
                 .recurrenceType(a.getRecurrenceType())

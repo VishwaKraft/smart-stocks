@@ -25,6 +25,8 @@ public class CampaignActivityDto {
     private String campaignName;
     private Long templateId;
     private String templateName;
+    private Long segmentId;
+    private String segmentName;
     private String activityName;
     private ScheduleType scheduleType;
     private RecurrenceType recurrenceType;

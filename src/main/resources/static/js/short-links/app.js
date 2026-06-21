@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toastEl               = document.getElementById("toast");
     const mobileMenuBtn         = document.getElementById("mobileMenuBtn");
     const sidebar               = document.querySelector(".sidebar");
+    const cloneModal            = document.getElementById("cloneModal");
 
     /* ── State ────────────────────────────────────────────── */
     let deleteContext      = null;
@@ -124,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
             loadActivityTable();
             loadCampaignDropdowns();
             loadTemplateDropdowns();
+            loadSegmentDropdownForActivity();
         } else if (section === "segments") {
             loadSegmentTable();
         }
@@ -504,6 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
         weeklyFields.hidden = true;
         monthlyFields.hidden = true;
         activityFormWrapper.hidden = false;
+        loadSegmentDropdownForActivity();
         activityFormWrapper.scrollIntoView({ behavior: "smooth" });
     });
 
@@ -511,6 +514,23 @@ document.addEventListener("DOMContentLoaded", () => {
         activityFormWrapper.hidden = true;
         activityForm.reset();
     });
+
+    async function loadSegmentDropdownForActivity() {
+        try {
+            const segments = await apiFetch(apiSegmentsUrl);
+            const sel = document.getElementById("actSegment");
+            if (!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = '<option value="">— select a segment —</option>';
+            segments.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.id;
+                opt.textContent = s.name;
+                sel.appendChild(opt);
+            });
+            if (currentVal) sel.value = currentVal;
+        } catch (e) { console.error("loadSegmentDropdownForActivity:", e); }
+    }
 
     async function loadCampaignDropdowns() {
         try {
@@ -552,6 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const payload = {
             campaignId:    Number(document.getElementById("actCampaign").value) || null,
             templateId:    Number(document.getElementById("actTemplate").value) || null,
+            segmentId:     Number(document.getElementById("actSegment").value) || null,
             activityName:  document.getElementById("actName").value.trim() || null,
             scheduleType:  schedType,
             recurrenceType: actRecurrence.value || null,
@@ -607,6 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ACTIVE: "badge-active", PAUSED: "badge-paused",
                     COMPLETED: "badge-completed", CANCELLED: "badge-cancelled"
                 }[a.status] || "badge-default";
+                const isCompleted = a.status === "COMPLETED" || a.status === "CANCELLED";
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>${escHtml(a.activityName || "—")}</strong></td>
@@ -616,10 +638,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${fmtDate(a.nextExecutionAt)}</td>
                     <td><span class="badge ${statusBadge}">${a.status}</span></td>
                     <td class="table-actions">
-                        <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}">Test Trigger</button>
-                        <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
-                        <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
-                        <button class="danger-btn" data-cancel-act="${a.id}">Cancel</button>
+                        ${isCompleted ? `
+                            <button class="secondary-btn btn-xs" data-clone-act="${a.id}" data-clone-name="${escHtml(a.activityName || '')}">Clone</button>
+                            <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
+                        ` : `
+                            <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}">Test Trigger</button>
+                            <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
+                            <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
+                            <button class="danger-btn" data-cancel-act="${a.id}">Cancel</button>
+                        `}
                     </td>`;
                 activityTableBody.appendChild(tr);
             });
@@ -633,6 +660,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         activityFormTitle.textContent = "Edit Activity";
                         document.getElementById("actCampaign").value   = a.campaignId;
                         document.getElementById("actTemplate").value   = a.templateId;
+                        await loadSegmentDropdownForActivity();
+                        if (a.segmentId) document.getElementById("actSegment").value = a.segmentId;
                         document.getElementById("actName").value       = a.activityName || "";
                         actScheduleType.value = a.scheduleType;
                         oneTimeFields.hidden   = a.scheduleType !== "ONE_TIME";
@@ -656,6 +685,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         activityFormWrapper.hidden = false;
                         activityFormWrapper.scrollIntoView({ behavior: "smooth" });
                     } catch (err) { showToast("Error loading activity: " + err.message, "error"); }
+                });
+            });
+
+            // Clone
+            activityTableBody.querySelectorAll("[data-clone-act]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.getElementById("cloneActivityName").value = (btn.dataset.cloneName || "") + " – Copy";
+                    document.getElementById("confirmClone").dataset.actId = btn.dataset.cloneAct;
+                    cloneModal.style.display = "flex";
                 });
             });
 
@@ -774,6 +812,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("click", ev       => { 
         if (ev.target === modal) { modal.style.display = "none"; deleteContext = null; } 
         if (ev.target === testFireModal) { testFireModal.style.display = "none"; }
+        if (ev.target === cloneModal) { cloneModal.style.display = "none"; }
     });
 
     /* ======================================================
@@ -805,6 +844,35 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             e.target.disabled = false;
             e.target.textContent = "Send Test";
+        }
+    });
+
+    /* ======================================================
+       CLONE MODAL LOGIC
+    ====================================================== */
+    document.getElementById("cancelClone").addEventListener("click", () => {
+        cloneModal.style.display = "none";
+    });
+
+    document.getElementById("confirmClone").addEventListener("click", async (e) => {
+        const actId = e.target.dataset.actId;
+        const newName = document.getElementById("cloneActivityName").value.trim();
+        if (!newName) {
+            showToast("Please enter a name for the cloned activity", "error");
+            return;
+        }
+        try {
+            e.target.disabled = true;
+            e.target.textContent = "Cloning...";
+            await apiFetch(`${apiActivitiesUrl}/${actId}/clone?newName=${encodeURIComponent(newName)}`, { method: "POST" });
+            showToast("Activity cloned successfully!", "success");
+            cloneModal.style.display = "none";
+            loadActivityTable();
+        } catch (err) {
+            showToast("Clone failed: " + err.message, "error");
+        } finally {
+            e.target.disabled = false;
+            e.target.textContent = "Clone";
         }
     });
 

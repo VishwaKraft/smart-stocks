@@ -25,6 +25,9 @@ public class CreateActivityRequestDto {
     @NotNull(message = "Template ID is required")
     private Long templateId;
 
+    @NotNull(message = "Segment ID is required")
+    private Long segmentId;
+
     private String activityName;
 
     @NotNull(message = "Schedule type is required")

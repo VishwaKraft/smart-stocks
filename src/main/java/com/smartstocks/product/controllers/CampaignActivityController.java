@@ -110,4 +110,17 @@ public class CampaignActivityController {
             return ResponseEntity.internalServerError().body("Test failed: " + ex.getMessage());
         }
     }
+
+    /**
+     * POST /api/activities/{id}/clone
+     */
+    @PostMapping("/{id}/clone")
+    public ResponseEntity<?> cloneActivity(@PathVariable Long id, @RequestParam String newName) {
+        try {
+            CampaignActivityDto cloned = activityService.cloneActivity(id, newName);
+            return ResponseEntity.status(HttpStatus.CREATED).body(cloned);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }

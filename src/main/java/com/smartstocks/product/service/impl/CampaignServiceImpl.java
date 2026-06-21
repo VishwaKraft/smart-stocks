@@ -5,7 +5,9 @@ import com.smartstocks.product.dto.CreateCampaignRequestDto;
 import com.smartstocks.product.models.Campaign;
 import com.smartstocks.product.repository.CampaignRepository;
 import com.smartstocks.product.repository.EmailOpenEventRepository;
+import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,8 +15,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -33,6 +37,9 @@ public class CampaignServiceImpl implements ICampaignService {
     private final CampaignRepository campaignRepository;
     private final EmailOpenEventRepository emailOpenEventRepository;
     private final String trackingBaseUrl;
+
+    @Autowired
+    private CampaignEventLogger eventLogger;
 
     @Value("${google.oauth.client-id:}")
     private String googleClientId;
@@ -64,6 +71,13 @@ public class CampaignServiceImpl implements ICampaignService {
         }
 
         Campaign saved = campaignRepository.save(campaign);
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("campaignId", saved.getId());
+        info.put("campaignName", saved.getName());
+        info.put("provider", saved.getEmailProviderType());
+        eventLogger.log("CAMPAIGN_CREATED", info);
+
         return toDto(saved);
     }
 
@@ -100,6 +114,10 @@ public class CampaignServiceImpl implements ICampaignService {
     public boolean deleteCampaign(Long id) {
         return campaignRepository.findById(id)
                 .map(campaign -> {
+                    Map<String, Object> info = new HashMap<>();
+                    info.put("campaignId", campaign.getId());
+                    info.put("campaignName", campaign.getName());
+                    eventLogger.log("CAMPAIGN_DELETED", info);
                     campaignRepository.delete(campaign);
                     return true;
                 })
@@ -145,6 +163,39 @@ public class CampaignServiceImpl implements ICampaignService {
             campaignRepository.save(campaign);
         } else {
             throw new RuntimeException("Failed to exchange auth code for Google tokens");
+        }
+    }
+
+    @Override
+    @Transactional
+    public String refreshGoogleAccessToken(Long id) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+
+        if (campaign.getGoogleRefreshToken() == null || campaign.getGoogleRefreshToken().isEmpty()) {
+            throw new IllegalStateException("No refresh token available to refresh access token");
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", googleClientId);
+        map.add("client_secret", googleClientSecret);
+        map.add("refresh_token", campaign.getGoogleRefreshToken());
+        map.add("grant_type", "refresh_token");
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity("https://oauth2.googleapis.com/token", request, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            String newAccessToken = (String) response.getBody().get("access_token");
+            campaign.setGoogleAccessToken(newAccessToken);
+            campaignRepository.save(campaign);
+            return newAccessToken;
+        } else {
+            throw new RuntimeException("Failed to refresh Google access token");
         }
     }
 

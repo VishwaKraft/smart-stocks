@@ -1,13 +1,15 @@
 package com.smartstocks.product.service.provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -22,6 +24,8 @@ import java.util.List;
 
 public class GmailProvider implements IEmailProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(GmailProvider.class);
+
     private final String accessToken;
     private final RestTemplate restTemplate;
 
@@ -33,7 +37,7 @@ public class GmailProvider implements IEmailProvider {
     @Override
     public SendResult send(RenderedTemplate rendered, List<String> recipients) {
         try {
-            // 1. Create a raw RFC 2822 email message
+            // 1. Build raw RFC-2822 message
             Properties props = new Properties();
             Session session = Session.getDefaultInstance(props, null);
             MimeMessage email = new MimeMessage(session);
@@ -52,8 +56,7 @@ public class GmailProvider implements IEmailProvider {
 
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             email.writeTo(buffer);
-            byte[] rawMessageBytes = buffer.toByteArray();
-            String encodedEmail = Base64.getUrlEncoder().encodeToString(rawMessageBytes);
+            String encodedEmail = Base64.getUrlEncoder().encodeToString(buffer.toByteArray());
 
             // 2. Call Gmail API
             String url = "https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send";
@@ -67,16 +70,37 @@ public class GmailProvider implements IEmailProvider {
 
             HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+            // --- Request log ---
+            log.info("[GmailProvider] REQUEST  url={} recipients={} subject=\"{}\"",
+                    url, recipients, rendered.getRenderedSubject());
+
+            ResponseEntity<Map> response;
+            try {
+                response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+            } catch (HttpClientErrorException ex) {
+                log.error("[GmailProvider] RESPONSE error status={} body={}",
+                        ex.getStatusCode(), ex.getResponseBodyAsString());
+                
+                String errorMsg = "Gmail API error: " + ex.getStatusCode() + " – " + ex.getResponseBodyAsString();
+                if (ex.getStatusCode() == org.springframework.http.HttpStatus.UNAUTHORIZED) {
+                    return SendResult.failureWithAuthError(errorMsg);
+                }
+                return SendResult.failure(errorMsg);
+            }
+
+            // --- Response log ---
+            log.info("[GmailProvider] RESPONSE status={} body={}",
+                    response.getStatusCode(), response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                return SendResult.ok(recipients.size(), "Message sent");
+                return SendResult.ok(recipients.size(), "Message sent – id=" +
+                        (response.getBody() != null ? response.getBody().get("id") : "unknown"));
             } else {
                 return SendResult.failure("Gmail API error: " + response.getStatusCode());
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("[GmailProvider] Unexpected error: {}", e.getMessage(), e);
             return SendResult.failure("Error composing/sending email via Gmail: " + e.getMessage());
         }
     }
