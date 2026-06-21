@@ -137,7 +137,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
     @Override
     @Transactional
-    public void testTrigger(Long id) {
+    public void testTrigger(Long id, List<String> emailIds) {
         CampaignActivity activity = activityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
 
@@ -157,7 +157,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             );
             com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
                     rendered,
-                    java.util.Collections.singletonList("test@example.com")
+                    emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
             );
 
             if (result.isSuccess()) {

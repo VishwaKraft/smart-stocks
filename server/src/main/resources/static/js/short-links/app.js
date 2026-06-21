@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const apiCampaignsUrl  = (window.API_CAMPAIGNS_URL  || "/api/campaigns").replace(/\/$/, "");
     const apiTemplatesUrl  = (window.API_TEMPLATES_URL  || "/api/templates").replace(/\/$/, "");
     const apiActivitiesUrl = (window.API_ACTIVITIES_URL || "/api/activities").replace(/\/$/, "");
+    const apiSegmentsUrl   = (window.API_SEGMENTS_URL   || "/api/segments").replace(/\/$/, "");
 
     const shortLinkBaseUrl = (() => {
         const u = window.SHORT_LINK_BASE_URL || "/s/";
@@ -20,11 +21,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const campaignPanel         = document.getElementById("campaignPanel");
     const templatePanel         = document.getElementById("templatePanel");
     const activityPanel         = document.getElementById("activityPanel");
+    const segmentPanel          = document.getElementById("segmentPanel");
     const modal                 = document.getElementById("deleteModal");
+    const testFireModal         = document.getElementById("testFireModal");
     const deleteModalMessage    = document.getElementById("deleteModalMessage");
     const confirmDeleteBtn      = document.getElementById("confirmDelete");
     const cancelDeleteBtn       = document.getElementById("cancelDelete");
     const toastEl               = document.getElementById("toast");
+    const mobileMenuBtn         = document.getElementById("mobileMenuBtn");
+    const sidebar               = document.querySelector(".sidebar");
 
     /* ── State ────────────────────────────────────────────── */
     let deleteContext      = null;
@@ -98,7 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
             shortener: shortenerPanel,
             campaigns: campaignPanel,
             templates: templatePanel,
-            activities: activityPanel
+            activities: activityPanel,
+            segments: segmentPanel
         };
 
         sectionNavButtons.forEach(btn =>
@@ -118,6 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
             loadActivityTable();
             loadCampaignDropdowns();
             loadTemplateDropdowns();
+        } else if (section === "segments") {
+            loadSegmentTable();
+        }
+
+        if (window.innerWidth <= 960) {
+            sidebar.classList.remove("open");
         }
     }
 
@@ -663,32 +675,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Test trigger
             activityTableBody.querySelectorAll("[data-test-trigger-act]").forEach(btn => {
-                btn.addEventListener("click", async () => {
-                    if (btn.textContent === "Test Trigger") {
-                        const actId = btn.dataset.testTriggerAct;
-                        try {
-                            btn.disabled = true;
-                            btn.textContent = "Sending...";
-                            const res = await apiFetch(`${apiActivitiesUrl}/${actId}/test-trigger`, { method: "POST" });
-                            showToast("Test mail triggered successfully!", "success");
-                            btn.textContent = "Request for Approval";
-                            btn.classList.remove("secondary-btn");
-                            btn.classList.add("primary-btn");
-                            btn.disabled = false;
-                            
-                            const badge = btn.closest("tr").querySelector(".badge");
-                            if (badge) {
-                                badge.textContent = "READY";
-                                badge.className = "badge badge-success";
-                            }
-                        } catch (err) {
-                            showToast("Test failed: " + err.message, "error");
-                            btn.textContent = "Test Trigger";
-                            btn.disabled = false;
-                        }
-                    } else if (btn.textContent === "Request for Approval") {
-                        showToast("Approval requested!", "success");
-                    }
+                btn.addEventListener("click", () => {
+                    const actId = btn.dataset.testTriggerAct;
+                    document.getElementById("testFireEmails").value = "";
+                    document.getElementById("confirmTestFire").dataset.actId = actId;
+                    testFireModal.style.display = "flex";
                 });
             });
         } catch (err) { console.error("loadActivityTable:", err); }
@@ -780,7 +771,184 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cancelDeleteBtn.addEventListener("click",  () => { modal.style.display = "none"; deleteContext = null; });
-    window.addEventListener("click", ev       => { if (ev.target === modal) { modal.style.display = "none"; deleteContext = null; } });
+    window.addEventListener("click", ev       => { 
+        if (ev.target === modal) { modal.style.display = "none"; deleteContext = null; } 
+        if (ev.target === testFireModal) { testFireModal.style.display = "none"; }
+    });
+
+    /* ======================================================
+       TEST FIRE MODAL LOGIC
+    ====================================================== */
+    document.getElementById("cancelTestFire").addEventListener("click", () => {
+        testFireModal.style.display = "none";
+    });
+
+    document.getElementById("confirmTestFire").addEventListener("click", async (e) => {
+        const actId = e.target.dataset.actId;
+        const emailsStr = document.getElementById("testFireEmails").value.trim();
+        const emailIds = emailsStr ? emailsStr.split(",").map(s => s.trim()).filter(s => s) : [];
+
+        try {
+            e.target.disabled = true;
+            e.target.textContent = "Sending...";
+            
+            await apiFetch(`${apiActivitiesUrl}/${actId}/test-trigger`, {
+                method: "POST",
+                body: JSON.stringify(emailIds)
+            });
+            
+            showToast("Test mail triggered successfully!", "success");
+            testFireModal.style.display = "none";
+            loadActivityTable(); // To update status badge
+        } catch (err) {
+            showToast("Test failed: " + err.message, "error");
+        } finally {
+            e.target.disabled = false;
+            e.target.textContent = "Send Test";
+        }
+    });
+
+    /* ======================================================
+       SEGMENTS LOGIC
+    ====================================================== */
+    const segmentFormWrapper = document.getElementById("segmentFormWrapper");
+    const segmentForm = document.getElementById("segmentForm");
+    const segmentTableBody = document.getElementById("segmentTableBody");
+    const segmentTable = document.getElementById("segmentTable");
+    const segmentEmpty = document.getElementById("segmentEmpty");
+
+    // Tabs logic
+    document.querySelectorAll(".segment-tabs .tab-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            document.querySelectorAll(".segment-tabs .tab-btn").forEach(b => b.classList.remove("active"));
+            e.target.classList.add("active");
+            
+            const tabId = e.target.dataset.tab;
+            document.getElementById("csvTabContent").hidden = (tabId !== "csvTab");
+            document.getElementById("sqlTabContent").hidden = (tabId !== "sqlTab");
+            document.getElementById("segmentType").value = (tabId === "csvTab") ? "CSV" : "SQL";
+        });
+    });
+
+    document.getElementById("newSegmentBtn").addEventListener("click", () => {
+        segmentForm.reset();
+        segmentFormWrapper.hidden = false;
+        segmentFormWrapper.scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("segCancelBtn").addEventListener("click", () => {
+        segmentFormWrapper.hidden = true;
+        segmentForm.reset();
+    });
+
+    segmentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const type = document.getElementById("segmentType").value;
+        const name = document.getElementById("segName").value.trim();
+        const description = document.getElementById("segDescription").value.trim();
+        
+        try {
+            document.getElementById("segSaveBtn").disabled = true;
+            document.getElementById("segSaveBtn").textContent = "Saving...";
+
+            if (type === "CSV") {
+                const fileInput = document.getElementById("segCsvFile");
+                if (!fileInput.files.length) throw new Error("Please select a CSV file");
+                
+                const formData = new FormData();
+                formData.append("name", name);
+                formData.append("description", description);
+                formData.append("file", fileInput.files[0]);
+                
+                const res = await fetch(`${apiSegmentsUrl}/csv`, {
+                    method: "POST",
+                    body: formData
+                });
+                
+                if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(msg);
+                }
+            } else {
+                const sqlQuery = document.getElementById("segSqlQuery").value.trim();
+                if (!sqlQuery) throw new Error("Please enter an SQL query");
+                
+                await apiFetch(`${apiSegmentsUrl}/sql`, {
+                    method: "POST",
+                    body: JSON.stringify({ name, description, sqlQuery })
+                });
+            }
+            
+            showToast("Segment created successfully!", "success");
+            segmentFormWrapper.hidden = true;
+            segmentForm.reset();
+            loadSegmentTable();
+        } catch (err) {
+            showToast("Error: " + err.message, "error");
+        } finally {
+            document.getElementById("segSaveBtn").disabled = false;
+            document.getElementById("segSaveBtn").textContent = "💾 Save Segment";
+        }
+    });
+
+    async function loadSegmentTable() {
+        try {
+            const segments = await apiFetch(apiSegmentsUrl);
+            segmentTableBody.innerHTML = "";
+            if (segments.length === 0) {
+                segmentTable.hidden = true;
+                segmentEmpty.hidden = false;
+                return;
+            }
+            segmentEmpty.hidden = true;
+            segmentTable.hidden = false;
+            segments.forEach(s => {
+                const typeBadge = s.segmentType === "CSV" ? "badge-default" : "badge-active";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(s.name)}</strong><br><small class="muted">${escHtml(s.description || "")}</small></td>
+                    <td><span class="badge ${typeBadge}">${s.segmentType}</span></td>
+                    <td>${fmtDate(s.createdAt)}</td>
+                    <td class="table-actions">
+                        <button class="danger-btn" data-delete-seg="${s.id}" data-delete-name="${escHtml(s.name)}">Delete</button>
+                    </td>`;
+                segmentTableBody.appendChild(tr);
+            });
+
+            // Delete
+            segmentTableBody.querySelectorAll("[data-delete-seg]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "segment", id: btn.dataset.deleteSeg };
+                    deleteModalMessage.textContent = `Delete segment "${btn.dataset.deleteName}"?`;
+                    modal.style.display = "flex";
+                });
+            });
+        } catch (err) { console.error("loadSegmentTable:", err); }
+    }
+
+    // Update delete handler for segments
+    const originalConfirmDelete = confirmDeleteBtn.onclick;
+    confirmDeleteBtn.addEventListener("click", async () => {
+        if (!deleteContext) return;
+        const { type, id } = deleteContext;
+        if (type === "segment") {
+            try {
+                await fetch(`${apiSegmentsUrl}/${id}`, { method: "DELETE" });
+                loadSegmentTable();
+                showToast("Segment deleted successfully", "success");
+            } catch (err) { showToast("Error: " + err.message, "error"); }
+            finally { modal.style.display = "none"; deleteContext = null; }
+            // Prevents original click listener from triggering if we handled it
+            // Actually, we replaced it using event listener, so we just add conditions.
+        }
+    });
+
+    /* ======================================================
+       MOBILE MENU LOGIC
+    ====================================================== */
+    mobileMenuBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+    });
 
     /* ======================================================
        UTILITIES
