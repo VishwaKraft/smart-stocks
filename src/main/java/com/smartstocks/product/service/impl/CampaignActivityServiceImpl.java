@@ -11,6 +11,8 @@ import com.smartstocks.product.repository.TemplateRepository;
 import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignActivityService;
 import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.service.renderer.ITemplateRenderer;
+import com.smartstocks.product.service.renderer.TemplateRendererFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final SegmentRepository segmentRepository;
     private final CampaignEventLogger eventLogger;
     private final ICampaignService campaignService;
+    private final TemplateRendererFactory templateRendererFactory;
 
     @Override
     @Transactional
@@ -203,10 +206,14 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
             com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
             
-            // Dummy test payload
-            com.smartstocks.product.service.renderer.RenderedTemplate rendered = new com.smartstocks.product.service.renderer.RenderedTemplate(
-                    "Test Trigger: " + activity.getActivityName(),
-                    "This is a test email triggered from Smart Stocks campaign manager."
+            Template templateObj = activity.getTemplate();
+            ITemplateRenderer renderer = templateRendererFactory.get(templateObj.getRendererType());
+            
+            // Render actual template with empty variables for test
+            com.smartstocks.product.service.renderer.RenderedTemplate rendered = renderer.render(
+                    templateObj.getSubject(),
+                    templateObj.getHtmlBody(),
+                    new HashMap<>()
             );
             com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
                     rendered,
