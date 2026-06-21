@@ -20,5 +20,5 @@ public interface ICampaignActivityService {
 
     boolean deleteActivity(Long id);
 
-    void testTrigger(Long id);
+    void testTrigger(Long id, java.util.List<String> emailIds);
 }

@@ -100,9 +100,9 @@ public class CampaignActivityController {
      * POST /api/activities/{id}/test-trigger
      */
     @PostMapping("/{id}/test-trigger")
-    public ResponseEntity<?> testTrigger(@PathVariable Long id) {
+    public ResponseEntity<?> testTrigger(@PathVariable Long id, @RequestBody(required = false) List<String> emailIds) {
         try {
-            activityService.testTrigger(id);
+            activityService.testTrigger(id, emailIds);
             return ResponseEntity.ok("Test trigger executed successfully");
         } catch (IllegalArgumentException | IllegalStateException | UnsupportedOperationException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());

@@ -20,6 +20,7 @@
     <div class="logo">
         <img th:src="@{/images/img.png}" alt="logo">
         <span>Smart Stocks</span>
+        <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
     </div>
 
     <nav class="section-nav">
@@ -34,6 +35,9 @@
         </button>
         <button type="button" class="section-nav-btn" data-section="activities">
             <span class="nav-icon">🗓️</span> Activities
+        </button>
+        <button type="button" class="section-nav-btn" data-section="segments">
+            <span class="nav-icon">👥</span> Segments
         </button>
     </nav>
 </div>
@@ -349,6 +353,73 @@
             <tbody id="activityTableBody"></tbody>
         </table>
     </section>
+
+    <!-- ── Segments ── -->
+    <section id="segmentPanel" class="panel" hidden>
+        <div class="panel-header">
+            <div>
+                <h2>Segments</h2>
+                <p class="panel-hint">Upload a CSV or write an SQL query to create a user segment.</p>
+            </div>
+            <button type="button" id="newSegmentBtn" class="primary-btn">+ New Segment</button>
+        </div>
+
+        <div id="segmentFormWrapper" class="form-card" hidden>
+            <h3>New Segment</h3>
+            <div class="segment-tabs">
+                <button type="button" class="tab-btn active" data-tab="csvTab">Upload CSV</button>
+                <button type="button" class="tab-btn" data-tab="sqlTab">SQL Query</button>
+            </div>
+            
+            <form id="segmentForm" class="form stacked-full">
+                <input type="hidden" id="segmentType" value="CSV">
+                <div class="form-group full-width">
+                    <label for="segName">Segment Name *</label>
+                    <input type="text" id="segName" placeholder="e.g. VIP Customers" required>
+                </div>
+                <div class="form-group full-width">
+                    <label for="segDescription">Description</label>
+                    <textarea id="segDescription" placeholder="Description of this segment" rows="2"></textarea>
+                </div>
+
+                <div id="csvTabContent" class="tab-content">
+                    <div class="form-group full-width">
+                        <label for="segCsvFile">CSV File *</label>
+                        <input type="file" id="segCsvFile" accept=".csv">
+                        <small class="form-hint">CSV must contain a header row with 'emailid' (mandatory), 'userid' (optional), 'phone_number' (optional).</small>
+                    </div>
+                </div>
+
+                <div id="sqlTabContent" class="tab-content" hidden>
+                    <div class="form-group full-width">
+                        <label for="segSqlQuery">SQL Query *</label>
+                        <textarea id="segSqlQuery" placeholder="SELECT id as userid, email as emailid, phone as phone_number FROM users WHERE status='ACTIVE'" rows="4"></textarea>
+                        <small class="form-hint">Query should select columns alias 'userid', 'emailid' (mandatory), 'phone_number'.</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn" id="segSaveBtn">💾 Save Segment</button>
+                    <button type="button" class="secondary-btn" id="segCancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <p class="empty-state" id="segmentEmpty">
+            No segments yet. Click <strong>+ New Segment</strong> to create one.
+        </p>
+        <table class="data-table" id="segmentTable" hidden>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="segmentTableBody"></tbody>
+        </table>
+    </section>
 </div>
 
 <!-- ===================== PREVIEW MODAL ===================== -->
@@ -373,6 +444,21 @@
     </div>
 </div>
 
+<!-- ===================== TEST FIRE MODAL ===================== -->
+<div id="testFireModal" class="modal">
+    <div class="modal-content">
+        <h3>Test Fire Activity</h3>
+        <p class="panel-hint">Enter comma-separated email addresses to receive the test email.</p>
+        <div class="form-group full-width">
+            <textarea id="testFireEmails" placeholder="user1@example.com, user2@example.com" rows="3" style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-family: Inter; resize: vertical;"></textarea>
+        </div>
+        <div class="modal-buttons" style="margin-top: 16px;">
+            <button id="confirmTestFire" class="primary-btn">Send Test</button>
+            <button id="cancelTestFire" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- ===================== TOAST ===================== -->
 <div id="toast" class="toast" aria-live="polite"></div>
 
@@ -383,6 +469,7 @@
     window.API_CAMPAIGNS_URL    = /*[[${apiCampaignsUrl}]]*/ '/api/campaigns';
     window.API_TEMPLATES_URL    = '/api/templates';
     window.API_ACTIVITIES_URL   = '/api/activities';
+    window.API_SEGMENTS_URL     = '/api/segments';
 </script>
 <script th:src="@{/js/short-links/app.js}"></script>
 </body>
