@@ -1,13 +1,15 @@
 package com.smartstocks.product.service.impl;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.AmazonServiceException;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.smartstocks.product.models.Segment;
@@ -17,6 +19,7 @@ import com.smartstocks.product.repository.SegmentUserRepository;
 import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ISegmentService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +47,7 @@ public class SegmentServiceImpl implements ISegmentService {
     private final JdbcTemplate jdbcTemplate;
     private final CampaignEventLogger eventLogger;
 
-    private AmazonS3 s3Client;
+    private S3Client s3Client;
 
     @Value("${aws.s3.accessKey}")
     private String awsAccessKey;
@@ -62,12 +66,17 @@ public class SegmentServiceImpl implements ISegmentService {
 
     @PostConstruct
     public void init() {
-        BasicAWSCredentials creds = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        s3Client = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(creds))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsEndpoint, awsRegion))
-                .withPathStyleAccessEnabled(true)
-                .withChunkedEncodingDisabled(true)
+        s3Client = S3Client.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .endpointOverride(URI.create(awsEndpoint))
+                .region(Region.of(awsRegion))
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(awsAccessKey, awsSecretKey)))
+                .serviceConfiguration(
+                        S3Configuration.builder()
+                                .pathStyleAccessEnabled(true)
+                                .build())
                 .build();
     }
 
@@ -75,16 +84,25 @@ public class SegmentServiceImpl implements ISegmentService {
     @Transactional
     public Segment uploadCsvSegment(String name, String description, MultipartFile file) {
         String s3Key = "segments/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-        
+
+        log.info("Uploading CSV to S3 with key: {}", s3Key);
         try {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(file.getContentType());
-            metadata.setContentLength(file.getSize());
-            s3Client.putObject(awsBucketName, s3Key, file.getInputStream(), metadata);
-        } catch (AmazonServiceException e) {
-            log.error("AmazonServiceException: Error Message: {}, HTTP Status Code: {}, AWS Error Code: {}, Error Type: {}, Request ID: {}", 
-                    e.getErrorMessage(), e.getStatusCode(), e.getErrorCode(), e.getErrorType(), e.getRequestId(), e);
-            throw new RuntimeException("Failed to upload CSV to S3. Status: " + e.getStatusCode() + ". Error: " + e.getErrorMessage(), e);
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(awsBucketName)
+                    .key(s3Key)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(
+                    request,
+                    RequestBody.fromInputStream(
+                            file.getInputStream(),
+                            file.getSize()));
+        } catch (AwsServiceException e) {
+            log.error(
+                    "AmazonServiceException: Error Message: {}", e);
+            throw new RuntimeException(
+                    "Failed to upload CSV to S3. Error: {}", e);
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload CSV to S3: " + e.getMessage(), e);
         }
@@ -109,9 +127,12 @@ public class SegmentServiceImpl implements ISegmentService {
                 int emailIdx = -1, userIdx = -1, phoneIdx = -1;
                 for (int i = 0; i < headers.length; i++) {
                     String h = headers[i].trim().toLowerCase();
-                    if (h.equals("emailid") || h.equals("email")) emailIdx = i;
-                    if (h.equals("userid") || h.equals("id")) userIdx = i;
-                    if (h.equals("phone_number") || h.equals("phonenumber") || h.equals("phone")) phoneIdx = i;
+                    if (h.equals("emailid") || h.equals("email"))
+                        emailIdx = i;
+                    if (h.equals("userid") || h.equals("id"))
+                        userIdx = i;
+                    if (h.equals("phone_number") || h.equals("phonenumber") || h.equals("phone"))
+                        phoneIdx = i;
                 }
 
                 if (emailIdx == -1) {
@@ -127,8 +148,10 @@ public class SegmentServiceImpl implements ISegmentService {
                             SegmentUser su = new SegmentUser();
                             su.setSegment(segment);
                             su.setEmailId(email);
-                            if (userIdx != -1 && parts.length > userIdx) su.setUserId(parts[userIdx].trim());
-                            if (phoneIdx != -1 && parts.length > phoneIdx) su.setPhoneNumber(parts[phoneIdx].trim());
+                            if (userIdx != -1 && parts.length > userIdx)
+                                su.setUserId(parts[userIdx].trim());
+                            if (phoneIdx != -1 && parts.length > phoneIdx)
+                                su.setPhoneNumber(parts[phoneIdx].trim());
                             segmentUserRepository.save(su);
                         }
                     }
@@ -137,7 +160,7 @@ public class SegmentServiceImpl implements ISegmentService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse CSV", e);
         }
-        
+
         return segment;
     }
 
@@ -149,7 +172,7 @@ public class SegmentServiceImpl implements ISegmentService {
         segment.setDescription(description);
         segment.setSegmentType("SQL");
         segment.setSqlQuery(sqlQuery);
-        
+
         segment = segmentRepository.save(segment);
 
         try {
@@ -157,16 +180,19 @@ public class SegmentServiceImpl implements ISegmentService {
             for (Map<String, Object> row : rows) {
                 SegmentUser su = new SegmentUser();
                 su.setSegment(segment);
-                
+
                 String emailId = null;
                 String userId = null;
                 String phoneNumber = null;
 
                 for (Map.Entry<String, Object> entry : row.entrySet()) {
                     String col = entry.getKey().toLowerCase();
-                    if (col.equals("emailid") || col.equals("email")) emailId = String.valueOf(entry.getValue());
-                    if (col.equals("userid") || col.equals("id")) userId = String.valueOf(entry.getValue());
-                    if (col.equals("phone_number") || col.equals("phonenumber") || col.equals("phone")) phoneNumber = String.valueOf(entry.getValue());
+                    if (col.equals("emailid") || col.equals("email"))
+                        emailId = String.valueOf(entry.getValue());
+                    if (col.equals("userid") || col.equals("id"))
+                        userId = String.valueOf(entry.getValue());
+                    if (col.equals("phone_number") || col.equals("phonenumber") || col.equals("phone"))
+                        phoneNumber = String.valueOf(entry.getValue());
                 }
 
                 if (emailId != null && !emailId.trim().isEmpty() && !emailId.equals("null")) {
