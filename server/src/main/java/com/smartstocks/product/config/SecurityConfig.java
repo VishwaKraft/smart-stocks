@@ -42,6 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+
+
     @Override
     public void configure(WebSecurity web) {
         web.ignoring()
@@ -53,7 +55,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/links/**")
                 .antMatchers("/api/campaigns/**")
                 .antMatchers("/api/templates/**")
-                .antMatchers("/api/activities/**");
+                .antMatchers("/api/activities/**")
+                .antMatchers("/api/segments/**");
     }
 
     @Override
@@ -69,6 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/campaigns/**").permitAll()
                 .antMatchers("/api/templates/**").permitAll()
                 .antMatchers("/api/activities/**").permitAll()
+                .antMatchers("/api/segments/**").permitAll()
                 .antMatchers(
                         "/stock/**",
                         "/user/token",
