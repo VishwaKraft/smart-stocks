@@ -21,4 +21,6 @@ public interface ICampaignActivityService {
     boolean deleteActivity(Long id);
 
     void testTrigger(Long id, java.util.List<String> emailIds);
+
+    CampaignActivityDto cloneActivity(Long id, String newName);
 }

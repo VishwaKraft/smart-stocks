@@ -14,11 +14,14 @@ public class SendResult {
     private final String providerResponse;
     private final String errorMessage;
 
+    private final boolean isAuthError;
+
     public static SendResult ok(int recipientCount, String providerResponse) {
         return SendResult.builder()
                 .success(true)
                 .recipientCount(recipientCount)
                 .providerResponse(providerResponse)
+                .isAuthError(false)
                 .build();
     }
 
@@ -27,6 +30,16 @@ public class SendResult {
                 .success(false)
                 .recipientCount(0)
                 .errorMessage(errorMessage)
+                .isAuthError(false)
+                .build();
+    }
+
+    public static SendResult failureWithAuthError(String errorMessage) {
+        return SendResult.builder()
+                .success(false)
+                .recipientCount(0)
+                .errorMessage(errorMessage)
+                .isAuthError(true)
                 .build();
     }
 }

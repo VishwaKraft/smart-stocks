@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,464 +14,505 @@
         window.GOOGLE_CLIENT_ID = /*[[${googleClientId}]]*/ '';
     </script>
 </head>
+
 <body>
 
-<!-- ===================== SIDEBAR ===================== -->
-<div class="sidebar">
-    <div class="logo">
-        <img th:src="@{/images/img.png}" alt="logo">
-        <span>Smart Stocks</span>
-        <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+    <!-- ===================== SIDEBAR ===================== -->
+    <div class="sidebar">
+        <div class="logo">
+            <img th:src="@{/images/img.png}" alt="logo">
+            <span>Smart Stocks</span>
+            <button id="mobileMenuBtn" class="mobile-menu-btn">☰</button>
+        </div>
+
+        <nav class="section-nav">
+            <button type="button" class="section-nav-btn active" data-section="shortener">
+                <span class="nav-icon">🔗</span> Short URLs
+            </button>
+            <button type="button" class="section-nav-btn" data-section="campaigns">
+                <span class="nav-icon">📣</span> Campaigns
+            </button>
+            <button type="button" class="section-nav-btn" data-section="templates">
+                <span class="nav-icon">📄</span> Templates
+            </button>
+            <button type="button" class="section-nav-btn" data-section="segments">
+                <span class="nav-icon">👥</span> Segments
+            </button>
+            <button type="button" class="section-nav-btn" data-section="activities">
+                <span class="nav-icon">🗓️</span> Activities
+            </button>
+        </nav>
     </div>
 
-    <nav class="section-nav">
-        <button type="button" class="section-nav-btn active" data-section="shortener">
-            <span class="nav-icon">🔗</span> Short URLs
-        </button>
-        <button type="button" class="section-nav-btn" data-section="campaigns">
-            <span class="nav-icon">📣</span> Campaigns
-        </button>
-        <button type="button" class="section-nav-btn" data-section="templates">
-            <span class="nav-icon">📄</span> Templates
-        </button>
-        <button type="button" class="section-nav-btn" data-section="activities">
-            <span class="nav-icon">🗓️</span> Activities
-        </button>
-        <button type="button" class="section-nav-btn" data-section="segments">
-            <span class="nav-icon">👥</span> Segments
-        </button>
-    </nav>
-</div>
+    <!-- ===================== MAIN ===================== -->
+    <div class="main">
 
-<!-- ===================== MAIN ===================== -->
-<div class="main">
-
-    <!-- ── Short URL shortener ── -->
-    <section id="shortenerPanel" class="panel">
-        <h2>URL Shortener</h2>
-        <form id="shortenForm" class="form">
-            <div class="inputs">
-                <input type="text" id="originalUrl" name="originalUrl"
-                       placeholder="Paste the URL to be shortened" required>
-            </div>
-            <button type="submit">Shorten URL</button>
-        </form>
-        <div id="shortUrlResult"></div>
-
-        <!-- Short links listing -->
-        <hr style="border:none;border-top:1px solid #e8ecf0;margin:28px 0 20px">
-        <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 16px">Your Short Links</h3>
-        <p class="empty-state" id="linksEmpty">
-            No short links yet. Shorten a URL above to get started.
-        </p>
-        <table class="data-table" id="linksTable" hidden>
-            <thead>
-                <tr>
-                    <th>Original URL</th>
-                    <th>Short URL</th>
-                    <th>Clicks</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="linksTableBody"></tbody>
-        </table>
-    </section>
-
-    <!-- ── Campaigns ── -->
-    <section id="campaignPanel" class="panel" hidden>
-        <h2>Campaign Builder</h2>
-        <p class="panel-hint">Create a campaign to get a tracking pixel URL for email opens.</p>
-        <form id="campaignForm" class="form">
-            <div class="inputs stacked">
-                <input type="text" id="campaignName" name="name" placeholder="Campaign name" required>
-                <input type="text" id="campaignCode" name="campaignCode" placeholder="Custom code (optional)">
-                <textarea id="campaignDescription" name="description"
-                          placeholder="Description (optional)" rows="3"></textarea>
-                <div class="form-group">
-                    <label for="campaignEmailProvider">Email Provider</label>
-                    <select id="campaignEmailProvider" name="emailProviderType">
-                        <option value="">— none —</option>
-                        <option value="SES">AWS SES</option>
-                        <option value="SENDGRID">SendGrid</option>
-                        <option value="MAILGUN">Mailgun</option>
-                        <option value="SMTP">SMTP</option>
-                        <option value="GMAIL">Gmail (OAuth)</option>
-                    </select>
+        <!-- ── Short URL shortener ── -->
+        <section id="shortenerPanel" class="panel">
+            <h2>URL Shortener</h2>
+            <form id="shortenForm" class="form">
+                <div class="inputs">
+                    <input type="text" id="originalUrl" name="originalUrl" placeholder="Paste the URL to be shortened"
+                        required>
                 </div>
-            </div>
-            <button type="submit">Create Campaign</button>
-        </form>
-        <div id="campaignResult"></div>
-
-        <!-- Campaign listing -->
-        <hr style="border:none;border-top:1px solid #e8ecf0;margin:28px 0 20px">
-        <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 16px">Your Campaigns</h3>
-        <p class="empty-state" id="campaignEmpty">
-            No campaigns yet. Create one above to start tracking.
-        </p>
-        <table class="data-table" id="campaignTable" hidden>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Provider</th>
-                    <th>Opens</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="campaignTableBody"></tbody>
-        </table>
-    </section>
-
-    <!-- ── Templates ── -->
-    <section id="templatePanel" class="panel" hidden>
-        <div class="panel-header">
-            <div>
-                <h2>Email Templates</h2>
-                <p class="panel-hint">Build reusable email templates with a live HTML editor. Variables use <code>{{name}}</code> syntax. New templates start from the default layout below.</p>
-            </div>
-            <button type="button" id="newTemplateBtn" class="primary-btn">+ New Template</button>
-        </div>
-
-        <!-- Template form -->
-        <div id="templateFormWrapper" class="form-card" hidden>
-            <h3 id="templateFormTitle">New Template</h3>
-
-            <form id="templateForm" class="form stacked-full">
-                <input type="hidden" id="templateEditId">
-
-                <div class="form-group full-width">
-                    <label for="tplName">Template Name *</label>
-                    <input type="text" id="tplName" placeholder="e.g. Welcome Email" required>
-                </div>
-
-                <div class="form-group full-width">
-                    <label for="tplSubject">Email Subject *</label>
-                    <input type="text" id="tplSubject"
-                           placeholder="e.g. Hello {{firstName}}, here's your update" required>
-                </div>
-
-                <!-- Full embedded HTML editor -->
-                <div class="form-group full-width">
-                    <div class="editor-section-header">
-                        <label class="field-label">HTML Body *</label>
-                        <div class="editor-toolbar-inline">
-                            <button type="button" class="secondary-btn btn-xs" id="tplFormatBtn">⚡ Format</button>
-                            <button type="button" class="secondary-btn btn-xs" id="tplCopyBtn">📋 Copy HTML</button>
-                            <button type="button" class="secondary-btn btn-xs" id="tplDownloadBtn">⬇ Download</button>
-                            <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show Preview</button>
-                        </div>
-                    </div>
-                    <div class="embedded-editor" id="tplEditorWorkspace">
-                        <div class="editor-col">
-                            <span class="editor-col-label">HTML Source</span>
-                            <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
-                                      placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn" id="tplSaveBtn">💾 Save Template</button>
-                    <button type="button" class="secondary-btn" id="tplCancelBtn">Cancel</button>
-                </div>
+                <button type="submit">Shorten URL</button>
             </form>
-        </div>
+            <div id="shortUrlResult"></div>
 
-        <!-- Templates table -->
-        <p class="empty-state" id="templateEmpty">
-            No templates yet. Click <strong>+ New Template</strong> to create one.
-        </p>
-        <table class="data-table" id="templateTable" hidden>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Subject</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="templateTableBody"></tbody>
-        </table>
-    </section>
+            <!-- Short links listing -->
+            <hr style="border:none;border-top:1px solid #e8ecf0;margin:28px 0 20px">
+            <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 16px">Your Short Links</h3>
+            <p class="empty-state" id="linksEmpty">
+                No short links yet. Shorten a URL above to get started.
+            </p>
+            <table class="data-table" id="linksTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Original URL</th>
+                        <th>Short URL</th>
+                        <th>Clicks</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="linksTableBody"></tbody>
+            </table>
+        </section>
 
-    <!-- ── Activities ── -->
-    <section id="activityPanel" class="panel" hidden>
-        <div class="panel-header">
-            <div>
-                <h2>Activities</h2>
-                <p class="panel-hint">Schedule one-time or recurring email sends. Each send automatically includes the campaign tracking pixel.</p>
+        <!-- ── Campaigns ── -->
+        <section id="campaignPanel" class="panel" hidden>
+            <h2>Campaign Builder</h2>
+            <p class="panel-hint">Create a campaign to get a tracking pixel URL for email opens.</p>
+            <form id="campaignForm" class="form">
+                <div class="inputs stacked">
+                    <input type="text" id="campaignName" name="name" placeholder="Campaign name" required>
+                    <input type="text" id="campaignCode" name="campaignCode" placeholder="Custom code (optional)">
+                    <textarea id="campaignDescription" name="description" placeholder="Description (optional)"
+                        rows="3"></textarea>
+                    <div class="form-group">
+                        <label for="campaignEmailProvider">Email Provider</label>
+                        <select id="campaignEmailProvider" name="emailProviderType">
+                            <option value="">— none —</option>
+                            <option value="SES">AWS SES</option>
+                            <option value="SENDGRID">SendGrid</option>
+                            <option value="MAILGUN">Mailgun</option>
+                            <option value="SMTP">SMTP</option>
+                            <option value="GMAIL">Gmail (OAuth)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Create Campaign</button>
+            </form>
+            <div id="campaignResult"></div>
+
+            <!-- Campaign listing -->
+            <hr style="border:none;border-top:1px solid #e8ecf0;margin:28px 0 20px">
+            <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 16px">Your Campaigns</h3>
+            <p class="empty-state" id="campaignEmpty">
+                No campaigns yet. Create one above to start tracking.
+            </p>
+            <table class="data-table" id="campaignTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Provider</th>
+                        <th>Opens</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="campaignTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- ── Templates ── -->
+        <section id="templatePanel" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2>Email Templates</h2>
+                    <p class="panel-hint">Build reusable email templates with a live HTML editor. Variables use
+                        <code>{{name}}</code> syntax. New templates start from the default layout below.
+                    </p>
+                </div>
+                <button type="button" id="newTemplateBtn" class="primary-btn">+ New Template</button>
             </div>
-            <button type="button" id="newActivityBtn" class="primary-btn">+ New Activity</button>
-        </div>
 
-        <!-- Activity form -->
-        <div id="activityFormWrapper" class="form-card" hidden>
-            <h3 id="activityFormTitle">New Activity</h3>
-            <form id="activityForm" class="form stacked-full">
-                <input type="hidden" id="activityEditId">
+            <!-- Template form -->
+            <div id="templateFormWrapper" class="form-card" hidden>
+                <h3 id="templateFormTitle">New Template</h3>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="actCampaign">Campaign *</label>
-                        <select id="actCampaign" required>
-                            <option value="">— select —</option>
-                        </select>
+                <form id="templateForm" class="form stacked-full">
+                    <input type="hidden" id="templateEditId">
+
+                    <div class="form-group full-width">
+                        <label for="tplName">Template Name *</label>
+                        <input type="text" id="tplName" placeholder="e.g. Welcome Email" required>
                     </div>
-                    <div class="form-group">
-                        <label for="actTemplate">Template *</label>
-                        <select id="actTemplate" required>
-                            <option value="">— select —</option>
-                        </select>
+
+                    <div class="form-group full-width">
+                        <label for="tplSubject">Email Subject *</label>
+                        <input type="text" id="tplSubject" placeholder="e.g. Hello {{firstName}}, here's your update"
+                            required>
                     </div>
+
+                    <!-- Full embedded HTML editor -->
+                    <div class="form-group full-width">
+                        <div class="editor-section-header">
+                            <label class="field-label">HTML Body *</label>
+                            <div class="editor-toolbar-inline">
+                                <button type="button" class="secondary-btn btn-xs" id="tplFormatBtn">⚡ Format</button>
+                                <button type="button" class="secondary-btn btn-xs" id="tplCopyBtn">📋 Copy HTML</button>
+                                <button type="button" class="secondary-btn btn-xs" id="tplDownloadBtn">⬇
+                                    Download</button>
+                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show
+                                    Preview</button>
+                            </div>
+                        </div>
+                        <div class="embedded-editor" id="tplEditorWorkspace">
+                            <div class="editor-col">
+                                <span class="editor-col-label">HTML Source</span>
+                                <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
+                                    placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn" id="tplSaveBtn">💾 Save Template</button>
+                        <button type="button" class="secondary-btn" id="tplCancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Templates table -->
+            <p class="empty-state" id="templateEmpty">
+                No templates yet. Click <strong>+ New Template</strong> to create one.
+            </p>
+            <table class="data-table" id="templateTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="templateTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- ── Activities ── -->
+        <section id="activityPanel" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2>Activities</h2>
+                    <p class="panel-hint">Schedule one-time or recurring email sends. Each send automatically includes
+                        the campaign tracking pixel.</p>
                 </div>
+                <button type="button" id="newActivityBtn" class="primary-btn">+ New Activity</button>
+            </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="actName">Activity Name</label>
-                        <input type="text" id="actName" placeholder="e.g. Launch Day Email">
-                    </div>
-                    <div class="form-group">
-                        <label for="actStatus">Status</label>
-                        <select id="actStatus">
-                            <option value="ACTIVE">Active</option>
-                            <option value="PAUSED">Paused</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- Activity form -->
+            <div id="activityFormWrapper" class="form-card" hidden>
+                <h3 id="activityFormTitle">New Activity</h3>
+                <form id="activityForm" class="form stacked-full">
+                    <input type="hidden" id="activityEditId">
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="actScheduleType">Schedule Type *</label>
-                        <select id="actScheduleType" required>
-                            <option value="">— select —</option>
-                            <option value="ONE_TIME">One Time</option>
-                            <option value="RECURRING">Recurring</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="actTimezone">Timezone</label>
-                        <select id="actTimezone">
-                            <option value="UTC">UTC</option>
-                            <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-                            <option value="America/New_York">America/New_York (ET)</option>
-                            <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
-                            <option value="Europe/London">Europe/London (GMT)</option>
-                            <option value="Europe/Paris">Europe/Paris (CET)</option>
-                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                            <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
-                            <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- ONE_TIME -->
-                <div id="oneTimeFields" class="schedule-section" hidden>
-                    <div class="form-group">
-                        <label for="actExecDatetime">Execution Date &amp; Time *</label>
-                        <input type="datetime-local" id="actExecDatetime">
-                    </div>
-                </div>
-
-                <!-- RECURRING -->
-                <div id="recurringFields" class="schedule-section" hidden>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="actRecurrence">Recurrence *</label>
-                            <select id="actRecurrence">
+                            <label for="actCampaign">Campaign *</label>
+                            <select id="actCampaign" required>
                                 <option value="">— select —</option>
-                                <option value="DAILY">Daily</option>
-                                <option value="WEEKLY">Weekly</option>
-                                <option value="MONTHLY">Monthly</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="actExecTime">Time of Day *</label>
-                            <input type="time" id="actExecTime">
+                            <label for="actTemplate">Template *</label>
+                            <select id="actTemplate" required>
+                                <option value="">— select —</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Weekly: day checkboxes -->
-                    <div id="weeklyFields" class="schedule-section" hidden>
-                        <label class="field-label">Days of the Week *</label>
-                        <div class="weekday-grid">
-                            <label class="weekday-chip"><input type="checkbox" value="MONDAY">Mon</label>
-                            <label class="weekday-chip"><input type="checkbox" value="TUESDAY">Tue</label>
-                            <label class="weekday-chip"><input type="checkbox" value="WEDNESDAY">Wed</label>
-                            <label class="weekday-chip"><input type="checkbox" value="THURSDAY">Thu</label>
-                            <label class="weekday-chip"><input type="checkbox" value="FRIDAY">Fri</label>
-                            <label class="weekday-chip"><input type="checkbox" value="SATURDAY">Sat</label>
-                            <label class="weekday-chip"><input type="checkbox" value="SUNDAY">Sun</label>
-                        </div>
-                    </div>
-
-                    <!-- Monthly: day of month -->
-                    <div id="monthlyFields" class="schedule-section" hidden>
-                        <div class="form-group">
-                            <label for="actDayOfMonth">Day of Month (1–28) *</label>
-                            <input type="number" id="actDayOfMonth" min="1" max="28" placeholder="5">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="actSegment">Segment *</label>
+                            <select id="actSegment" required>
+                                <option value="">— select a segment —</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="actStartDate">Start Date</label>
-                            <input type="date" id="actStartDate">
+                            <label for="actName">Activity Name</label>
+                            <input type="text" id="actName" placeholder="e.g. Launch Day Email">
                         </div>
                         <div class="form-group">
-                            <label for="actEndDate">End Date</label>
-                            <input type="date" id="actEndDate">
+                            <label for="actStatus">Status</label>
+                            <select id="actStatus">
+                                <option value="ACTIVE">Active</option>
+                                <option value="PAUSED">Paused</option>
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn">💾 Save Activity</button>
-                    <button type="button" class="secondary-btn" id="actCancelBtn">Cancel</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Activities table -->
-        <p class="empty-state" id="activityEmpty">
-            No activities yet. Click <strong>+ New Activity</strong> to schedule one.
-        </p>
-        <table class="data-table" id="activityTable" hidden>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Campaign</th>
-                    <th>Template</th>
-                    <th>Schedule</th>
-                    <th>Next Run</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="activityTableBody"></tbody>
-        </table>
-    </section>
-
-    <!-- ── Segments ── -->
-    <section id="segmentPanel" class="panel" hidden>
-        <div class="panel-header">
-            <div>
-                <h2>Segments</h2>
-                <p class="panel-hint">Upload a CSV or write an SQL query to create a user segment.</p>
-            </div>
-            <button type="button" id="newSegmentBtn" class="primary-btn">+ New Segment</button>
-        </div>
-
-        <div id="segmentFormWrapper" class="form-card" hidden>
-            <h3>New Segment</h3>
-            <div class="segment-tabs">
-                <button type="button" class="tab-btn active" data-tab="csvTab">Upload CSV</button>
-                <button type="button" class="tab-btn" data-tab="sqlTab">SQL Query</button>
-            </div>
-            
-            <form id="segmentForm" class="form stacked-full">
-                <input type="hidden" id="segmentType" value="CSV">
-                <div class="form-group full-width">
-                    <label for="segName">Segment Name *</label>
-                    <input type="text" id="segName" placeholder="e.g. VIP Customers" required>
-                </div>
-                <div class="form-group full-width">
-                    <label for="segDescription">Description</label>
-                    <textarea id="segDescription" placeholder="Description of this segment" rows="2"></textarea>
-                </div>
-
-                <div id="csvTabContent" class="tab-content">
-                    <div class="form-group full-width">
-                        <label for="segCsvFile">CSV File *</label>
-                        <input type="file" id="segCsvFile" accept=".csv">
-                        <small class="form-hint">CSV must contain a header row with 'emailid' (mandatory), 'userid' (optional), 'phone_number' (optional).</small>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="actScheduleType">Schedule Type *</label>
+                            <select id="actScheduleType" required>
+                                <option value="">— select —</option>
+                                <option value="ONE_TIME">One Time</option>
+                                <option value="RECURRING">Recurring</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="actTimezone">Timezone</label>
+                            <select id="actTimezone">
+                                <option value="UTC">UTC</option>
+                                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                                <option value="America/New_York">America/New_York (ET)</option>
+                                <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+                                <option value="Europe/London">Europe/London (GMT)</option>
+                                <option value="Europe/Paris">Europe/Paris (CET)</option>
+                                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                                <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <div id="sqlTabContent" class="tab-content" hidden>
-                    <div class="form-group full-width">
-                        <label for="segSqlQuery">SQL Query *</label>
-                        <textarea id="segSqlQuery" placeholder="SELECT id as userid, email as emailid, phone as phone_number FROM users WHERE status='ACTIVE'" rows="4"></textarea>
-                        <small class="form-hint">Query should select columns alias 'userid', 'emailid' (mandatory), 'phone_number'.</small>
+                    <!-- ONE_TIME -->
+                    <div id="oneTimeFields" class="schedule-section" hidden>
+                        <div class="form-group">
+                            <label for="actExecDatetime">Execution Date &amp; Time *</label>
+                            <input type="datetime-local" id="actExecDatetime">
+                        </div>
                     </div>
+
+                    <!-- RECURRING -->
+                    <div id="recurringFields" class="schedule-section" hidden>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="actRecurrence">Recurrence *</label>
+                                <select id="actRecurrence">
+                                    <option value="">— select —</option>
+                                    <option value="DAILY">Daily</option>
+                                    <option value="WEEKLY">Weekly</option>
+                                    <option value="MONTHLY">Monthly</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="actExecTime">Time of Day *</label>
+                                <input type="time" id="actExecTime">
+                            </div>
+                        </div>
+
+                        <!-- Weekly: day checkboxes -->
+                        <div id="weeklyFields" class="schedule-section" hidden>
+                            <label class="field-label">Days of the Week *</label>
+                            <div class="weekday-grid">
+                                <label class="weekday-chip"><input type="checkbox" value="MONDAY">Mon</label>
+                                <label class="weekday-chip"><input type="checkbox" value="TUESDAY">Tue</label>
+                                <label class="weekday-chip"><input type="checkbox" value="WEDNESDAY">Wed</label>
+                                <label class="weekday-chip"><input type="checkbox" value="THURSDAY">Thu</label>
+                                <label class="weekday-chip"><input type="checkbox" value="FRIDAY">Fri</label>
+                                <label class="weekday-chip"><input type="checkbox" value="SATURDAY">Sat</label>
+                                <label class="weekday-chip"><input type="checkbox" value="SUNDAY">Sun</label>
+                            </div>
+                        </div>
+
+                        <!-- Monthly: day of month -->
+                        <div id="monthlyFields" class="schedule-section" hidden>
+                            <div class="form-group">
+                                <label for="actDayOfMonth">Day of Month (1–28) *</label>
+                                <input type="number" id="actDayOfMonth" min="1" max="28" placeholder="5">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="actStartDate">Start Date</label>
+                                <input type="date" id="actStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="actEndDate">End Date</label>
+                                <input type="date" id="actEndDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">💾 Save Activity</button>
+                        <button type="button" class="secondary-btn" id="actCancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Activities table -->
+            <p class="empty-state" id="activityEmpty">
+                No activities yet. Click <strong>+ New Activity</strong> to schedule one.
+            </p>
+            <table class="data-table" id="activityTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Campaign</th>
+                        <th>Template</th>
+                        <th>Schedule</th>
+                        <th>Next Run</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="activityTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- ── Segments ── -->
+        <section id="segmentPanel" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2>Segments</h2>
+                    <p class="panel-hint">Upload a CSV or write an SQL query to create a user segment.</p>
+                </div>
+                <button type="button" id="newSegmentBtn" class="primary-btn">+ New Segment</button>
+            </div>
+
+            <div id="segmentFormWrapper" class="form-card" hidden>
+                <h3>New Segment</h3>
+                <div class="segment-tabs">
+                    <button type="button" class="tab-btn active" data-tab="csvTab">Upload CSV</button>
+                    <button type="button" class="tab-btn" data-tab="sqlTab">SQL Query</button>
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="primary-btn" id="segSaveBtn">💾 Save Segment</button>
-                    <button type="button" class="secondary-btn" id="segCancelBtn">Cancel</button>
-                </div>
-            </form>
-        </div>
+                <form id="segmentForm" class="form stacked-full">
+                    <input type="hidden" id="segmentType" value="CSV">
+                    <div class="form-group full-width">
+                        <label for="segName">Segment Name *</label>
+                        <input type="text" id="segName" placeholder="e.g. VIP Customers" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="segDescription">Description</label>
+                        <textarea id="segDescription" placeholder="Description of this segment" rows="2"></textarea>
+                    </div>
 
-        <p class="empty-state" id="segmentEmpty">
-            No segments yet. Click <strong>+ New Segment</strong> to create one.
-        </p>
-        <table class="data-table" id="segmentTable" hidden>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="segmentTableBody"></tbody>
-        </table>
-    </section>
-</div>
+                    <div id="csvTabContent" class="tab-content">
+                        <div class="form-group full-width">
+                            <label for="segCsvFile">CSV File *</label>
+                            <input type="file" id="segCsvFile" accept=".csv">
+                            <small class="form-hint">CSV must contain a header row with 'emailid' (mandatory), 'userid'
+                                (optional), 'phone_number' (optional).</small>
+                        </div>
+                    </div>
 
-<!-- ===================== PREVIEW MODAL ===================== -->
-<div id="previewModal" class="modal">
-    <div class="modal-content" style="width: 90vw; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 12px;">
-        <div style="padding: 16px 24px; border-bottom: 1px solid #e8ecf0; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; font-size: 16px; color: #1a1a2e;">Template Preview</h3>
-            <button id="closePreviewModal" class="secondary-btn btn-xs">Close</button>
-        </div>
-        <iframe id="modalHtmlPreview" style="flex: 1; width: 100%; border: none; background: #fff;" sandbox=""></iframe>
+                    <div id="sqlTabContent" class="tab-content" hidden>
+                        <div class="form-group full-width">
+                            <label for="segSqlQuery">SQL Query *</label>
+                            <textarea id="segSqlQuery"
+                                placeholder="SELECT id as userid, email as emailid, phone as phone_number FROM users WHERE status='ACTIVE'"
+                                rows="4"></textarea>
+                            <small class="form-hint">Query should select columns alias 'userid', 'emailid' (mandatory),
+                                'phone_number'.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn" id="segSaveBtn">💾 Save Segment</button>
+                        <button type="button" class="secondary-btn" id="segCancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <p class="empty-state" id="segmentEmpty">
+                No segments yet. Click <strong>+ New Segment</strong> to create one.
+            </p>
+            <table class="data-table" id="segmentTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="segmentTableBody"></tbody>
+            </table>
+        </section>
     </div>
-</div>
 
-<!-- ===================== DELETE MODAL ===================== -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <p id="deleteModalMessage">Are you sure?</p>
-        <div class="modal-buttons">
-            <button id="confirmDelete">Yes, Delete</button>
-            <button id="cancelDelete">Cancel</button>
+    <!-- ===================== PREVIEW MODAL ===================== -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content"
+            style="width: 90vw; max-width: 1200px; height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 12px;">
+            <div
+                style="padding: 16px 24px; border-bottom: 1px solid #e8ecf0; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; border-radius: 12px 12px 0 0;">
+                <h3 style="margin: 0; font-size: 16px; color: #1a1a2e;">Template Preview</h3>
+                <button id="closePreviewModal" class="secondary-btn btn-xs">Close</button>
+            </div>
+            <iframe id="modalHtmlPreview" style="flex: 1; width: 100%; border: none; background: #fff;"
+                sandbox=""></iframe>
         </div>
     </div>
-</div>
 
-<!-- ===================== TEST FIRE MODAL ===================== -->
-<div id="testFireModal" class="modal">
-    <div class="modal-content">
-        <h3>Test Fire Activity</h3>
-        <p class="panel-hint">Enter comma-separated email addresses to receive the test email.</p>
-        <div class="form-group full-width">
-            <textarea id="testFireEmails" placeholder="user1@example.com, user2@example.com" rows="3" style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-family: Inter; resize: vertical;"></textarea>
-        </div>
-        <div class="modal-buttons" style="margin-top: 16px;">
-            <button id="confirmTestFire" class="primary-btn">Send Test</button>
-            <button id="cancelTestFire" class="secondary-btn">Cancel</button>
+    <!-- ===================== DELETE MODAL ===================== -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <p id="deleteModalMessage">Are you sure?</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete">Yes, Delete</button>
+                <button id="cancelDelete">Cancel</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- ===================== TOAST ===================== -->
-<div id="toast" class="toast" aria-live="polite"></div>
+    <!-- ===================== TEST FIRE MODAL ===================== -->
+    <div id="testFireModal" class="modal">
+        <div class="modal-content">
+            <h3>Test Fire Activity</h3>
+            <p class="panel-hint">Enter comma-separated email addresses to receive the test email.</p>
+            <div class="form-group full-width">
+                <textarea id="testFireEmails" placeholder="user1@example.com, user2@example.com" rows="3"
+                    style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-family: Inter; resize: vertical;"></textarea>
+            </div>
+            <div class="modal-buttons" style="margin-top: 16px;">
+                <button id="confirmTestFire" class="primary-btn">Send Test</button>
+                <button id="cancelTestFire" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-<!-- ===================== SCRIPTS ===================== -->
-<script th:inline="javascript">
-    window.SHORT_LINK_BASE_URL  = /*[[${shortLinkBaseUrl}]]*/ '/s/';
-    window.API_LINKS_URL        = /*[[${apiLinksUrl}]]*/ '/api/links';
-    window.API_CAMPAIGNS_URL    = /*[[${apiCampaignsUrl}]]*/ '/api/campaigns';
-    window.API_TEMPLATES_URL    = '/api/templates';
-    window.API_ACTIVITIES_URL   = '/api/activities';
-    window.API_SEGMENTS_URL     = '/api/segments';
-</script>
-<script th:src="@{/js/short-links/app.js}"></script>
+    <!-- ===================== CLONE MODAL ===================== -->
+    <div id="cloneModal" class="modal">
+        <div class="modal-content">
+            <h3>Clone Activity</h3>
+            <p class="panel-hint">Enter a unique name for the cloned activity.</p>
+            <div class="form-group full-width" style="margin: 12px 0;">
+                <label for="cloneActivityName">New Activity Name *</label>
+                <input type="text" id="cloneActivityName" placeholder="e.g. Launch Day Email – Copy"
+                    style="width:100%; padding:9px 12px; border:1px solid #dde3ea; border-radius:8px; font-family:Inter; font-size:14px;">
+            </div>
+            <div class="modal-buttons" style="margin-top: 16px;">
+                <button id="confirmClone" class="primary-btn">Clone</button>
+                <button id="cancelClone" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TOAST ===================== -->
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <!-- ===================== SCRIPTS ===================== -->
+    <script th:inline="javascript">
+        window.SHORT_LINK_BASE_URL = /*[[${shortLinkBaseUrl}]]*/ '/s/';
+        window.API_LINKS_URL = /*[[${apiLinksUrl}]]*/ '/api/links';
+        window.API_CAMPAIGNS_URL = /*[[${apiCampaignsUrl}]]*/ '/api/campaigns';
+        window.API_TEMPLATES_URL = '/api/templates';
+        window.API_ACTIVITIES_URL = '/api/activities';
+        window.API_SEGMENTS_URL = '/api/segments';
+    </script>
+    <script th:src="@{/js/short-links/app.js}"></script>
 </body>
+
 </html>

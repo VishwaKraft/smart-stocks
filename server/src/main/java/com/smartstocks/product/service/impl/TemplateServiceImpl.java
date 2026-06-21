@@ -6,12 +6,15 @@ import com.smartstocks.product.dto.UpdateTemplateRequestDto;
 import com.smartstocks.product.models.RendererType;
 import com.smartstocks.product.models.Template;
 import com.smartstocks.product.repository.TemplateRepository;
+import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ITemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class TemplateServiceImpl implements ITemplateService {
 
     private final TemplateRepository templateRepository;
+    private final CampaignEventLogger eventLogger;
 
     @Override
     @Transactional
@@ -35,7 +39,14 @@ public class TemplateServiceImpl implements ITemplateService {
         template.setRendererType(RendererType.DEFAULT);
         template.setIsActive(true);
 
-        return toDto(templateRepository.save(template));
+        Template saved = templateRepository.save(template);
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("templateId", saved.getId());
+        info.put("templateName", saved.getName());
+        eventLogger.log("TEMPLATE_CREATED", info);
+
+        return toDto(saved);
     }
 
     @Override
@@ -82,7 +93,14 @@ public class TemplateServiceImpl implements ITemplateService {
             template.setIsActive(request.getIsActive());
         }
 
-        return toDto(templateRepository.save(template));
+        Template saved = templateRepository.save(template);
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("templateId", saved.getId());
+        info.put("templateName", saved.getName());
+        eventLogger.log("TEMPLATE_UPDATED", info);
+
+        return toDto(saved);
     }
 
     @Override

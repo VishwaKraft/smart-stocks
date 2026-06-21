@@ -23,4 +23,8 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
      */
     @Query("SELECT a FROM CampaignActivity a WHERE a.status = 'ACTIVE' AND a.nextExecutionAt <= :now")
     List<CampaignActivity> findDueActivities(@Param("now") LocalDateTime now);
+
+    boolean existsByActivityName(String activityName);
+
+    boolean existsByActivityNameAndIdNot(String activityName, Long id);
 }
