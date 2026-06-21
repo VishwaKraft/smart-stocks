@@ -97,7 +97,7 @@
 			<version>2.4.4</version>
 		</dependency>
 		<!-- OpenTelemetry Dependencies -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-api</artifactId>
 			<version>1.32.0</version>
@@ -116,7 +116,7 @@
 			<groupId>io.opentelemetry.instrumentation</groupId>
 			<artifactId>opentelemetry-spring-boot-starter</artifactId>
 			<version>2.0.0-alpha</version>
-		</dependency>
+		</dependency> -->
 		<!-- ===== Template Rendering Engines ===== -->
 		<!-- Handlebars renderer -->
 		<dependency>
