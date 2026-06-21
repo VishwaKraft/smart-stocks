@@ -29,8 +29,12 @@ public interface ICampaignService {
 
     String buildTrackingPixelUrl(String campaignCode);
 
+    String buildTrackingPixelUrl(String campaignCode, boolean isTest);
+
     /**
      * Appends a 1×1 tracking pixel to the HTML body (before {@code </body>} when present).
      */
     String injectTrackingPixel(String htmlBody, String campaignCode);
+
+    String injectTrackingPixel(String htmlBody, String campaignCode, boolean isTest);
 }
