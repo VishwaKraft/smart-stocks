@@ -7,6 +7,9 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.AmazonServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.smartstocks.product.models.Segment;
 import com.smartstocks.product.models.SegmentUser;
 import com.smartstocks.product.repository.SegmentRepository;
@@ -32,6 +35,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class SegmentServiceImpl implements ISegmentService {
+
+    private static final Logger log = LoggerFactory.getLogger(SegmentServiceImpl.class);
 
     private final SegmentRepository segmentRepository;
     private final SegmentUserRepository segmentUserRepository;
@@ -62,6 +67,7 @@ public class SegmentServiceImpl implements ISegmentService {
                 .withCredentials(new AWSStaticCredentialsProvider(creds))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsEndpoint, awsRegion))
                 .withPathStyleAccessEnabled(true)
+                .disableChunkedEncoding()
                 .build();
     }
 
@@ -75,6 +81,10 @@ public class SegmentServiceImpl implements ISegmentService {
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
             s3Client.putObject(awsBucketName, s3Key, file.getInputStream(), metadata);
+        } catch (AmazonServiceException e) {
+            log.error("AmazonServiceException: Error Message: {}, HTTP Status Code: {}, AWS Error Code: {}, Error Type: {}, Request ID: {}", 
+                    e.getErrorMessage(), e.getStatusCode(), e.getErrorCode(), e.getErrorType(), e.getRequestId(), e);
+            throw new RuntimeException("Failed to upload CSV to S3. Status: " + e.getStatusCode() + ". Error: " + e.getErrorMessage(), e);
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload CSV to S3: " + e.getMessage(), e);
         }
