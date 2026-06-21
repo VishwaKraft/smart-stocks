@@ -59,7 +59,7 @@ public class GmailProvider implements IEmailProvider {
             String encodedEmail = Base64.getUrlEncoder().encodeToString(buffer.toByteArray());
 
             // 2. Call Gmail API
-            String url = "https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send";
+            String url = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
