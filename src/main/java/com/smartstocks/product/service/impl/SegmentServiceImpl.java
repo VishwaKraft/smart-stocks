@@ -67,7 +67,7 @@ public class SegmentServiceImpl implements ISegmentService {
                 .withCredentials(new AWSStaticCredentialsProvider(creds))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsEndpoint, awsRegion))
                 .withPathStyleAccessEnabled(true)
-                .disableChunkedEncoding()
+                .withChunkedEncodingDisabled(true)
                 .build();
     }
 
