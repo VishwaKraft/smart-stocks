@@ -2,6 +2,7 @@ package com.smartstocks.product.service.impl;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -51,12 +52,16 @@ public class SegmentServiceImpl implements ISegmentService {
     @Value("${aws.s3.bucket}")
     private String awsBucketName;
 
+    @Value("${aws.s3.endpoint}")
+    private String awsEndpoint;
+
     @PostConstruct
     public void init() {
         BasicAWSCredentials creds = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(creds))
-                .withRegion(Regions.fromName(awsRegion))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(awsEndpoint, awsRegion))
+                .withPathStyleAccessEnabled(true)
                 .build();
     }
 
