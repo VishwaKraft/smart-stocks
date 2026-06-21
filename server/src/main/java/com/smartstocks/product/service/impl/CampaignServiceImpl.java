@@ -201,20 +201,34 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     public String buildTrackingPixelUrl(String campaignCode) {
-        return UriComponentsBuilder.fromHttpUrl(trackingBaseUrl)
+        return buildTrackingPixelUrl(campaignCode, false);
+    }
+
+    @Override
+    public String buildTrackingPixelUrl(String campaignCode, boolean isTest) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(trackingBaseUrl)
                 .pathSegment(PIXEL_PATH)
-                .queryParam("campaign", campaignCode)
-                .build()
-                .toUriString();
+                .queryParam("campaign", campaignCode);
+        
+        if (isTest) {
+            builder.queryParam("isTest", "true");
+        }
+        
+        return builder.build().toUriString();
     }
 
     @Override
     public String injectTrackingPixel(String htmlBody, String campaignCode) {
+        return injectTrackingPixel(htmlBody, campaignCode, false);
+    }
+
+    @Override
+    public String injectTrackingPixel(String htmlBody, String campaignCode, boolean isTest) {
         if (htmlBody == null || htmlBody.isBlank() || campaignCode == null || campaignCode.isBlank()) {
             return htmlBody;
         }
 
-        String pixelUrl = buildTrackingPixelUrl(campaignCode);
+        String pixelUrl = buildTrackingPixelUrl(campaignCode, isTest);
         String pixelTag = String.format(
                 "<img src=\"%s\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;\" />",
                 pixelUrl);

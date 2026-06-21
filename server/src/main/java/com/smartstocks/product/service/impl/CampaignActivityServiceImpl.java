@@ -209,10 +209,13 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             Template templateObj = activity.getTemplate();
             ITemplateRenderer renderer = templateRendererFactory.get(templateObj.getRendererType());
             
+            // Inject tracking pixel for open tracking
+            String htmlWithPixel = campaignService.injectTrackingPixel(templateObj.getHtmlBody(), campaign.getCampaignCode(), true);
+            
             // Render actual template with empty variables for test
             com.smartstocks.product.service.renderer.RenderedTemplate rendered = renderer.render(
                     templateObj.getSubject(),
-                    templateObj.getHtmlBody(),
+                    htmlWithPixel,
                     new HashMap<>()
             );
             com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
