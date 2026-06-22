@@ -92,7 +92,7 @@ public class CampaignScheduler {
             EmailProviderType providerType = campaign.getEmailProviderType() != null
                     ? campaign.getEmailProviderType()
                     : EmailProviderType.SMTP;
-            IEmailProvider provider = emailProviderFactory.get(providerType);
+            // IEmailProvider provider = emailProviderFactory.get(providerType);
 
             if (providerType == EmailProviderType.GMAIL) {
                 String accessToken = campaign.getGoogleAccessToken();
