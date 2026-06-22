@@ -3,6 +3,7 @@ package com.smartstocks.product.scheduler;
 import com.smartstocks.product.models.*;
 import com.smartstocks.product.repository.CampaignActivityExecutionLogRepository;
 import com.smartstocks.product.repository.CampaignActivityRepository;
+import com.smartstocks.product.repository.SegmentUserRepository;
 import com.smartstocks.product.service.ICampaignService;
 import com.smartstocks.product.service.impl.CampaignActivityServiceImpl;
 import com.smartstocks.product.service.provider.EmailProviderFactory;
@@ -19,8 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Runs every 60 seconds.
@@ -35,6 +38,7 @@ public class CampaignScheduler {
 
     private final CampaignActivityRepository activityRepository;
     private final CampaignActivityExecutionLogRepository logRepository;
+    private final SegmentUserRepository segmentUserRepository;
     private final TemplateRendererFactory rendererFactory;
     private final EmailProviderFactory emailProviderFactory;
     private final CampaignActivityServiceImpl activityService;
@@ -69,28 +73,61 @@ public class CampaignScheduler {
         log.info("[Scheduler] Executing activity [{}] for campaign [{}] using template [{}]",
                 activity.getId(), campaign.getName(), template.getName());
 
-        SendResult result;
+        SendResult result = null;
         try {
             // 1. Resolve renderer
             ITemplateRenderer renderer = rendererFactory.get(template.getRendererType());
 
             // 2. Render subject + body
-            //    Variables would be populated from the campaign/recipient context in a real scenario
+            // Variables would be populated from the campaign/recipient context in a real
+            // scenario
             Map<String, Object> variables = Collections.emptyMap();
             RenderedTemplate rendered = renderer.render(template.getSubject(), template.getHtmlBody(), variables);
             String bodyWithPixel = campaignService.injectTrackingPixel(
                     rendered.getRenderedBody(), campaign.getCampaignCode());
             RenderedTemplate emailContent = new RenderedTemplate(rendered.getRenderedSubject(), bodyWithPixel);
 
-            // 3. Resolve email provider (fall back to SMTP if campaign has no provider configured)
+            // 3. Resolve email provider (fall back to SMTP if campaign has no provider
+            // configured)
             EmailProviderType providerType = campaign.getEmailProviderType() != null
                     ? campaign.getEmailProviderType()
                     : EmailProviderType.SMTP;
             IEmailProvider provider = emailProviderFactory.get(providerType);
 
-            // 4. Send email (recipient list would come from an audience/segment service)
-            List<String> recipients = resolveRecipients(campaign);
-            result = provider.send(emailContent, recipients);
+            if (providerType == EmailProviderType.GMAIL) {
+                String accessToken = campaign.getGoogleAccessToken();
+                if (accessToken == null || accessToken.isEmpty()) {
+                    throw new IllegalStateException("Gmail is not authorized for this campaign.");
+                }
+
+                com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(
+                        accessToken);
+
+                List<String> emailIds = segmentUserRepository.findBySegmentId(activity.getSegment().getId()).stream()
+                        .map(SegmentUser::getEmailId).collect(Collectors.toList());
+
+                result = gmailProvider.send(
+                        emailContent,
+                        emailIds != null && !emailIds.isEmpty() ? emailIds
+                                : java.util.Collections.singletonList("test@example.com"));
+
+                if (result.isAuthError()) {
+                    // Refresh token and retry
+                    accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
+                    gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+                    result = gmailProvider.send(
+                            emailContent,
+                            emailIds != null && !emailIds.isEmpty() ? emailIds
+                                    : java.util.Collections.singletonList("test@example.com"));
+                }
+
+                if (result.isSuccess()) {
+                    activity.setStatus(ActivityStatus.READY);
+                    activityRepository.save(activity);
+                } else {
+                    throw new RuntimeException("Email Send failed: " + result.getErrorMessage());
+                }
+            }
 
         } catch (Exception ex) {
             log.error("[Scheduler] Activity [{}] failed: {}", activity.getId(), ex.getMessage(), ex);
@@ -118,7 +155,8 @@ public class CampaignScheduler {
     }
 
     /**
-     * After execution: compute next time or mark as COMPLETED for one-time activities.
+     * After execution: compute next time or mark as COMPLETED for one-time
+     * activities.
      */
     private void updateActivityAfterExecution(CampaignActivity activity, LocalDateTime now) {
         if (activity.getScheduleType() == ScheduleType.ONE_TIME) {
@@ -136,14 +174,5 @@ public class CampaignScheduler {
 
         LocalDateTime next = activityService.computeNextExecution(activity, now);
         activity.setNextExecutionAt(next);
-    }
-
-    /**
-     * Placeholder: returns an empty list.
-     * Replace with a real look-up against a contacts/segments table.
-     */
-    private List<String> resolveRecipients(Campaign campaign) {
-        // TODO: query recipient list for this campaign from contacts/segments service
-        return Collections.emptyList();
     }
 }

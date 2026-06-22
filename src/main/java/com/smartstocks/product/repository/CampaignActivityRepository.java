@@ -21,7 +21,7 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
      * Fetch active activities whose next_execution_at has arrived.
      * Used by the scheduler every minute.
      */
-    @Query("SELECT a FROM CampaignActivity a WHERE a.status = 'ACTIVE' AND a.nextExecutionAt <= :now")
+    @Query("SELECT a FROM CampaignActivity a WHERE a.status IN ('ACTIVE', 'READY') AND a.nextExecutionAt <= :now")
     List<CampaignActivity> findDueActivities(@Param("now") LocalDateTime now);
 
     boolean existsByActivityName(String activityName);
