@@ -79,7 +79,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         activity.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
         // Status always starts as NEW; use activate/pause actions to change it
         activity.setStatus(ActivityStatus.NEW);
-        activity.setIsDeleted(false);
+        activity.setDeleted(false);
         activity.setNextExecutionAt(computeNextExecution(activity, LocalDateTime.now()));
 
         CampaignActivity saved = activityRepository.save(activity);
@@ -160,9 +160,6 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         activity.setEndDate(request.getEndDate());
         activity.setDayOfMonth(request.getDayOfMonth());
         activity.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
-        if (request.getStatus() != null) {
-            activity.setStatus(request.getStatus());
-        }
         activity.setNextExecutionAt(computeNextExecution(activity, LocalDateTime.now()));
 
         // Replace weekday rows
@@ -187,7 +184,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Transactional
     public boolean deleteActivity(Long id) {
         return activityRepository.findById(id).map(activity -> {
-            activity.setIsDeleted(true);
+            activity.setDeleted(true);
             activityRepository.save(activity);
             return true;
         }).orElse(false);
