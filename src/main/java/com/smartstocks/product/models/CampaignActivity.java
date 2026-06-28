@@ -70,6 +70,14 @@ public class CampaignActivity {
     @Column(length = 20)
     private ActivityStatus status = ActivityStatus.NEW;
 
+    /**
+     * Soft-delete flag. When true the activity is logically deleted and will
+     * not be picked up by the scheduler or returned in normal list queries.
+     * Default is false (not deleted).
+     */
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     private LocalDateTime nextExecutionAt;
 
     private LocalDateTime lastExecutionAt;

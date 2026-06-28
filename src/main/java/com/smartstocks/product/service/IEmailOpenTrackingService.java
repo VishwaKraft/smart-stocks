@@ -8,6 +8,7 @@ public interface IEmailOpenTrackingService {
     void trackOpen(
             Long userId,
             Long campaignId,
+            Long activityId,
             String campaignCode,
             String emailId,
             Map<String, Object> metadata,

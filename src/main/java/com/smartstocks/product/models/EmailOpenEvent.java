@@ -27,6 +27,9 @@ public class EmailOpenEvent {
 
     private Long campaignId;
 
+    /** The activity that sent this email (for per-activity open-rate analytics) */
+    private Long activityId;
+
     @Column(length = 255)
     private String campaign;
 
@@ -38,9 +41,18 @@ public class EmailOpenEvent {
     @Column(length = 512)
     private String userAgent = "";
 
+    /** General metadata map (campaign info, headers, source, etc.) */
     @Convert(converter = MapToJsonConverter.class)
     @Column(columnDefinition = "TEXT")
     private Map<String, Object> metadata;
+
+    /**
+     * Extra arbitrary data passed through the pixel URL (e.g. from the segment's
+     * per-recipient data). Stored as JSON for extensibility.
+     */
+    @Convert(converter = MapToJsonConverter.class)
+    @Column(name = "extra_data", columnDefinition = "TEXT")
+    private Map<String, Object> extraData;
 
     @Column(nullable = false)
     private LocalDateTime openedAt;
@@ -48,3 +60,4 @@ public class EmailOpenEvent {
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
+

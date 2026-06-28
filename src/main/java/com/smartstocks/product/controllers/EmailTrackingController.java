@@ -43,6 +43,7 @@ public class EmailTrackingController {
             @RequestParam(value = "campaign", required = false) String campaign,
             @RequestParam(value = "campaign_id", required = false) Long campaignId,
             @RequestParam(value = "email_id", required = false) String emailId,
+            @RequestParam(value = "activity_id", required = false) Long activityId,
             HttpServletRequest httpRequest,
             Principal principal) throws IOException {
 
@@ -51,9 +52,10 @@ public class EmailTrackingController {
         emailOpenTrackingService.trackOpen(
                 userId,
                 resolvedCampaign.map(Campaign::getId).orElse(null),
+                activityId,
                 resolvedCampaign.map(Campaign::getCampaignCode).orElse(campaign),
                 emailId,
-                buildMetadata(httpRequest, resolvedCampaign, campaign, emailId),
+                buildMetadata(httpRequest, resolvedCampaign, campaign, emailId, activityId),
                 HttpRequestUtils.resolveClientIp(httpRequest),
                 httpRequest.getHeader("User-Agent"),
                 HttpRequestUtils.extractHeaders(httpRequest),
@@ -87,7 +89,8 @@ public class EmailTrackingController {
             HttpServletRequest request,
             Optional<Campaign> resolvedCampaign,
             String campaignParam,
-            String emailId) {
+            String emailId,
+            Long activityId) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("image", "email_stocks.png");
         metadata.put("source", "email_pixel");
@@ -103,6 +106,9 @@ public class EmailTrackingController {
         }
         if (emailId != null && !emailId.isBlank()) {
             metadata.put("email_id", emailId);
+        }
+        if (activityId != null) {
+            metadata.put("activity_id", activityId);
         }
 
         request.getParameterMap().forEach((key, values) -> {

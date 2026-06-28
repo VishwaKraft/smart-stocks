@@ -229,10 +229,36 @@ public class CampaignServiceImpl implements ICampaignService {
         }
 
         String pixelUrl = buildTrackingPixelUrl(campaignCode, isTest);
+        return appendPixelTag(htmlBody, pixelUrl);
+    }
+
+    @Override
+    public String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId) {
+        if (htmlBody == null || htmlBody.isBlank() || campaignCode == null || campaignCode.isBlank()) {
+            return htmlBody;
+        }
+        String pixelUrl = buildTrackingPixelUrl(campaignCode, emailId, activityId);
+        return appendPixelTag(htmlBody, pixelUrl);
+    }
+
+    @Override
+    public String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(trackingBaseUrl)
+                .pathSegment(PIXEL_PATH)
+                .queryParam("campaign", campaignCode);
+        if (emailId != null && !emailId.isBlank()) {
+            builder.queryParam("email_id", emailId);
+        }
+        if (activityId != null) {
+            builder.queryParam("activity_id", activityId);
+        }
+        return builder.build().toUriString();
+    }
+
+    private String appendPixelTag(String htmlBody, String pixelUrl) {
         String pixelTag = String.format(
                 "<img src=\"%s\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;\" />",
                 pixelUrl);
-
         String lower = htmlBody.toLowerCase(Locale.ROOT);
         int bodyClose = lower.lastIndexOf("</body>");
         if (bodyClose >= 0) {

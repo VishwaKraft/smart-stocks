@@ -26,6 +26,8 @@ public class CampaignActivityController {
 
     /**
      * POST /api/activities
+     * Creates an activity with status=NEW and isDeleted=false.
+     * Use /activate or /pause endpoints to change state.
      */
     @PostMapping
     public ResponseEntity<?> createActivity(@Valid @RequestBody CreateActivityRequestDto request) {
@@ -39,7 +41,7 @@ public class CampaignActivityController {
 
     /**
      * GET /api/activities
-     * Optional ?campaignId=X to filter by campaign.
+     * Optional ?campaignId=X to filter by campaign. Soft-deleted activities are hidden.
      */
     @GetMapping
     public ResponseEntity<List<CampaignActivityDto>> getAllActivities(
@@ -77,14 +79,44 @@ public class CampaignActivityController {
 
     /**
      * DELETE /api/activities/{id}
-     * Logical delete: sets status = CANCELLED.
+     * Soft-deletes the activity (isDeleted=true). It will no longer appear in lists
+     * or be picked up by the scheduler.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteActivity(@PathVariable Long id) {
         if (!activityService.deleteActivity(id)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok("Activity cancelled successfully");
+        return ResponseEntity.ok("Activity deleted successfully");
+    }
+
+    /**
+     * POST /api/activities/{id}/activate
+     * Transitions status to ACTIVE. The scheduler will pick this up on the next tick.
+     * Requires the activity to have status=READY (after a successful test fire).
+     */
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<?> activateActivity(@PathVariable Long id) {
+        try {
+            CampaignActivityDto dto = activityService.activateActivity(id);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    /**
+     * POST /api/activities/{id}/pause
+     * Transitions status to PAUSED. The scheduler will skip the activity until re-activated.
+     */
+    @PostMapping("/{id}/pause")
+    public ResponseEntity<?> pauseActivity(@PathVariable Long id) {
+        try {
+            CampaignActivityDto dto = activityService.pauseActivity(id);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     /**
@@ -98,12 +130,13 @@ public class CampaignActivityController {
 
     /**
      * POST /api/activities/{id}/test-trigger
+     * Sends a test email. On success, transitions status from NEW → READY.
      */
     @PostMapping("/{id}/test-trigger")
     public ResponseEntity<?> testTrigger(@PathVariable Long id, @RequestBody(required = false) List<String> emailIds) {
         try {
             activityService.testTrigger(id, emailIds);
-            return ResponseEntity.ok("Test trigger executed successfully");
+            return ResponseEntity.ok("Test trigger executed successfully. Activity is now READY.");
         } catch (IllegalArgumentException | IllegalStateException | UnsupportedOperationException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         } catch (Exception ex) {
@@ -124,3 +157,4 @@ public class CampaignActivityController {
         }
     }
 }
+

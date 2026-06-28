@@ -37,6 +37,7 @@ public class CampaignActivityDto {
     private Integer dayOfMonth;
     private String timezone;
     private ActivityStatus status;
+    private boolean isDeleted;
     private List<Weekday> weekdays;
     private LocalDateTime nextExecutionAt;
     private LocalDateTime lastExecutionAt;
