@@ -32,11 +32,12 @@ public class WhatsappWebhookController {
                 logger.info("WhatsApp webhook verified successfully!");
                 return ResponseEntity.ok(challenge);
             } else {
-                logger.warn("WhatsApp webhook verification failed. Token mismatch.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                logger.warn("WhatsApp webhook verification failed. Expected token: '{}', Received token: '{}'", verifyToken, token);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token mismatch.");
             }
         }
-        return ResponseEntity.badRequest().build();
+        logger.warn("WhatsApp webhook verification failed. Missing mode or token. mode={}, token={}", mode, token);
+        return ResponseEntity.badRequest().body("Missing 'hub.mode' or 'hub.verify_token'");
     }
 
     /**
