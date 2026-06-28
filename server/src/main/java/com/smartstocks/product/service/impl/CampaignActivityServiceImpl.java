@@ -77,7 +77,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         activity.setEndDate(request.getEndDate());
         activity.setDayOfMonth(request.getDayOfMonth());
         activity.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
-        activity.setStatus(request.getStatus() != null ? request.getStatus() : ActivityStatus.NEW);
+        // Status always starts as NEW; use activate/pause actions to change it
+        activity.setStatus(ActivityStatus.NEW);
+        activity.setIsDeleted(false);
         activity.setNextExecutionAt(computeNextExecution(activity, LocalDateTime.now()));
 
         CampaignActivity saved = activityRepository.save(activity);
@@ -102,7 +104,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Override
     @Transactional(readOnly = true)
     public List<CampaignActivityDto> getAllActivities() {
-        return activityRepository.findAll().stream()
+        return activityRepository.findAllByIsDeletedFalse().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -110,7 +112,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Override
     @Transactional(readOnly = true)
     public List<CampaignActivityDto> getActivitiesByCampaign(Long campaignId) {
-        return activityRepository.findAllByCampaignId(campaignId).stream()
+        return activityRepository.findAllByCampaignIdAndIsDeletedFalse(campaignId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -185,10 +187,44 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Transactional
     public boolean deleteActivity(Long id) {
         return activityRepository.findById(id).map(activity -> {
-            activity.setStatus(ActivityStatus.CANCELLED);
+            activity.setIsDeleted(true);
             activityRepository.save(activity);
             return true;
         }).orElse(false);
+    }
+
+    @Override
+    @Transactional
+    public CampaignActivityDto activateActivity(Long id) {
+        CampaignActivity activity = activityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+        if (activity.isDeleted()) {
+            throw new IllegalStateException("Cannot activate a soft-deleted activity.");
+        }
+        activity.setStatus(ActivityStatus.ACTIVE);
+        CampaignActivity saved = activityRepository.save(activity);
+        Map<String, Object> info = new HashMap<>();
+        info.put("activityId", id);
+        info.put("action", "ACTIVATED");
+        eventLogger.log("ACTIVITY_STATUS_CHANGED", info);
+        return toDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public CampaignActivityDto pauseActivity(Long id) {
+        CampaignActivity activity = activityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+        if (activity.isDeleted()) {
+            throw new IllegalStateException("Cannot pause a soft-deleted activity.");
+        }
+        activity.setStatus(ActivityStatus.PAUSED);
+        CampaignActivity saved = activityRepository.save(activity);
+        Map<String, Object> info = new HashMap<>();
+        info.put("activityId", id);
+        info.put("action", "PAUSED");
+        eventLogger.log("ACTIVITY_STATUS_CHANGED", info);
+        return toDto(saved);
     }
 
     @Override
@@ -384,6 +420,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .dayOfMonth(a.getDayOfMonth())
                 .timezone(a.getTimezone())
                 .status(a.getStatus())
+                .isDeleted(a.isDeleted())
                 .weekdays(weekdays)
                 .nextExecutionAt(a.getNextExecutionAt())
                 .lastExecutionAt(a.getLastExecutionAt())

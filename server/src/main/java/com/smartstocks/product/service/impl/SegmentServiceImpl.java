@@ -139,6 +139,11 @@ public class SegmentServiceImpl implements ISegmentService {
                     throw new IllegalArgumentException("CSV must contain an 'emailid' column");
                 }
 
+                // Identify indices of extra (non-special) columns for template variable data
+                final int finalEmailIdx = emailIdx;
+                final int finalUserIdx = userIdx;
+                final int finalPhoneIdx = phoneIdx;
+
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(",", -1);
@@ -152,6 +157,25 @@ public class SegmentServiceImpl implements ISegmentService {
                                 su.setUserId(parts[userIdx].trim());
                             if (phoneIdx != -1 && parts.length > phoneIdx)
                                 su.setPhoneNumber(parts[phoneIdx].trim());
+
+                            // Collect extra columns into data map for template rendering
+                            Map<String, Object> extraData = new java.util.HashMap<>();
+                            for (int i = 0; i < headers.length; i++) {
+                                if (i == finalEmailIdx || i == finalUserIdx || i == finalPhoneIdx) continue;
+                                String key = headers[i].trim();
+                                String val = parts.length > i ? parts[i].trim() : "";
+                                if (!key.isEmpty()) {
+                                    extraData.put(key, val);
+                                }
+                            }
+                            // Also expose standard fields as template variables
+                            extraData.put("email", email);
+                            if (su.getUserId() != null) extraData.put("userId", su.getUserId());
+                            if (su.getPhoneNumber() != null) extraData.put("phoneNumber", su.getPhoneNumber());
+                            if (!extraData.isEmpty()) {
+                                su.setData(extraData);
+                            }
+
                             segmentUserRepository.save(su);
                         }
                     }

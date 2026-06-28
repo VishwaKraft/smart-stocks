@@ -37,4 +37,13 @@ public interface ICampaignService {
     String injectTrackingPixel(String htmlBody, String campaignCode);
 
     String injectTrackingPixel(String htmlBody, String campaignCode, boolean isTest);
+
+    /**
+     * Injects a tracking pixel enriched with the recipient email and activity ID.
+     * Used by the scheduler for per-recipient personalized tracking.
+     */
+    String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId);
+
+    /** Builds a tracking pixel URL with optional emailId and activityId params. */
+    String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId);
 }

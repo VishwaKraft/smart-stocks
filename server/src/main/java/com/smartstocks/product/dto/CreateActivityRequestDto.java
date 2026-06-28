@@ -53,5 +53,8 @@ public class CreateActivityRequestDto {
 
     private String timezone;
 
-    private ActivityStatus status;
+    // NOTE: status is NOT accepted at creation time.
+    // On creation the status is always set to NEW.
+    // Use POST /api/activities/{id}/activate or /pause to change state.
 }
+

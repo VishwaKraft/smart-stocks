@@ -28,6 +28,7 @@ public class EmailOpenTrackingServiceImpl implements IEmailOpenTrackingService {
     public void trackOpen(
             Long userId,
             Long campaignId,
+            Long activityId,
             String campaignCode,
             String emailId,
             Map<String, Object> metadata,
@@ -35,9 +36,11 @@ public class EmailOpenTrackingServiceImpl implements IEmailOpenTrackingService {
             String userAgent,
             Map<String, String> requestHeaders,
             Principal principal) {
+
         EmailOpenEvent event = new EmailOpenEvent();
         event.setUserId(resolveUserId(userId, principal));
         event.setCampaignId(campaignId);
+        event.setActivityId(activityId);
         event.setCampaign(campaignCode);
         event.setEmailId(emailId);
         event.setIpAddress(ipAddress);
