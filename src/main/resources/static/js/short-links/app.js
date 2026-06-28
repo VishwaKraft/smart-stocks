@@ -350,7 +350,9 @@ document.addEventListener("DOMContentLoaded", () => {
         templateFormTitle.textContent = "New Template";
         templateForm.reset();
         tplHtmlBody.value = DEFAULT_EMAIL_TEMPLATE;
+        document.getElementById("chatHistory").innerHTML = ""; // Clear chat history
         templateFormWrapper.hidden = false;
+        scheduleTplPreview();
         templateFormWrapper.scrollIntoView({ behavior: "smooth" });
     });
 
@@ -364,15 +366,66 @@ document.addEventListener("DOMContentLoaded", () => {
         scheduleTplPreview();
     });
 
-    document.getElementById("tplPreviewToggle").addEventListener("click", () => {
-        const previewModal = document.getElementById("previewModal");
-        const modalHtmlPreview = document.getElementById("modalHtmlPreview");
-        modalHtmlPreview.srcdoc = tplHtmlBody.value;
-        previewModal.style.display = "flex";
+    const sourceCodeModal = document.getElementById("sourceCodeModal");
+    const tplPreviewToggle = document.getElementById("tplPreviewToggle");
+
+    tplPreviewToggle.addEventListener("click", () => {
+        sourceCodeModal.style.display = "flex";
     });
 
-    document.getElementById("closePreviewModal").addEventListener("click", () => {
-        document.getElementById("previewModal").style.display = "none";
+    document.getElementById("closeSourceCodeModal").addEventListener("click", () => {
+        sourceCodeModal.style.display = "none";
+        scheduleTplPreview(); // refresh preview in case manual edits were made
+    });
+
+    // Chatbot logic
+    const aiSubmitBtn = document.getElementById("aiSubmitBtn");
+    const aiPromptInput = document.getElementById("aiPromptInput");
+    const aiLoadingSpinner = document.getElementById("aiLoadingSpinner");
+
+    const chatHistory = document.getElementById("chatHistory");
+
+    function appendChatMessage(text, sender) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `chat-message ${sender}`;
+        msgDiv.textContent = text;
+        chatHistory.appendChild(msgDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    aiSubmitBtn.addEventListener("click", async () => {
+        const prompt = aiPromptInput.value.trim();
+        if (!prompt) return;
+
+        appendChatMessage(prompt, "user");
+        aiPromptInput.value = "";
+        aiSubmitBtn.disabled = true;
+        aiLoadingSpinner.hidden = false;
+
+        try {
+            const res = await fetch(`${apiTemplatesUrl}/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt, currentHtml: tplHtmlBody.value })
+            });
+
+            if (!res.ok) {
+                const msg = await res.text();
+                throw new Error(msg || "Failed to get AI response");
+            }
+
+            const newHtml = await res.text();
+            tplHtmlBody.value = newHtml;
+            scheduleTplPreview();
+            appendChatMessage("I've updated the template based on your request!", "ai");
+            showToast("Template updated by AI!", "success");
+        } catch (err) {
+            appendChatMessage("Error: " + err.message, "ai");
+            showToast("AI Error: " + err.message, "error");
+        } finally {
+            aiSubmitBtn.disabled = false;
+            aiLoadingSpinner.hidden = true;
+        }
     });
 
     tplHtmlBody.addEventListener("input", scheduleTplPreview);
@@ -380,12 +433,43 @@ document.addEventListener("DOMContentLoaded", () => {
     function scheduleTplPreview() {
         clearTimeout(tplPreviewTimer);
         tplPreviewTimer = setTimeout(() => {
-            const previewModal = document.getElementById("previewModal");
-            if (previewModal && previewModal.style.display === "flex") {
-                document.getElementById("modalHtmlPreview").srcdoc = tplHtmlBody.value;
+            if (tplHtmlPreview) {
+                tplHtmlPreview.srcdoc = tplHtmlBody.value;
+                tplHtmlPreview.onload = () => {
+                    const doc = tplHtmlPreview.contentWindow.document;
+                    doc.designMode = "on";
+                    doc.body.style.outline = "none";
+                    doc.addEventListener("input", () => {
+                        const hasHtmlTag = /<html/i.test(tplHtmlBody.value);
+                        if (hasHtmlTag) {
+                            tplHtmlBody.value = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+                        } else {
+                            tplHtmlBody.value = doc.body.innerHTML;
+                        }
+                    });
+                };
             }
         }, 300);
     }
+
+    // Modal Copy and Download Buttons
+    document.getElementById("tplCopyBtn").addEventListener("click", () => {
+        navigator.clipboard.writeText(tplHtmlBody.value).then(() => {
+            showToast("HTML copied to clipboard!", "success");
+        }).catch(() => {
+            showToast("Failed to copy HTML", "error");
+        });
+    });
+
+    document.getElementById("tplDownloadBtn").addEventListener("click", () => {
+        const blob = new Blob([tplHtmlBody.value], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "template.html";
+        a.click();
+        URL.revokeObjectURL(url);
+    });
 
     templateForm.addEventListener("submit", async e => {
         e.preventDefault();
@@ -451,7 +535,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("tplName").value    = tpl.name;
                     document.getElementById("tplSubject").value = tpl.subject;
                     tplHtmlBody.value = tpl.htmlBody;
+                    document.getElementById("chatHistory").innerHTML = ""; // Clear chat history
                     templateFormWrapper.hidden = false;
+                    scheduleTplPreview();
                     templateFormWrapper.scrollIntoView({ behavior: "smooth" });
                 });
             });

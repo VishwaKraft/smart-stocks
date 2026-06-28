@@ -60,4 +60,6 @@ aws:
     bucket: ${AWS_S3_BUCKET:campaign-segments}
     endpoint: ${AWS_S3_ENDPOINT:https://nmzidzfsrwmvhxhbgfzs.storage.supabase.co/storage/v1/s3}
 
-
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:}

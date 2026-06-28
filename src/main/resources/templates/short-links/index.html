@@ -162,18 +162,33 @@
                             <label class="field-label">HTML Body *</label>
                             <div class="editor-toolbar-inline">
                                 <button type="button" class="secondary-btn btn-xs" id="tplFormatBtn">⚡ Format</button>
-                                <button type="button" class="secondary-btn btn-xs" id="tplCopyBtn">📋 Copy HTML</button>
-                                <button type="button" class="secondary-btn btn-xs" id="tplDownloadBtn">⬇
-                                    Download</button>
-                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show
-                                    Preview</button>
+                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show Code</button>
                             </div>
                         </div>
-                        <div class="embedded-editor" id="tplEditorWorkspace">
-                            <div class="editor-col">
-                                <span class="editor-col-label">HTML Source</span>
-                                <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
-                                    placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;"></textarea>
+                        <div class="embedded-editor split-view" id="tplEditorWorkspace">
+                            <!-- Preview Panel -->
+                            <div class="editor-col" id="tplPreviewCol">
+                                <span class="editor-col-label">Preview</span>
+                                <iframe id="tplHtmlPreview" class="full-html-preview" sandbox="allow-same-origin allow-scripts"></iframe>
+                            </div>
+                            
+                            <!-- Chat Panel -->
+                            <div class="editor-col chat-panel" id="tplChatCol">
+                                <div class="chat-header" style="margin-bottom: 8px;">
+                                    <span class="editor-col-label">✨ AI Chatbot</span>
+                                </div>
+                                <div class="chat-history" id="chatHistory">
+                                    <!-- Messages will be appended here -->
+                                </div>
+                                <div class="chat-input-area" style="margin-top: auto; padding-top: 12px;">
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" id="aiPromptInput" placeholder="e.g. Change the background color..." style="flex: 1; padding: 10px; border: 1px solid #dde3ea; border-radius: 6px;">
+                                        <button type="button" id="aiSubmitBtn" class="primary-btn" style="display: flex; align-items: center; gap: 6px;">
+                                            <span>Send</span>
+                                            <span id="aiLoadingSpinner" class="spinner" hidden></span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -496,6 +511,24 @@
             <div class="modal-buttons" style="margin-top: 16px;">
                 <button id="confirmClone" class="primary-btn">Clone</button>
                 <button id="cancelClone" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== SOURCE CODE MODAL ===================== -->
+    <div id="sourceCodeModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <h3>HTML Source</h3>
+            <div class="form-group full-width" style="margin: 12px 0;">
+                <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
+                    placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;" style="min-height: 400px; width: 100%; font-family: monospace; padding: 12px; border: 1px solid #dde3ea; border-radius: 8px;"></textarea>
+            </div>
+            <div class="modal-buttons" style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="secondary-btn" id="tplCopyBtn">📋 Copy</button>
+                    <button type="button" class="secondary-btn" id="tplDownloadBtn">⬇ Download</button>
+                </div>
+                <button id="closeSourceCodeModal" class="primary-btn">Done</button>
             </div>
         </div>
     </div>
