@@ -1,5 +1,6 @@
 package com.smartstocks.product.dto;
 
+import com.smartstocks.product.models.CampaignType;
 import com.smartstocks.product.models.EmailProviderType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,8 @@ public class CampaignDto {
     private String campaignCode;
     private String name;
     private String description;
+    private CampaignType campaignType;
+    private String whatsappSenderNumber;
     private EmailProviderType emailProviderType;
     private String trackingPixelUrl;
     private long openCount;

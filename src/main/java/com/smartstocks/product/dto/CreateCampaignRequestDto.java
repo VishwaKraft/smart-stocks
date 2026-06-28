@@ -1,5 +1,6 @@
 package com.smartstocks.product.dto;
 
+import com.smartstocks.product.models.CampaignType;
 import com.smartstocks.product.models.EmailProviderType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,10 @@ public class CreateCampaignRequestDto {
     private String description;
 
     private String campaignCode;
+
+    private CampaignType campaignType;
+
+    private String whatsappSenderNumber;
 
     /** Optional: email delivery provider for this campaign */
     private EmailProviderType emailProviderType;

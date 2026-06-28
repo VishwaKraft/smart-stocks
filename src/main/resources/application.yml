@@ -63,3 +63,7 @@ aws:
 gemini:
   api:
     key: ${GEMINI_API_KEY:}
+
+whatsapp:
+  webhook:
+    verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:smartstocks-whatsapp-webhook-token}
