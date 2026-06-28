@@ -785,19 +785,19 @@ body.editor-active .main {
 
 .html-preview {
     flex: 1;
-    min-height: 420px;
+    min-height: 800px;
     width: 100%;
     border: 1px solid #dde3ea;
     border-radius: 8px;
     background: #fff;
     box-sizing: border-box;
 }
-
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 960px) {
     .editor-workspace,
     .mini-editor-workspace { grid-template-columns: 1fr; }
     .html-source, .html-preview { min-height: 280px; }
+
     .sidebar { 
         position: absolute;
         z-index: 100;
@@ -852,4 +852,75 @@ body.editor-active .main {
     color: #666;
     font-size: 12px;
     margin-top: 4px;
+}
+
+/* ── Spinner for loading state ────────────────────────────── */
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 2px solid #fff;
+    width: 14px;
+    height: 14px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ── Split View Editor ────────────────────────────────────── */
+.split-view {
+    display: grid !important;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    background: #fafbfc;
+    padding: 16px;
+    height: 400px;
+    position: sticky;
+    top: 20px;
+    box-sizing: border-box;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 12px;
+    max-height: 300px;
+}
+
+.chat-message {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background-color: #8e24aa;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-message.ai {
+    align-self: flex-start;
+    background-color: #f1f3f5;
+    color: #333;
+    border: 1px solid #dde3ea;
+    border-bottom-left-radius: 4px;
 }
