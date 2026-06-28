@@ -89,7 +89,20 @@
                     <input type="text" id="campaignCode" name="campaignCode" placeholder="Custom code (optional)">
                     <textarea id="campaignDescription" name="description" placeholder="Description (optional)"
                         rows="3"></textarea>
+
                     <div class="form-group">
+                        <label>Campaign Type *</label>
+                        <div class="radio-group" style="display: flex; gap: 16px; margin-top: 8px; margin-bottom: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                <input type="radio" name="campaignType" value="EMAIL" checked> Email
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                                <input type="radio" name="campaignType" value="WHATSAPP"> WhatsApp
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="emailProviderGroup">
                         <label for="campaignEmailProvider">Email Provider</label>
                         <select id="campaignEmailProvider" name="emailProviderType">
                             <option value="">— none —</option>
@@ -98,6 +111,14 @@
                             <option value="MAILGUN">Mailgun</option>
                             <option value="SMTP">SMTP</option>
                             <option value="GMAIL">Gmail (OAuth)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="whatsappSenderGroup" hidden>
+                        <label for="campaignWhatsappSender">WhatsApp Sender Number *</label>
+                        <select id="campaignWhatsappSender" name="whatsappSenderNumber">
+                            <option value="">— select number —</option>
+                            <option value="+919258844009">+919258844009</option>
                         </select>
                     </div>
                 </div>
@@ -115,8 +136,9 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Type</th>
                         <th>Description</th>
-                        <th>Provider</th>
+                        <th>Provider / Sender</th>
                         <th>Opens</th>
                         <th>Created</th>
                         <th>Actions</th>
@@ -162,16 +184,18 @@
                             <label class="field-label">HTML Body *</label>
                             <div class="editor-toolbar-inline">
                                 <button type="button" class="secondary-btn btn-xs" id="tplFormatBtn">⚡ Format</button>
-                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show Code</button>
+                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show
+                                    Code</button>
                             </div>
                         </div>
                         <div class="embedded-editor split-view" id="tplEditorWorkspace">
                             <!-- Preview Panel -->
                             <div class="editor-col" id="tplPreviewCol">
                                 <span class="editor-col-label">Preview</span>
-                                <iframe id="tplHtmlPreview" class="full-html-preview" sandbox="allow-same-origin allow-scripts"></iframe>
+                                <iframe id="tplHtmlPreview" class="full-html-preview"
+                                    sandbox="allow-same-origin allow-scripts"></iframe>
                             </div>
-                            
+
                             <!-- Chat Panel -->
                             <div class="editor-col chat-panel" id="tplChatCol">
                                 <div class="chat-header" style="margin-bottom: 8px;">
@@ -182,8 +206,11 @@
                                 </div>
                                 <div class="chat-input-area" style="margin-top: auto; padding-top: 12px;">
                                     <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="aiPromptInput" placeholder="e.g. Change the background color..." style="flex: 1; padding: 10px; border: 1px solid #dde3ea; border-radius: 6px;">
-                                        <button type="button" id="aiSubmitBtn" class="primary-btn" style="display: flex; align-items: center; gap: 6px;">
+                                        <input type="text" id="aiPromptInput"
+                                            placeholder="e.g. Change the background color..."
+                                            style="flex: 1; padding: 10px; border: 1px solid #dde3ea; border-radius: 6px;">
+                                        <button type="button" id="aiSubmitBtn" class="primary-btn"
+                                            style="display: flex; align-items: center; gap: 6px;">
                                             <span>Send</span>
                                             <span id="aiLoadingSpinner" class="spinner" hidden></span>
                                         </button>
@@ -521,9 +548,11 @@
             <h3>HTML Source</h3>
             <div class="form-group full-width" style="margin: 12px 0;">
                 <textarea id="tplHtmlBody" class="full-html-source" spellcheck="false"
-                    placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;" style="min-height: 400px; width: 100%; font-family: monospace; padding: 12px; border: 1px solid #dde3ea; border-radius: 8px;"></textarea>
+                    placeholder="&lt;h1&gt;Hello {{firstName}}&lt;/h1&gt;"
+                    style="min-height: 400px; width: 100%; font-family: monospace; padding: 12px; border: 1px solid #dde3ea; border-radius: 8px;"></textarea>
             </div>
-            <div class="modal-buttons" style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="modal-buttons"
+                style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="secondary-btn" id="tplCopyBtn">📋 Copy</button>
                     <button type="button" class="secondary-btn" id="tplDownloadBtn">⬇ Download</button>

@@ -66,6 +66,14 @@ public class CampaignServiceImpl implements ICampaignService {
         campaign.setName(request.getName().trim());
         campaign.setDescription(trimToNull(request.getDescription()));
 
+        if (request.getCampaignType() != null) {
+            campaign.setCampaignType(request.getCampaignType());
+        }
+
+        if (request.getWhatsappSenderNumber() != null && !request.getWhatsappSenderNumber().isBlank()) {
+            campaign.setWhatsappSenderNumber(request.getWhatsappSenderNumber());
+        }
+
         if (request.getEmailProviderType() != null) {
             campaign.setEmailProviderType(request.getEmailProviderType());
         }
@@ -278,6 +286,8 @@ public class CampaignServiceImpl implements ICampaignService {
                 .campaignCode(campaign.getCampaignCode())
                 .name(campaign.getName())
                 .description(campaign.getDescription())
+                .campaignType(campaign.getCampaignType())
+                .whatsappSenderNumber(campaign.getWhatsappSenderNumber())
                 .emailProviderType(campaign.getEmailProviderType())
                 .trackingPixelUrl(buildTrackingPixelUrl(campaign.getCampaignCode()))
                 .openCount(openCount)

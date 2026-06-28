@@ -248,13 +248,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Toggle fields based on campaign type
+    document.querySelectorAll('input[name="campaignType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const isWhatsApp = e.target.value === 'WHATSAPP';
+            document.getElementById('emailProviderGroup').hidden = isWhatsApp;
+            document.getElementById('whatsappSenderGroup').hidden = !isWhatsApp;
+        });
+    });
+
     document.getElementById("campaignForm").addEventListener("submit", async e => {
         e.preventDefault();
+        
+        const campaignType = document.querySelector('input[name="campaignType"]:checked').value;
         const payload = {
             name:              document.getElementById("campaignName").value.trim(),
             campaignCode:      document.getElementById("campaignCode").value.trim() || null,
             description:       document.getElementById("campaignDescription").value.trim() || null,
-            emailProviderType: document.getElementById("campaignEmailProvider").value || null
+            campaignType:      campaignType,
+            emailProviderType: campaignType === 'EMAIL' ? (document.getElementById("campaignEmailProvider").value || null) : null,
+            whatsappSenderNumber: campaignType === 'WHATSAPP' ? (document.getElementById("campaignWhatsappSender").value || null) : null
         };
         if (!payload.name) return;
         try {
@@ -287,14 +300,20 @@ document.addEventListener("DOMContentLoaded", () => {
             empty.hidden = true;
             table.hidden = false;
             campaigns.forEach(c => {
-                const providerBadge = c.emailProviderType
-                    ? `<span class="badge badge-default">${escHtml(c.emailProviderType)}</span>`
-                    : '<span class="muted">—</span>';
+                let providerSenderHtml = '<span class="muted">—</span>';
+                if (c.campaignType === 'WHATSAPP' && c.whatsappSenderNumber) {
+                    providerSenderHtml = `<span class="badge badge-default">Sender: ${escHtml(c.whatsappSenderNumber)}</span>`;
+                } else if (c.emailProviderType) {
+                    providerSenderHtml = `<span class="badge badge-default">${escHtml(c.emailProviderType)}</span>`;
+                }
+                const typeBadge = `<span class="badge badge-default">${escHtml(c.campaignType || 'EMAIL')}</span>`;
+                
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>${escHtml(c.name)}</strong></td>
+                    <td>${typeBadge}</td>
                     <td class="truncate" style="max-width:180px">${escHtml(c.description || "—")}</td>
-                    <td>${providerBadge}</td>
+                    <td>${providerSenderHtml}</td>
                     <td>${c.openCount ?? 0}</td>
                     <td>${fmtDate(c.createdAt)}</td>
                     <td class="table-actions">

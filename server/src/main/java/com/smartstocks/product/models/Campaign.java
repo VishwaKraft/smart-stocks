@@ -30,6 +30,13 @@ public class Campaign {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private CampaignType campaignType = CampaignType.EMAIL;
+
+    @Column(length = 32)
+    private String whatsappSenderNumber;
+
     /** Email delivery provider to use when executing activities for this campaign */
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
