@@ -27,6 +27,11 @@ public interface ICampaignService {
 
     String refreshGoogleAccessToken(Long id);
 
+    /**
+     * Saves the permanent Meta/WhatsApp access token and phone number ID for a campaign.
+     */
+    void saveMetaToken(Long id, String accessToken, String phoneNumberId);
+
     String buildTrackingPixelUrl(String campaignCode);
 
     String buildTrackingPixelUrl(String campaignCode, boolean isTest);
@@ -46,4 +51,7 @@ public interface ICampaignService {
 
     /** Builds a tracking pixel URL with optional emailId and activityId params. */
     String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId);
+
+    /** Exchanges the Meta OAuth code and saves the permanent access token. */
+    void saveMetaAuthCode(Long id, String code, String redirectUri);
 }

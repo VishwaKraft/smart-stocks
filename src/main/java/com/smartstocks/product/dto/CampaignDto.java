@@ -25,5 +25,11 @@ public class CampaignDto {
     private String trackingPixelUrl;
     private long openCount;
     private LocalDateTime createdAt;
+
+    /** WhatsApp Phone Number ID from Meta App Dashboard (used by scheduler to send messages) */
+    private String metaPhoneNumberId;
+
+    /** WhatsApp Business Account ID needed to fetch approved templates from Meta */
+    private String wabaId;
 }
 

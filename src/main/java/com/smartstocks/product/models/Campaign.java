@@ -48,6 +48,14 @@ public class Campaign {
     @Column(length = 2048)
     private String googleRefreshToken;
 
+    /** Permanent Meta/WhatsApp access token stored after "Sign in with Meta" */
+    @Column(length = 2048)
+    private String metaAccessToken;
+
+    /** WhatsApp Phone Number ID from Meta App Dashboard (e.g. 1095078330366468) */
+    @Column(length = 64)
+    private String metaPhoneNumberId;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

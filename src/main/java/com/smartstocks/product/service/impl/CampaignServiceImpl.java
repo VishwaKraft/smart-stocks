@@ -31,6 +31,8 @@ import java.util.Map;
 @Service
 public class CampaignServiceImpl implements ICampaignService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CampaignServiceImpl.class);
+
     private static final String PIXEL_PATH = "email_stocks.png";
     private static final int RANDOM_SUFFIX_LENGTH = 6;
 
@@ -46,6 +48,15 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Value("${google.oauth.client-secret:}")
     private String googleClientSecret;
+
+    @Value("${meta.oauth.client-id:}")
+    private String metaClientId;
+
+    @Value("${meta.oauth.client-secret:}")
+    private String metaClientSecret;
+
+    @Value("${meta.waba-id:1726866808739698}")
+    private String configuredWabaId;
 
     public CampaignServiceImpl(
             CampaignRepository campaignRepository,
@@ -139,6 +150,84 @@ public class CampaignServiceImpl implements ICampaignService {
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
         campaign.setGoogleAccessToken(accessToken);
         campaignRepository.save(campaign);
+    }
+
+    @Override
+    @Transactional
+    public void saveMetaToken(Long id, String accessToken, String phoneNumberId) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+        campaign.setMetaAccessToken(accessToken);
+        campaign.setMetaPhoneNumberId(phoneNumberId);
+        campaignRepository.save(campaign);
+    }
+
+    @Override
+    @Transactional
+    public void saveMetaAuthCode(Long id, String code, String redirectUri) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = UriComponentsBuilder.fromHttpUrl("https://graph.facebook.com/v25.0/oauth/access_token")
+                .queryParam("client_id", metaClientId)
+                .queryParam("redirect_uri", redirectUri)
+                .queryParam("client_secret", metaClientSecret)
+                .queryParam("code", code)
+                .build().toUriString();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                String accessToken = (String) response.getBody().get("access_token");
+                campaign.setMetaAccessToken(accessToken);
+                
+                // Automatically fetch and store the Phone Number ID
+                String appSecretProof = computeAppSecretProof(accessToken, metaClientSecret);
+                String phoneNumbersUrl = "https://graph.facebook.com/v25.0/" + configuredWabaId + "/phone_numbers?access_token=" + accessToken + "&appsecret_proof=" + appSecretProof;
+                
+                try {
+                    ResponseEntity<Map> phoneResponse = restTemplate.getForEntity(phoneNumbersUrl, Map.class);
+                    if (phoneResponse.getStatusCode() == HttpStatus.OK && phoneResponse.getBody() != null) {
+                        List<Map<String, Object>> data = (List<Map<String, Object>>) phoneResponse.getBody().get("data");
+                        if (data != null && !data.isEmpty()) {
+                            String phoneNumberId = String.valueOf(data.get(0).get("id"));
+                            campaign.setMetaPhoneNumberId(phoneNumberId);
+                            log.info("[CampaignService] Fetched and saved Meta Phone Number ID: {}", phoneNumberId);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("[CampaignService] Failed to fetch phone number ID: {}", e.getMessage());
+                }
+
+                campaignRepository.save(campaign);
+            } else {
+                throw new RuntimeException("Failed to exchange auth code for Meta access token: status=" + response.getStatusCode());
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException ex) {
+            log.error("[CampaignService] Meta OAuth token exchange failed. Status: {}, Response: {}",
+                    ex.getStatusCode(), ex.getResponseBodyAsString(), ex);
+            throw new RuntimeException("Failed to exchange Meta auth code: " + ex.getResponseBodyAsString(), ex);
+        } catch (Exception ex) {
+            log.error("[CampaignService] Unexpected error during Meta OAuth token exchange: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Unexpected error exchanging Meta auth code: " + ex.getMessage(), ex);
+        }
+    }
+
+    private String computeAppSecretProof(String accessToken, String appSecret) {
+        if (appSecret == null || appSecret.isBlank()) {
+            return "";
+        }
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(appSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(accessToken.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(hash);
+        } catch (Exception ex) {
+            log.error("[CampaignService] Failed to compute appsecret_proof: {}", ex.getMessage(), ex);
+            return "";
+        }
     }
 
     @Override
@@ -292,6 +381,8 @@ public class CampaignServiceImpl implements ICampaignService {
                 .trackingPixelUrl(buildTrackingPixelUrl(campaign.getCampaignCode()))
                 .openCount(openCount)
                 .createdAt(campaign.getCreatedAt())
+                .metaPhoneNumberId(campaign.getMetaPhoneNumberId())
+                .wabaId(campaign.getWhatsappSenderNumber())  // whatsappSenderNumber stores WABA-ID for WA campaigns
                 .build();
     }
 
