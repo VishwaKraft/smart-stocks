@@ -11,6 +11,7 @@ import com.smartstocks.product.service.provider.EmailProviderFactory;
 import com.smartstocks.product.service.provider.GmailProvider;
 import com.smartstocks.product.service.provider.IEmailProvider;
 import com.smartstocks.product.service.provider.SendResult;
+import com.smartstocks.product.service.provider.WhatsappProvider;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
@@ -87,7 +88,97 @@ public class CampaignScheduler {
             return;
         }
 
-        // 2. Resolve renderer
+        // Branch on campaign type — WhatsApp vs Email
+        if (campaign.getCampaignType() == CampaignType.WHATSAPP) {
+            executeWhatsappActivity(activity, campaign, segmentUsers, startedAt);
+        } else {
+            executeEmailActivity(activity, campaign, template, segmentUsers, startedAt, now);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // WhatsApp execution path
+    // -----------------------------------------------------------------------
+    private void executeWhatsappActivity(CampaignActivity activity, Campaign campaign,
+                                          List<SegmentUser> segmentUsers, LocalDateTime startedAt) {
+        if (campaign.getMetaAccessToken() == null || campaign.getMetaAccessToken().isBlank()) {
+            log.error("[Scheduler] WhatsApp activity [{}] skipped – no Meta access token. Use 'Sign in with Meta'.", activity.getId());
+            return;
+        }
+        if (campaign.getMetaPhoneNumberId() == null || campaign.getMetaPhoneNumberId().isBlank()) {
+            log.error("[Scheduler] WhatsApp activity [{}] skipped – no Meta Phone Number ID configured.", activity.getId());
+            return;
+        }
+
+        WhatsappProvider whatsappProvider = new WhatsappProvider(
+                campaign.getMetaAccessToken(),
+                campaign.getMetaPhoneNumberId());
+
+        // Template name — use the WhatsApp template name from the activity
+        String waTemplateName = activity.getWhatsappTemplateName();
+        if (waTemplateName == null || waTemplateName.isBlank()) {
+            log.error("[Scheduler] WhatsApp activity [{}] skipped – missing WhatsApp template name.", activity.getId());
+            return;
+        }
+        String waLanguage = "en_US";
+
+        int sentCount = 0;
+        int bounceCount = 0;
+
+        for (SegmentUser recipient : segmentUsers) {
+            String phone = recipient.getPhoneNumber();
+            if (phone == null || phone.isBlank()) {
+                log.warn("[Scheduler] Recipient [{}] has no phone number – skipping for WhatsApp activity [{}]",
+                        recipient.getEmailId(), activity.getId());
+                bounceCount++;
+                continue;
+            }
+
+            try {
+                SendResult result = whatsappProvider.send(phone, waTemplateName, waLanguage);
+                if (result.isSuccess()) {
+                    sentCount++;
+                    log.debug("[Scheduler] WhatsApp sent to [{}] for activity [{}]", phone, activity.getId());
+                } else {
+                    bounceCount++;
+                    log.warn("[Scheduler] WhatsApp failed for [{}], activity [{}]: {}",
+                            phone, activity.getId(), result.getErrorMessage());
+                    recordBounce(activity, campaign, phone, result);
+                }
+            } catch (Exception ex) {
+                bounceCount++;
+                log.error("[Scheduler] Exception sending WhatsApp to [{}], activity [{}]: {}",
+                        phone, activity.getId(), ex.getMessage(), ex);
+                recordBounce(activity, campaign, phone, SendResult.failure("Exception: " + ex.getMessage()));
+            }
+        }
+
+        String providerResponse = String.format("whatsapp: sent=%d, failed=%d, total=%d",
+                sentCount, bounceCount, segmentUsers.size());
+
+        CampaignActivityExecutionLog executionLog = CampaignActivityExecutionLog.builder()
+                .activity(activity)
+                .campaign(campaign)
+                .template(activity.getTemplate())
+                .startedAt(startedAt)
+                .completedAt(LocalDateTime.now())
+                .status(sentCount > 0 ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED)
+                .recipientCount(sentCount)
+                .providerResponse(providerResponse)
+                .errorMessage(bounceCount > 0 ? bounceCount + " recipient(s) failed." : null)
+                .build();
+        logRepository.save(executionLog);
+
+        activity.setLastExecutionAt(LocalDateTime.now());
+        updateActivityAfterExecution(activity, LocalDateTime.now());
+        activityRepository.save(activity);
+    }
+
+    // -----------------------------------------------------------------------
+    // Email execution path (original)
+    // -----------------------------------------------------------------------
+    private void executeEmailActivity(CampaignActivity activity, Campaign campaign, Template template,
+                                       List<SegmentUser> segmentUsers, LocalDateTime startedAt, LocalDateTime now) {
         ITemplateRenderer renderer = rendererFactory.get(template.getRendererType());
 
         // 3. Resolve email provider — modular via factory, with special Gmail token handling

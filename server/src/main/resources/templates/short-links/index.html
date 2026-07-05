@@ -12,6 +12,7 @@
     <link rel="stylesheet" th:href="@{/css/short-links/style.css}">
     <script th:inline="javascript">
         window.GOOGLE_CLIENT_ID = /*[[${googleClientId}]]*/ '';
+        window.META_CLIENT_ID = /*[[${metaClientId}]]*/ '';
     </script>
 </head>
 
@@ -34,6 +35,9 @@
             </button>
             <button type="button" class="section-nav-btn" data-section="templates">
                 <span class="nav-icon">📄</span> Templates
+            </button>
+            <button type="button" class="section-nav-btn" data-section="whatsapp-templates">
+                <span class="nav-icon">💬</span> WhatsApp Templates
             </button>
             <button type="button" class="section-nav-btn" data-section="segments">
                 <span class="nav-icon">👥</span> Segments
@@ -245,6 +249,129 @@
             </table>
         </section>
 
+        <!-- ── WhatsApp Templates ── -->
+        <section id="whatsappTemplatesPanel" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2>WhatsApp Templates</h2>
+                    <p class="panel-hint">Manage your Meta WhatsApp templates. Select a WhatsApp Business ID (WABA ID) and campaign token below to load/manage templates.</p>
+                </div>
+                <button type="button" id="newWhatsappTemplateBtn" class="primary-btn">+ New WhatsApp Template</button>
+            </div>
+
+            <!-- Configuration selection row -->
+            <div class="config-bar" style="display: flex; gap: 16px; margin: 16px 0; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 200px; margin: 0; display: flex; flex-direction: column;">
+                    <label for="waTemplateCampaignSelect" style="font-weight: 600; font-size: 13px; color: #4a5568; display: block; margin-bottom: 6px;">Campaign Token Source *</label>
+                    <select id="waTemplateCampaignSelect" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                        <option value="">— select campaign —</option>
+                        <option value="manual">— Use Manual Token —</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="waManualTokenGroup" style="flex: 2; min-width: 300px; margin: 0; display: flex; flex-direction: column;" hidden>
+                    <label for="waManualTokenInput" style="font-weight: 600; font-size: 13px; color: #4a5568; display: block; margin-bottom: 6px;">Manual Meta Access Token</label>
+                    <input type="password" id="waManualTokenInput" placeholder="EAALg..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                </div>
+
+
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="button" id="waReloadTemplatesBtn" class="secondary-btn" style="height: 38px; padding: 0 16px;">🔄 Load Templates</button>
+                </div>
+            </div>
+
+            <!-- Form to Create WhatsApp Template -->
+            <div id="waTemplateFormWrapper" class="form-card" hidden style="margin-bottom: 24px; padding: 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <h3>New WhatsApp Template</h3>
+                <form id="waTemplateForm" class="form stacked-full">
+                    <div class="form-row" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label for="waTplName">Template Name *</label>
+                            <input type="text" id="waTplName" placeholder="e.g. seasonal_promotion" required style="text-transform: lowercase; font-family: monospace; width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <small class="form-hint" style="color: #718096; font-size: 11px;">Only lowercase letters, numbers, and underscores.</small>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="waTplLanguage">Language *</label>
+                            <select id="waTplLanguage" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="en" selected>English (en)</option>
+                                <option value="en_US">English US (en_US)</option>
+                                <option value="es">Spanish (es)</option>
+                                <option value="pt_BR">Portuguese (pt_BR)</option>
+                                <option value="fr">French (fr)</option>
+                                <option value="de">German (de)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="waTplCategory">Category *</label>
+                            <select id="waTplCategory" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="MARKETING" selected>Marketing</option>
+                                <option value="UTILITY">Utility</option>
+                                <option value="AUTHENTICATION">Authentication</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Components -->
+                    <div class="form-group full-width" style="margin-bottom: 16px;">
+                        <label for="waTplHeaderText">Header Text (Optional)</label>
+                        <input type="text" id="waTplHeaderText" placeholder="e.g. Our {{1}} is on!" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <small class="form-hint" style="color: #718096; font-size: 11px;">Variables use <code>{{1}}</code> syntax.</small>
+                        <div id="waTplHeaderExampleGroup" style="margin-top: 8px;" hidden>
+                            <label for="waTplHeaderExample" style="font-size: 12px; font-weight: normal; color: #666;">Header Variable Example *</label>
+                            <input type="text" id="waTplHeaderExample" placeholder="e.g. Summer Sale" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-bottom: 16px;">
+                        <label for="waTplBodyText">Body Text *</label>
+                        <textarea id="waTplBodyText" rows="4" placeholder="Shop now through {{1}} and use code {{2}} to get {{3}} off." required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;"></textarea>
+                        <small class="form-hint" style="color: #718096; font-size: 11px;">Variables use <code>{{1}}</code>, <code>{{2}}</code>, etc.</small>
+                        <div id="waTplBodyExamplesGroup" style="margin-top: 8px;" hidden>
+                            <label for="waTplBodyExamples" style="font-size: 12px; font-weight: normal; color: #666;">Body Variable Examples (comma separated) *</label>
+                            <input type="text" id="waTplBodyExamples" placeholder="e.g. tomorrow, 25OFF, 25%" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-bottom: 16px;">
+                        <label for="waTplFooterText">Footer Text (Optional)</label>
+                        <input type="text" id="waTplFooterText" placeholder="Use the buttons below to manage your subscriptions" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+
+                    <div class="form-group full-width" style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 6px;">Quick Reply Buttons (Optional, max 3)</label>
+                        <div id="waButtonsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                            <input type="text" class="wa-reply-btn-input" placeholder="Button 1 text (e.g. Unsubscribe from Promos)" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" class="wa-reply-btn-input" placeholder="Button 2 text (e.g. Unsubscribe from All)" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" class="wa-reply-btn-input" placeholder="Button 3 text" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; gap: 12px;">
+                        <button type="submit" class="primary-btn" id="waTplSaveBtn">💾 Create WhatsApp Template</button>
+                        <button type="button" class="secondary-btn" id="waTplCancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table of WhatsApp Templates -->
+            <p class="empty-state" id="waTemplateEmpty">
+                No WhatsApp templates loaded. Select a campaign/token and WABA-ID and click <strong>Load Templates</strong>.
+            </p>
+            <table class="data-table" id="waTemplateTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Template Name</th>
+                        <th>Language</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Body Text</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="waTemplateTableBody"></tbody>
+            </table>
+        </section>
+
         <!-- ── Activities ── -->
         <section id="activityPanel" class="panel" hidden>
             <div class="panel-header">
@@ -269,10 +396,16 @@
                                 <option value="">— select —</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="actEmailTemplateGroup" hidden>
                             <label for="actTemplate">Template *</label>
-                            <select id="actTemplate" required>
+                            <select id="actTemplate">
                                 <option value="">— select —</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="actWaTemplateGroup" hidden>
+                            <label for="actWaTemplate">WhatsApp Template *</label>
+                            <select id="actWaTemplate">
+                                <option value="">— select a WhatsApp template —</option>
                             </select>
                         </div>
                     </div>
@@ -312,8 +445,8 @@
                         <div class="form-group">
                             <label for="actTimezone">Timezone</label>
                             <select id="actTimezone">
+                                <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
                                 <option value="UTC">UTC</option>
-                                <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
                                 <option value="America/New_York">America/New_York (ET)</option>
                                 <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
                                 <option value="Europe/London">Europe/London (GMT)</option>
@@ -562,6 +695,40 @@
         </div>
     </div>
 
+    <!-- ===================== SIGN IN WITH META MODAL ===================== -->
+    <div id="metaTokenModal" class="modal">
+        <div class="modal-content" style="max-width:500px; width:90%;">
+            <h3 style="margin:0 0 8px; color:#1a1a2e;">🔑 Sign in with Meta</h3>
+            <p class="panel-hint" style="margin-bottom:16px;">Enter your permanent access token and Phone Number ID from the <a href="https://developers.facebook.com/" target="_blank">Meta App Dashboard</a>.</p>
+            <input type="hidden" id="metaTokenCampaignId">
+            <div id="metaOAuthSection" style="margin-bottom: 16px; text-align: center;" hidden>
+                <button type="button" id="metaOAuthBtn" class="primary-btn" style="background: linear-gradient(135deg, #1877f2, #166fe5); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-family: inherit;">
+                    Sign in with Facebook
+                </button>
+                <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center; gap: 12px; color: #718096; font-size: 11px;">
+                    <span style="flex: 1; height: 1px; background: #e2e8f0;"></span>
+                    <span>OR ENTER MANUALLY</span>
+                    <span style="flex: 1; height: 1px; background: #e2e8f0;"></span>
+                </div>
+            </div>
+            <div class="form-group full-width" style="margin: 10px 0;">
+                <label for="metaAccessTokenInput">Access Token *</label>
+                <textarea id="metaAccessTokenInput" rows="4"
+                    placeholder="EAALg..."
+                    style="width:100%; padding:9px 12px; border:1px solid #dde3ea; border-radius:8px; font-family:monospace; font-size:13px; resize:vertical;"></textarea>
+            </div>
+            <div class="form-group full-width" style="margin: 10px 0;">
+                <label for="metaPhoneNumberIdInput">Phone Number ID *</label>
+                <input type="text" id="metaPhoneNumberIdInput" placeholder="e.g. 1095078330366468"
+                    style="width:100%; padding:9px 12px; border:1px solid #dde3ea; border-radius:8px; font-family:Inter; font-size:14px;">
+            </div>
+            <div class="modal-buttons" style="margin-top:16px;">
+                <button id="confirmMetaToken" class="primary-btn" style="background: linear-gradient(135deg, #25d366, #128c7e);">Save Token</button>
+                <button id="cancelMetaToken" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================== TOAST ===================== -->
     <div id="toast" class="toast" aria-live="polite"></div>
 
@@ -573,6 +740,7 @@
         window.API_TEMPLATES_URL = '/api/templates';
         window.API_ACTIVITIES_URL = '/api/activities';
         window.API_SEGMENTS_URL = '/api/segments';
+        window.API_WHATSAPP_TEMPLATES_URL = '/api/whatsapp/templates';
     </script>
     <script th:src="@{/js/short-links/app.js}"></script>
 </body>

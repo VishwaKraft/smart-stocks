@@ -53,9 +53,19 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         Campaign campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
-        Template template = templateRepository.findById(request.getTemplateId())
-                .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
-                .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
+        Template template = null;
+        if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.EMAIL) {
+            if (request.getTemplateId() == null) {
+                throw new IllegalArgumentException("Template ID is required for EMAIL campaigns.");
+            }
+            template = templateRepository.findById(request.getTemplateId())
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
+        } else if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
+            if (request.getWhatsappTemplateName() == null || request.getWhatsappTemplateName().trim().isEmpty()) {
+                throw new IllegalArgumentException("WhatsApp template name is required for WHATSAPP campaigns.");
+            }
+        }
 
         // Segment is mandatory
         if (request.getSegmentId() == null) {
@@ -67,6 +77,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         CampaignActivity activity = new CampaignActivity();
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
+            activity.setWhatsappTemplateName(request.getWhatsappTemplateName().trim());
+        }
         activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
         activity.setScheduleType(request.getScheduleType());
@@ -138,9 +151,19 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         Campaign campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
-        Template template = templateRepository.findById(request.getTemplateId())
-                .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
-                .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
+        Template template = null;
+        if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.EMAIL) {
+            if (request.getTemplateId() == null) {
+                throw new IllegalArgumentException("Template ID is required for EMAIL campaigns.");
+            }
+            template = templateRepository.findById(request.getTemplateId())
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .orElseThrow(() -> new IllegalArgumentException("Active template not found: " + request.getTemplateId()));
+        } else if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
+            if (request.getWhatsappTemplateName() == null || request.getWhatsappTemplateName().trim().isEmpty()) {
+                throw new IllegalArgumentException("WhatsApp template name is required for WHATSAPP campaigns.");
+            }
+        }
 
         Segment segment = null;
         if (request.getSegmentId() != null) {
@@ -150,6 +173,11 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
+            activity.setWhatsappTemplateName(request.getWhatsappTemplateName().trim());
+        } else {
+            activity.setWhatsappTemplateName(null);
+        }
         activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
         activity.setScheduleType(request.getScheduleType());
@@ -403,8 +431,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .id(a.getId())
                 .campaignId(a.getCampaign().getId())
                 .campaignName(a.getCampaign().getName())
-                .templateId(a.getTemplate().getId())
-                .templateName(a.getTemplate().getName())
+                .templateId(a.getTemplate() != null ? a.getTemplate().getId() : null)
+                .templateName(a.getTemplate() != null ? a.getTemplate().getName() : null)
+                .whatsappTemplateName(a.getWhatsappTemplateName())
                 .segmentId(a.getSegment() != null ? a.getSegment().getId() : null)
                 .segmentName(a.getSegment() != null ? a.getSegment().getName() : null)
                 .activityName(a.getActivityName())

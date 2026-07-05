@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const shortenerPanel        = document.getElementById("shortenerPanel");
     const campaignPanel         = document.getElementById("campaignPanel");
     const templatePanel         = document.getElementById("templatePanel");
+    const whatsappTemplatesPanel = document.getElementById("whatsappTemplatesPanel");
     const activityPanel         = document.getElementById("activityPanel");
     const segmentPanel          = document.getElementById("segmentPanel");
     const modal                 = document.getElementById("deleteModal");
@@ -37,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let cachedCampaigns    = [];
     let cachedTemplates    = [];
     let tplPreviewTimer       = null;
+    let campaignsById         = {};
 
     const DEFAULT_EMAIL_TEMPLATE = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#ffe6ee;padding:40px 20px">
   <tbody><tr>
@@ -104,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
             shortener: shortenerPanel,
             campaigns: campaignPanel,
             templates: templatePanel,
+            "whatsapp-templates": whatsappTemplatesPanel,
             activities: activityPanel,
             segments: segmentPanel
         };
@@ -121,6 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
             loadCampaignTable();
         } else if (section === "templates") {
             loadTemplateTable();
+        } else if (section === "whatsapp-templates") {
+            loadWaCampaignDropdown();
+            loadWhatsappTemplates();
         } else if (section === "activities") {
             loadActivityTable();
             loadCampaignDropdowns();
@@ -141,16 +147,21 @@ document.addEventListener("DOMContentLoaded", () => {
        UTILITY: fetch helpers
     ====================================================== */
     async function apiFetch(url, opts = {}) {
+        const method = (opts.method || "GET").toUpperCase();
+        console.log(`[apiFetch] → ${method} ${url}`);
         const res = await fetch(url, {
             headers: { "Content-Type": "application/json" },
             ...opts
         });
         if (!res.ok) {
             const msg = await res.text().catch(() => "Unknown error");
+            console.error(`[apiFetch] ✗ ${method} ${url} — HTTP ${res.status}:`, msg);
             throw new Error(msg || `HTTP ${res.status}`);
         }
         const ct = res.headers.get("content-type") || "";
-        return ct.includes("application/json") ? res.json() : res.text();
+        const data = ct.includes("application/json") ? await res.json() : await res.text();
+        console.log(`[apiFetch] ✓ ${method} ${url} — HTTP ${res.status}`);
+        return data;
     }
 
     function fmtDate(isoStr) {
@@ -274,6 +285,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const campaign = await apiFetch(apiCampaignsUrl, { method: "POST", body: JSON.stringify(payload) });
             renderCampaignResult(campaign);
             e.target.reset();
+            document.getElementById('emailProviderGroup').hidden = false;
+            document.getElementById('whatsappSenderGroup').hidden = true;
             refreshCampaignCache();
             loadCampaignTable();
             showToast("Campaign created!", "success");
@@ -318,7 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${fmtDate(c.createdAt)}</td>
                     <td class="table-actions">
                         ${c.emailProviderType === 'GMAIL' ? `<button class="primary-btn btn-xs" data-auth-gmail="${c.id}">Sign in with Gmail</button>` : ''}
-                        ${c.trackingPixelUrl ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
+                        ${c.campaignType === 'WHATSAPP' ? `<button class="primary-btn btn-xs" style="background: linear-gradient(135deg, #25d366, #128c7e);" data-auth-meta="${c.id}">🔑 Sign in with Meta</button>` : ''}
+                        ${c.trackingPixelUrl && c.campaignType !== 'WHATSAPP' ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
                         <button class="danger-btn" data-delete-campaign="${c.id}" data-delete-name="${escHtml(c.name)}">Delete</button>
                     </td>`;
                 tbody.appendChild(tr);
@@ -332,6 +346,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     const redirectUri = window.location.origin + window.location.pathname;
                     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&access_type=offline&prompt=consent&state=${campaignId}`;
                     window.location.href = authUrl;
+                });
+            });
+
+            // Sign in with Meta (WhatsApp)
+            tbody.querySelectorAll("[data-auth-meta]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const campaignId = btn.dataset.authMeta;
+                    document.getElementById("metaTokenCampaignId").value = campaignId;
+                    document.getElementById("metaAccessTokenInput").value = "";
+                    document.getElementById("metaPhoneNumberIdInput").value = "";
+                    
+                    const oauthSection = document.getElementById("metaOAuthSection");
+                    if (oauthSection) {
+                        oauthSection.hidden = !window.META_CLIENT_ID;
+                    }
+                    
+                    document.getElementById("metaTokenModal").style.display = "flex";
                 });
             });
 
@@ -618,6 +649,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("actCancelBtn").addEventListener("click", () => {
         activityFormWrapper.hidden = true;
         activityForm.reset();
+        const emailGrp = document.getElementById("actEmailTemplateGroup");
+        const waGrp = document.getElementById("actWaTemplateGroup");
+        if (emailGrp) emailGrp.hidden = true;
+        if (waGrp) waGrp.hidden = true;
     });
 
     async function loadSegmentDropdownForActivity() {
@@ -642,13 +677,56 @@ document.addEventListener("DOMContentLoaded", () => {
             if (cachedCampaigns.length === 0) cachedCampaigns = await apiFetch(apiCampaignsUrl);
             const sel = document.getElementById("actCampaign");
             sel.innerHTML = '<option value="">— select —</option>';
+            campaignsById = {};
             cachedCampaigns.forEach(c => {
+                campaignsById[c.id] = c;
                 const opt = document.createElement("option");
                 opt.value = c.id;
                 opt.textContent = c.name;
                 sel.appendChild(opt);
             });
         } catch (e) { console.error(e); }
+    }
+
+    document.getElementById("actCampaign").addEventListener("change", async (e) => {
+        const campaignId = e.target.value;
+        const c = campaignsById[campaignId];
+        const emailGrp = document.getElementById("actEmailTemplateGroup");
+        const waGrp = document.getElementById("actWaTemplateGroup");
+        if (c && c.campaignType === "WHATSAPP") {
+            if (emailGrp) emailGrp.hidden = true;
+            if (waGrp) waGrp.hidden = false;
+            await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
+        } else if (c && c.campaignType === "EMAIL") {
+            if (emailGrp) emailGrp.hidden = false;
+            if (waGrp) waGrp.hidden = true;
+        } else {
+            if (emailGrp) emailGrp.hidden = true;
+            if (waGrp) waGrp.hidden = true;
+        }
+    });
+
+    async function loadWhatsappTemplatesForActivity(wabaId, campaignId) {
+        const sel = document.getElementById("actWaTemplate");
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— loading WhatsApp templates... —</option>';
+        try {
+            const params = new URLSearchParams();
+            if (wabaId) params.append("wabaId", wabaId);
+            if (campaignId) params.append("campaignId", campaignId);
+            const res = await apiFetch(`/api/whatsapp/templates?${params}`);
+            const templates = res.data || [];
+            sel.innerHTML = '<option value="">— select a WhatsApp template —</option>';
+            templates.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.name;
+                opt.textContent = t.name;
+                sel.appendChild(opt);
+            });
+        } catch (err) {
+            console.error(err);
+            sel.innerHTML = '<option value="">— error loading templates —</option>';
+        }
     }
 
     async function loadTemplateDropdowns() {
@@ -674,9 +752,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const checkedDays = [...document.querySelectorAll("#weeklyFields input[type=checkbox]:checked")]
             .map(cb => cb.value);
 
+        const actCampaignId = Number(document.getElementById("actCampaign").value) || null;
+        const c = campaignsById[actCampaignId];
+        const isWa = c && c.campaignType === "WHATSAPP";
+
         const payload = {
-            campaignId:    Number(document.getElementById("actCampaign").value) || null,
-            templateId:    Number(document.getElementById("actTemplate").value) || null,
+            campaignId:    actCampaignId,
+            templateId:    isWa ? null : (Number(document.getElementById("actTemplate").value) || null),
+            whatsappTemplateName: isWa ? document.getElementById("actWaTemplate").value : null,
             segmentId:     Number(document.getElementById("actSegment").value) || null,
             activityName:  document.getElementById("actName").value.trim() || null,
             scheduleType:  schedType,
@@ -691,7 +774,7 @@ document.addEventListener("DOMContentLoaded", () => {
             status:            document.getElementById("actStatus").value || "ACTIVE"
         };
 
-        if (!payload.campaignId || !payload.templateId || !payload.scheduleType) {
+        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName) || !payload.scheduleType) {
             showToast("Campaign, Template and Schedule Type are required", "error");
             return;
         }
@@ -764,7 +847,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         activityEditId.value = a.id;
                         activityFormTitle.textContent = "Edit Activity";
                         document.getElementById("actCampaign").value   = a.campaignId;
-                        document.getElementById("actTemplate").value   = a.templateId;
+                        
+                        const c = campaignsById[a.campaignId];
+                        const emailGrp = document.getElementById("actEmailTemplateGroup");
+                        const waGrp = document.getElementById("actWaTemplateGroup");
+                        if (c && c.campaignType === "WHATSAPP") {
+                            if (emailGrp) emailGrp.hidden = true;
+                            if (waGrp) waGrp.hidden = false;
+                            await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
+                            document.getElementById("actWaTemplate").value = a.whatsappTemplateName || "";
+                        } else if (c && c.campaignType === "EMAIL") {
+                            if (emailGrp) emailGrp.hidden = false;
+                            if (waGrp) waGrp.hidden = true;
+                            document.getElementById("actTemplate").value   = a.templateId;
+                        } else {
+                            if (emailGrp) emailGrp.hidden = true;
+                            if (waGrp) waGrp.hidden = true;
+                        }
+                        
                         await loadSegmentDropdownForActivity();
                         if (a.segmentId) document.getElementById("actSegment").value = a.segmentId;
                         document.getElementById("actName").value       = a.activityName || "";
@@ -781,7 +881,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (a.dayOfMonth)    document.getElementById("actDayOfMonth").value = a.dayOfMonth;
                         if (a.startDate)     document.getElementById("actStartDate").value = a.startDate;
                         if (a.endDate)       document.getElementById("actEndDate").value   = a.endDate;
-                        document.getElementById("actTimezone").value = a.timezone || "UTC";
+                        document.getElementById("actTimezone").value = a.timezone || "Asia/Kolkata";
                         document.getElementById("actStatus").value   = a.status   || "ACTIVE";
                         // Weekdays
                         document.querySelectorAll("#weeklyFields input[type=checkbox]").forEach(cb => {
@@ -893,20 +993,27 @@ document.addEventListener("DOMContentLoaded", () => {
     ====================================================== */
     confirmDeleteBtn.addEventListener("click", async () => {
         if (!deleteContext) return;
-        const { type, id } = deleteContext;
+        const { type, id, name, wabaId } = deleteContext;
         try {
-            let url;
-            if (type === "template") url = `${apiTemplatesUrl}/${id}`;
-            else if (type === "activity") url = `${apiActivitiesUrl}/${id}`;
-            else if (type === "link") url = `${apiLinksUrl}/${id}`;
-            else if (type === "campaign") url = `${apiCampaignsUrl}/${id}`;
+            if (type === "whatsapp-template") {
+                const params = getWabaRequestParams();
+                const cleanParams = params.replace(/wabaId=[^&]*/, `wabaId=${wabaId}`);
+                await fetch(`/api/whatsapp/templates?${cleanParams}&name=${name}`, { method: "DELETE" });
+                loadWhatsappTemplates();
+            } else {
+                let url;
+                if (type === "template") url = `${apiTemplatesUrl}/${id}`;
+                else if (type === "activity") url = `${apiActivitiesUrl}/${id}`;
+                else if (type === "link") url = `${apiLinksUrl}/${id}`;
+                else if (type === "campaign") url = `${apiCampaignsUrl}/${id}`;
 
-            await fetch(url, { method: "DELETE" });
+                await fetch(url, { method: "DELETE" });
 
-            if (type === "template") loadTemplateTable();
-            else if (type === "activity") loadActivityTable();
-            else if (type === "link") loadShortLinksTable();
-            else if (type === "campaign") { loadCampaignTable(); refreshCampaignCache(); }
+                if (type === "template") loadTemplateTable();
+                else if (type === "activity") loadActivityTable();
+                else if (type === "link") loadShortLinksTable();
+                else if (type === "campaign") { loadCampaignTable(); refreshCampaignCache(); }
+            }
 
             showToast("Deleted successfully", "success");
         } catch (err) { showToast("Error: " + err.message, "error"); }
@@ -1182,27 +1289,417 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
+       SIGN IN WITH META MODAL
+    ====================================================== */
+    const metaTokenModal = document.getElementById("metaTokenModal");
+
+    document.getElementById("cancelMetaToken").addEventListener("click", () => {
+        metaTokenModal.style.display = "none";
+    });
+
+    document.getElementById("confirmMetaToken").addEventListener("click", async () => {
+        const campaignId = document.getElementById("metaTokenCampaignId").value;
+        const accessToken = document.getElementById("metaAccessTokenInput").value.trim();
+        const phoneNumberId = document.getElementById("metaPhoneNumberIdInput").value.trim();
+
+        if (!accessToken) { showToast("Access token is required", "error"); return; }
+        if (!phoneNumberId) { showToast("Phone Number ID is required", "error"); return; }
+
+        try {
+            await apiFetch(`${apiCampaignsUrl}/${campaignId}/meta-token`, {
+                method: "POST",
+                body: JSON.stringify({ access_token: accessToken, phone_number_id: phoneNumberId })
+            });
+            showToast("Meta token saved successfully!", "success");
+            metaTokenModal.style.display = "none";
+            loadCampaignTable();
+        } catch (err) {
+            showToast("Failed to save Meta token: " + err.message, "error");
+        }
+    });
+
+    const metaOAuthBtn = document.getElementById("metaOAuthBtn");
+    if (metaOAuthBtn) {
+        metaOAuthBtn.addEventListener("click", () => {
+            const campaignId = document.getElementById("metaTokenCampaignId").value;
+            const clientId = window.META_CLIENT_ID;
+            const redirectUri = window.location.origin + window.location.pathname;
+            const authUrl = `https://www.facebook.com/v25.0/dialog/oauth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=whatsapp_business_management,whatsapp_business_messaging,public_profile&state=meta_${campaignId}`;
+            window.location.href = authUrl;
+        });
+    }
+
+    /* ======================================================
+       WHATSAPP TEMPLATES PANEL
+    ====================================================== */
+    const waTemplateCampaignSelect = document.getElementById("waTemplateCampaignSelect");
+    const waManualTokenGroup = document.getElementById("waManualTokenGroup");
+    const waManualTokenInput = document.getElementById("waManualTokenInput");
+    const waReloadTemplatesBtn = document.getElementById("waReloadTemplatesBtn");
+    const waTemplateEmpty = document.getElementById("waTemplateEmpty");
+    const waTemplateTable = document.getElementById("waTemplateTable");
+    const waTemplateTableBody = document.getElementById("waTemplateTableBody");
+    const newWhatsappTemplateBtn = document.getElementById("newWhatsappTemplateBtn");
+    const waTemplateFormWrapper = document.getElementById("waTemplateFormWrapper");
+    const waTemplateForm = document.getElementById("waTemplateForm");
+
+    const waTplHeaderText = document.getElementById("waTplHeaderText");
+    const waTplHeaderExampleGroup = document.getElementById("waTplHeaderExampleGroup");
+    const waTplHeaderExample = document.getElementById("waTplHeaderExample");
+    const waTplBodyText = document.getElementById("waTplBodyText");
+    const waTplBodyExamplesGroup = document.getElementById("waTplBodyExamplesGroup");
+    const waTplBodyExamples = document.getElementById("waTplBodyExamples");
+
+    // Toggle fields visibility based on input patterns
+    if (waTemplateCampaignSelect) {
+        waTemplateCampaignSelect.addEventListener("change", () => {
+            waManualTokenGroup.hidden = waTemplateCampaignSelect.value !== "manual";
+        });
+    }
+
+
+    if (waTplHeaderText) {
+        waTplHeaderText.addEventListener("input", () => {
+            waTplHeaderExampleGroup.hidden = !waTplHeaderText.value.includes("{{1}}");
+        });
+    }
+
+    if (waTplBodyText) {
+        waTplBodyText.addEventListener("input", () => {
+            waTplBodyExamplesGroup.hidden = !waTplBodyText.value.includes("{{1}}");
+        });
+    }
+
+    if (newWhatsappTemplateBtn) {
+        newWhatsappTemplateBtn.addEventListener("click", () => {
+            waTemplateForm.reset();
+            waTplHeaderExampleGroup.hidden = true;
+            waTplBodyExamplesGroup.hidden = true;
+            waTemplateFormWrapper.hidden = false;
+            waTemplateFormWrapper.scrollIntoView({ behavior: "smooth" });
+        });
+    }
+
+    if (document.getElementById("waTplCancelBtn")) {
+        document.getElementById("waTplCancelBtn").addEventListener("click", () => {
+            waTemplateFormWrapper.hidden = true;
+            waTemplateForm.reset();
+        });
+    }
+
+    // Load WhatsApp Campaigns to populate the campaign selector
+    async function loadWaCampaignDropdown() {
+        if (!waTemplateCampaignSelect) return;
+        try {
+            if (cachedCampaigns.length === 0) cachedCampaigns = await apiFetch(apiCampaignsUrl);
+            const currentVal = waTemplateCampaignSelect.value;
+            waTemplateCampaignSelect.innerHTML = `
+                <option value="">— select campaign —</option>
+                <option value="manual">— Use Manual Token —</option>
+            `;
+            cachedCampaigns.forEach(c => {
+                if (c.campaignType === 'WHATSAPP') {
+                    const opt = document.createElement("option");
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    waTemplateCampaignSelect.appendChild(opt);
+                }
+            });
+            if (currentVal) waTemplateCampaignSelect.value = currentVal;
+        } catch (e) {
+            console.error("loadWaCampaignDropdown error:", e);
+        }
+    }
+
+    function getSelectedWabaId() {
+        return "1726866808739698";
+    }
+
+    function getWabaRequestParams() {
+        const wabaId = getSelectedWabaId();
+        const campaignId = waTemplateCampaignSelect ? waTemplateCampaignSelect.value : "";
+        const manualToken = waManualTokenInput ? waManualTokenInput.value.trim() : "";
+
+        const params = new URLSearchParams();
+        params.append("wabaId", wabaId);
+        if (campaignId && campaignId !== "manual") {
+            params.append("campaignId", campaignId);
+        } else if (manualToken) {
+            params.append("token", manualToken);
+        }
+        return params.toString();
+    }
+
+    async function loadWhatsappTemplates() {
+        if (!waTemplateTableBody) return;
+
+        const params = getWabaRequestParams();
+        const wabaId = getSelectedWabaId();
+        console.log(`[WA Templates] Loading templates for wabaId=${wabaId}`, Object.fromEntries(new URLSearchParams(params)));
+
+        if (!params.includes("campaignId") && !params.includes("token")) {
+            console.warn("[WA Templates] No token source configured — cannot load templates.");
+            waTemplateTable.hidden = true;
+            waTemplateEmpty.hidden = false;
+            waTemplateEmpty.innerHTML = "Please configure/select a <strong>Campaign Token Source</strong> or enter a <strong>Manual Token</strong> to load templates.";
+            return;
+        }
+
+        try {
+            waTemplateEmpty.innerHTML = "🔄 Loading WhatsApp templates...";
+            waTemplateEmpty.hidden = false;
+            waTemplateTable.hidden = true;
+
+            const res = await apiFetch(`/api/whatsapp/templates?${params}`);
+            const templates = res.data || [];
+            console.log(`[WA Templates] Received ${templates.length} template(s) from Meta.`);
+
+            waTemplateTableBody.innerHTML = "";
+            if (templates.length === 0) {
+                waTemplateTable.hidden = true;
+                waTemplateEmpty.hidden = false;
+                waTemplateEmpty.innerHTML = "No templates found on Meta for the selected configuration.";
+                return;
+            }
+
+            waTemplateEmpty.hidden = true;
+            waTemplateTable.hidden = false;
+
+            templates.forEach(t => {
+                let bodyText = "—";
+                (t.components || []).forEach(comp => {
+                    if (comp.type === "BODY") {
+                        bodyText = comp.text || "—";
+                    }
+                });
+
+                const statusClass = {
+                    APPROVED: "badge-active",
+                    PENDING: "badge-paused",
+                    REJECTED: "badge-cancelled"
+                }[t.status] || "badge-default";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(t.name)}</strong></td>
+                    <td><span class="badge badge-default">${escHtml(t.language)}</span></td>
+                    <td><span class="badge badge-default">${escHtml(t.category)}</span></td>
+                    <td><span class="badge ${statusClass}">${escHtml(t.status)}</span></td>
+                    <td class="truncate" style="max-width: 300px;" title="${escHtml(bodyText)}">${escHtml(bodyText)}</td>
+                    <td class="table-actions">
+                        <button class="danger-btn" data-delete-wa-tpl="${escHtml(t.name)}" data-waba-id="${escHtml(getSelectedWabaId())}" data-delete-wa-tpl-name="${escHtml(t.name)}">Delete</button>
+                    </td>
+                `;
+                waTemplateTableBody.appendChild(tr);
+            });
+
+            // Bind delete events
+            waTemplateTableBody.querySelectorAll("[data-delete-wa-tpl]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = {
+                        type: "whatsapp-template",
+                        name: btn.dataset.deleteWaTpl,
+                        wabaId: btn.dataset.wabaId
+                    };
+                    console.log(`[WA Templates] Delete requested for template: ${btn.dataset.deleteWaTpl}, wabaId: ${btn.dataset.wabaId}`);
+                    deleteModalMessage.textContent = `Delete WhatsApp template "${btn.dataset.deleteWaTplName}"? This action cannot be undone.`;
+                    modal.style.display = "flex";
+                });
+            });
+
+        } catch (e) {
+            console.error("[WA Templates] Failed to load templates:", e);
+            waTemplateTable.hidden = true;
+            waTemplateEmpty.hidden = false;
+            waTemplateEmpty.innerHTML = `<span class="error">Error: ${escHtml(e.message)}</span>`;
+        }
+    }
+
+    if (waReloadTemplatesBtn) {
+        waReloadTemplatesBtn.addEventListener("click", () => {
+            loadWhatsappTemplates();
+        });
+    }
+
+    // Submit form to create template
+    if (waTemplateForm) {
+        waTemplateForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById("waTplName").value.trim().toLowerCase();
+            const language = document.getElementById("waTplLanguage").value;
+            const category = document.getElementById("waTplCategory").value;
+
+            console.log(`[WA Template Create] Starting creation — name=${name}, language=${language}, category=${category}`);
+
+            if (!/^[a-z0-9_]+$/.test(name)) {
+                console.warn(`[WA Template Create] Invalid template name: "${name}"`);
+                showToast("Template Name must contain only lowercase letters, numbers, and underscores.", "error");
+                return;
+            }
+
+            const components = [];
+
+            // Header component
+            const headerText = waTplHeaderText.value.trim();
+            if (headerText) {
+                const headerComp = {
+                    type: "HEADER",
+                    format: "TEXT",
+                    text: headerText
+                };
+                if (headerText.includes("{{1}}")) {
+                    const hExample = waTplHeaderExample.value.trim();
+                    if (!hExample) {
+                        console.warn("[WA Template Create] Header has {{1}} variable but no example value provided.");
+                        showToast("Please provide an example value for the header variable.", "error");
+                        return;
+                    }
+                    headerComp.example = {
+                        header_text: [hExample]
+                    };
+                    console.log(`[WA Template Create] Header variable example: "${hExample}"`);
+                }
+                components.push(headerComp);
+                console.log(`[WA Template Create] Header component added: "${headerText}"`);
+            }
+
+            // Body component
+            const bodyText = waTplBodyText.value.trim();
+            if (!bodyText) {
+                console.warn("[WA Template Create] Body text is empty — rejecting submission.");
+                showToast("Body text is required.", "error");
+                return;
+            }
+            const bodyComp = {
+                type: "BODY",
+                text: bodyText
+            };
+
+            const matches = bodyText.match(/\{\{\d+\}\}/g) || [];
+            if (matches.length > 0) {
+                const bExamplesStr = waTplBodyExamples.value.trim();
+                if (!bExamplesStr) {
+                    console.warn(`[WA Template Create] Body has ${matches.length} variable(s) but no examples provided.`);
+                    showToast("Please provide comma-separated example values for body variables.", "error");
+                    return;
+                }
+                const examplesArr = bExamplesStr.split(",").map(x => x.trim()).filter(x => x);
+                bodyComp.example = {
+                    body_text: [examplesArr]
+                };
+                console.log(`[WA Template Create] Body variables found: ${matches.join(", ")} — examples: [${examplesArr.join(", ")}]`);
+            }
+            components.push(bodyComp);
+
+            // Footer component
+            const footerText = document.getElementById("waTplFooterText").value.trim();
+            if (footerText) {
+                components.push({
+                    type: "FOOTER",
+                    text: footerText
+                });
+                console.log(`[WA Template Create] Footer component added: "${footerText}"`);
+            }
+
+            // Buttons component (Quick Replies)
+            const buttonInputs = document.querySelectorAll(".wa-reply-btn-input");
+            const quickReplies = [];
+            buttonInputs.forEach(inp => {
+                const val = inp.value.trim();
+                if (val) {
+                    quickReplies.push({
+                        type: "QUICK_REPLY",
+                        text: val
+                    });
+                }
+            });
+
+            if (quickReplies.length > 0) {
+                components.push({
+                    type: "BUTTONS",
+                    buttons: quickReplies
+                });
+                console.log(`[WA Template Create] Quick reply buttons added: [${quickReplies.map(b => b.text).join(", ")}]`);
+            }
+
+            const payload = {
+                name: name,
+                language: language,
+                category: category,
+                components: components
+            };
+
+            const params = getWabaRequestParams();
+            if (!params.includes("campaignId") && !params.includes("token")) {
+                console.warn("[WA Template Create] No token source configured — aborting.");
+                showToast("Please specify a valid Campaign Token Source or Manual Token.", "error");
+                return;
+            }
+
+            console.log(`[WA Template Create] Submitting payload to Meta via proxy:`, JSON.stringify(payload, null, 2));
+
+            try {
+                const saveBtn = document.getElementById("waTplSaveBtn");
+                saveBtn.disabled = true;
+                saveBtn.textContent = "Saving...";
+
+                const result = await apiFetch(`/api/whatsapp/templates?${params}`, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+
+                console.log("[WA Template Create] ✓ Template created successfully:", result);
+                showToast("WhatsApp Template created successfully!", "success");
+                waTemplateFormWrapper.hidden = true;
+                waTemplateForm.reset();
+                loadWhatsappTemplates();
+            } catch (err) {
+                console.error("[WA Template Create] ✗ Failed to create template:", err.message);
+                showToast("Failed to create template: " + err.message, "error");
+            } finally {
+                const saveBtn = document.getElementById("waTplSaveBtn");
+                saveBtn.disabled = false;
+                saveBtn.textContent = "💾 Create WhatsApp Template";
+            }
+        });
+    }
+
+    /* ======================================================
        BOOTSTRAP
     ====================================================== */
-    // Check for Google OAuth code
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('code') && urlParams.has('state')) {
         const code = urlParams.get('code');
-        const campaignId = urlParams.get('state');
+        const state = urlParams.get('state');
         const redirectUri = window.location.origin + window.location.pathname;
 
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
 
-        apiFetch(`${apiCampaignsUrl}/${campaignId}/google-code`, {
-            method: "POST",
-            body: JSON.stringify({ code: code, redirect_uri: redirectUri })
-        }).then(() => {
-            showToast("Gmail authorized successfully!", "success");
-            switchSection("campaigns");
-        }).catch(err => {
-            showToast("Failed to save Gmail token: " + err.message, "error");
-        });
+        if (state.startsWith('meta_')) {
+            const campaignId = state.replace('meta_', '');
+            apiFetch(`${apiCampaignsUrl}/${campaignId}/meta-code`, {
+                method: "POST",
+                body: JSON.stringify({ code: code, redirect_uri: redirectUri })
+            }).then(() => {
+                showToast("Meta authorized successfully!", "success");
+                switchSection("campaigns");
+            }).catch(err => {
+                showToast("Failed to save Meta token: " + err.message, "error");
+            });
+        } else {
+            const campaignId = state;
+            apiFetch(`${apiCampaignsUrl}/${campaignId}/google-code`, {
+                method: "POST",
+                body: JSON.stringify({ code: code, redirect_uri: redirectUri })
+            }).then(() => {
+                showToast("Gmail authorized successfully!", "success");
+                switchSection("campaigns");
+            }).catch(err => {
+                showToast("Failed to save Gmail token: " + err.message, "error");
+            });
+        }
     }
 
     // Pre-load templates for campaign and activity forms

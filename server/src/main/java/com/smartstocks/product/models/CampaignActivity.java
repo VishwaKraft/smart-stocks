@@ -29,8 +29,12 @@ public class CampaignActivity {
     private Campaign campaign;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", nullable = false)
+    @JoinColumn(name = "template_id", nullable = true)
     private Template template;
+
+    /** For WhatsApp campaigns: the approved Meta template name (e.g. "hello_world"). */
+    @Column(length = 255)
+    private String whatsappTemplateName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "segment_id")

@@ -25,6 +25,7 @@ public class CampaignActivityDto {
     private String campaignName;
     private Long templateId;
     private String templateName;
+    private String whatsappTemplateName;
     private Long segmentId;
     private String segmentName;
     private String activityName;

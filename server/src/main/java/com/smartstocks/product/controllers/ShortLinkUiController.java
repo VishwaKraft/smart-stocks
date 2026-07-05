@@ -14,6 +14,9 @@ public class ShortLinkUiController {
     @Value("${google.oauth.client-id:}")
     private String googleClientId;
 
+    @Value("${meta.oauth.client-id:}")
+    private String metaClientId;
+
     @GetMapping("/short-links")
     public String homePage(Model model) {
         String baseUrl = shortLinkBaseUrl.endsWith("/") ? shortLinkBaseUrl : shortLinkBaseUrl + "/";
@@ -21,6 +24,7 @@ public class ShortLinkUiController {
         model.addAttribute("apiLinksUrl", "/api/links");
         model.addAttribute("apiCampaignsUrl", "/api/campaigns");
         model.addAttribute("googleClientId", googleClientId);
+        model.addAttribute("metaClientId", metaClientId);
         return "short-links/index";
     }
 }

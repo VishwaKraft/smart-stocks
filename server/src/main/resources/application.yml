@@ -67,3 +67,9 @@ gemini:
 whatsapp:
   webhook:
     verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:smartstocks-whatsapp-webhook-token}
+
+meta:
+  oauth:
+    client-id: ${META_CLIENT_ID:810077728726088}
+    client-secret: ${META_CLIENT_SECRET:733bf16c1751c5619692ff0611588909}
+

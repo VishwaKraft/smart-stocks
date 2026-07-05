@@ -22,8 +22,14 @@ public class CreateActivityRequestDto {
     @NotNull(message = "Campaign ID is required")
     private Long campaignId;
 
-    @NotNull(message = "Template ID is required")
+    /**
+     * Required for EMAIL campaigns. Leave null for WHATSAPP campaigns
+     * and set whatsappTemplateName instead.
+     */
     private Long templateId;
+
+    /** Required for WHATSAPP campaigns – the approved Meta template name (e.g. "hello_world"). */
+    private String whatsappTemplateName;
 
     @NotNull(message = "Segment ID is required")
     private Long segmentId;
