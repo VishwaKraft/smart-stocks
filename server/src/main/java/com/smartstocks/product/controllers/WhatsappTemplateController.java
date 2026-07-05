@@ -14,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
 
@@ -79,7 +78,11 @@ public class WhatsappTemplateController {
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(appSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] hash = mac.doFinal(accessToken.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
         } catch (Exception ex) {
             log.error("[WhatsappTemplateController] Failed to compute appsecret_proof: {}", ex.getMessage(), ex);
             throw new RuntimeException("Failed to compute appsecret_proof", ex);
