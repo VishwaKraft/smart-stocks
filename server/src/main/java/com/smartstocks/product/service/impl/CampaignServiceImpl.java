@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -335,15 +336,25 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     public String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId) {
+        return injectTrackingPixel(htmlBody, campaignCode, emailId, activityId, null);
+    }
+
+    @Override
+    public String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId, String nonce) {
         if (htmlBody == null || htmlBody.isBlank() || campaignCode == null || campaignCode.isBlank()) {
             return htmlBody;
         }
-        String pixelUrl = buildTrackingPixelUrl(campaignCode, emailId, activityId);
+        String pixelUrl = buildTrackingPixelUrl(campaignCode, emailId, activityId, nonce);
         return appendPixelTag(htmlBody, pixelUrl);
     }
 
     @Override
     public String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId) {
+        return buildTrackingPixelUrl(campaignCode, emailId, activityId, null);
+    }
+
+    @Override
+    public String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId, String nonce) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(trackingBaseUrl)
                 .pathSegment(PIXEL_PATH)
                 .queryParam("campaign", campaignCode);
@@ -353,6 +364,13 @@ public class CampaignServiceImpl implements ICampaignService {
         if (activityId != null) {
             builder.queryParam("activity_id", activityId);
         }
+        // Append a unique nonce so that every recipient URL is distinct.
+        // This prevents caching proxies (Gmail Image Proxy, Apple Mail, Yahoo)
+        // from serving a single cached response for all recipients.
+        String resolvedNonce = (nonce != null && !nonce.isBlank()) ? nonce : UUID.randomUUID().toString();
+        builder.queryParam("nonce", resolvedNonce);
+        // Secondary cache-buster: current epoch-millis makes the URL unique in time as well
+        builder.queryParam("_t", System.currentTimeMillis());
         return builder.build().toUriString();
     }
 

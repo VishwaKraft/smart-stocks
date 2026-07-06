@@ -35,6 +35,7 @@ public class EmailOpenTrackingServiceImpl implements IEmailOpenTrackingService {
             String ipAddress,
             String userAgent,
             Map<String, String> requestHeaders,
+            boolean isProxyOpen,
             Principal principal) {
 
         EmailOpenEvent event = new EmailOpenEvent();
@@ -45,7 +46,8 @@ public class EmailOpenTrackingServiceImpl implements IEmailOpenTrackingService {
         event.setEmailId(emailId);
         event.setIpAddress(ipAddress);
         event.setUserAgent(userAgent != null ? userAgent : "");
-        event.setMetadata(mergeMetadata(metadata, requestHeaders));
+        event.setProxyOpen(isProxyOpen);
+        event.setMetadata(mergeMetadata(metadata, requestHeaders, isProxyOpen));
         event.setOpenedAt(LocalDateTime.now());
 
         emailOpenEventRepository.save(event);
@@ -62,10 +64,14 @@ public class EmailOpenTrackingServiceImpl implements IEmailOpenTrackingService {
         return null;
     }
 
-    private Map<String, Object> mergeMetadata(Map<String, Object> metadata, Map<String, String> requestHeaders) {
+    private Map<String, Object> mergeMetadata(Map<String, Object> metadata, Map<String, String> requestHeaders, boolean isProxyOpen) {
         Map<String, Object> merged = metadata != null ? new HashMap<>(metadata) : new HashMap<>();
         if (requestHeaders != null && !requestHeaders.isEmpty()) {
             merged.put("headers", requestHeaders);
+        }
+        if (isProxyOpen) {
+            merged.put("proxy_open", true);
+            merged.put("proxy_note", "IP belongs to caching proxy, not the real reader");
         }
         return merged;
     }

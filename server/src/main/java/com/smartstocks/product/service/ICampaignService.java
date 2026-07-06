@@ -49,8 +49,22 @@ public interface ICampaignService {
      */
     String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId);
 
+    /**
+     * Injects a tracking pixel with a per-recipient {@code nonce} that makes the URL
+     * globally unique, preventing caching proxies (Gmail, Apple Mail, Yahoo) from
+     * reusing a cached response. The {@code nonce} should be a UUID generated fresh
+     * for each outbound message.
+     */
+    String injectTrackingPixel(String htmlBody, String campaignCode, String emailId, Long activityId, String nonce);
+
     /** Builds a tracking pixel URL with optional emailId and activityId params. */
     String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId);
+
+    /**
+     * Builds a tracking pixel URL with a per-recipient {@code nonce} to defeat proxy
+     * caching. The nonce is appended as a query parameter so every recipient URL is unique.
+     */
+    String buildTrackingPixelUrl(String campaignCode, String emailId, Long activityId, String nonce);
 
     /** Exchanges the Meta OAuth code and saves the permanent access token. */
     void saveMetaAuthCode(Long id, String code, String redirectUri);
