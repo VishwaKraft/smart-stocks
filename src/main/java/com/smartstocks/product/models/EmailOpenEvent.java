@@ -41,6 +41,14 @@ public class EmailOpenEvent {
     @Column(length = 512)
     private String userAgent = "";
 
+    /**
+     * {@code true} when the open was triggered by a known email-client caching proxy
+     * (e.g. Gmail Image Proxy, Apple Mail Privacy Protection) rather than the actual
+     * human reader. IP address recorded in such events belongs to the proxy server.
+     */
+    @Column(nullable = false)
+    private boolean proxyOpen = false;
+
     /** General metadata map (campaign info, headers, source, etc.) */
     @Convert(converter = MapToJsonConverter.class)
     @Column(columnDefinition = "TEXT")

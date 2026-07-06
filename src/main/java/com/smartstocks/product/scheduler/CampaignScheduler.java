@@ -202,12 +202,16 @@ public class CampaignScheduler {
                         template.getHtmlBody(),
                         variables);
 
-                // 4c. Inject tracking pixel with emailId + activityId
+                // 4c. Inject tracking pixel with a unique per-recipient nonce so that
+                //     caching proxies (Gmail Image Proxy, Apple Mail, Yahoo) cannot serve
+                //     a cached copy — every URL is distinct, forcing a real server hit.
+                String nonce = UUID.randomUUID().toString();
                 String bodyWithPixel = campaignService.injectTrackingPixel(
                         rendered.getRenderedBody(),
                         campaign.getCampaignCode(),
                         emailId,
-                        activity.getId());
+                        activity.getId(),
+                        nonce);
 
                 RenderedTemplate emailContent = new RenderedTemplate(
                         rendered.getRenderedSubject(), bodyWithPixel);

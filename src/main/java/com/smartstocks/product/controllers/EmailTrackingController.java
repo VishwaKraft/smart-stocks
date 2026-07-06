@@ -37,6 +37,23 @@ public class EmailTrackingController {
     @Autowired
     private ICampaignService campaignService;
 
+    /**
+     * Pixel-tracking endpoint.
+     *
+     * <p>Each recipient receives a URL that contains a unique {@code nonce} (UUID) so that
+     * caching proxies (Google Image Proxy, Apple Mail Privacy Protection, etc.) cannot serve
+     * a cached copy — every URL is distinct, forcing a fresh network request that reaches
+     * this server with the real client IP.
+     *
+     * <p>The response also carries the strongest possible cache-busting headers:
+     * {@code Cache-Control: no-store, must-revalidate}, {@code Pragma: no-cache}, and
+     * {@code Expires: 0}. While proxies can ignore these, the combination of unique URL +
+     * no-cache headers gives the best chance of recording the reader's actual IP.
+     *
+     * <p>When the User-Agent is recognised as a known caching bot (Gmail proxy, Yahoo Slurp,
+     * Apple iCloud, etc.) the event is saved with {@code proxyOpen = true} so analytics
+     * queries can exclude or separately count proxy-inflated opens.
+     */
     @GetMapping(value = "/email_stocks.png", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> trackEmailOpen(
             @RequestParam(value = "user_id", required = false) Long userId,
@@ -44,8 +61,13 @@ public class EmailTrackingController {
             @RequestParam(value = "campaign_id", required = false) Long campaignId,
             @RequestParam(value = "email_id", required = false) String emailId,
             @RequestParam(value = "activity_id", required = false) Long activityId,
+            // Unique nonce appended per-recipient to defeat caching proxies
+            @RequestParam(value = "nonce", required = false) String nonce,
             HttpServletRequest httpRequest,
             Principal principal) throws IOException {
+
+        String userAgent = httpRequest.getHeader("User-Agent");
+        boolean isProxyOpen = HttpRequestUtils.isProxyOrBot(userAgent);
 
         Optional<Campaign> resolvedCampaign = resolveCampaign(campaignId, campaign);
 
@@ -55,10 +77,11 @@ public class EmailTrackingController {
                 activityId,
                 resolvedCampaign.map(Campaign::getCampaignCode).orElse(campaign),
                 emailId,
-                buildMetadata(httpRequest, resolvedCampaign, campaign, emailId, activityId),
+                buildMetadata(httpRequest, resolvedCampaign, campaign, emailId, activityId, nonce, isProxyOpen),
                 HttpRequestUtils.resolveClientIp(httpRequest),
-                httpRequest.getHeader("User-Agent"),
+                userAgent,
                 HttpRequestUtils.extractHeaders(httpRequest),
+                isProxyOpen,
                 principal
         );
 
@@ -67,7 +90,14 @@ public class EmailTrackingController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
+
+        // Aggressive cache-busting: instruct every intermediary NOT to cache this response.
+        // Combined with a unique per-recipient nonce in the URL, this maximises the chance
+        // that the request reaches our server directly rather than being served from a
+        // Google / Yahoo / Apple caching proxy.
         headers.setCacheControl(CacheControl.noStore().mustRevalidate());
+        headers.setPragma("no-cache");
+        headers.setExpires(0);
 
         return ResponseEntity.ok().headers(headers).body(imageBytes);
     }
@@ -90,7 +120,9 @@ public class EmailTrackingController {
             Optional<Campaign> resolvedCampaign,
             String campaignParam,
             String emailId,
-            Long activityId) {
+            Long activityId,
+            String nonce,
+            boolean isProxyOpen) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("image", "email_stocks.png");
         metadata.put("source", "email_pixel");
@@ -109,6 +141,13 @@ public class EmailTrackingController {
         }
         if (activityId != null) {
             metadata.put("activity_id", activityId);
+        }
+        if (nonce != null && !nonce.isBlank()) {
+            // Store the nonce so we can correlate this open with the specific sent message
+            metadata.put("nonce", nonce);
+        }
+        if (isProxyOpen) {
+            metadata.put("proxy_open", true);
         }
 
         request.getParameterMap().forEach((key, values) -> {

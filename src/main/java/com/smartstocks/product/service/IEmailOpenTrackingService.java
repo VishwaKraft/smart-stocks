@@ -15,5 +15,6 @@ public interface IEmailOpenTrackingService {
             String ipAddress,
             String userAgent,
             Map<String, String> requestHeaders,
+            boolean isProxyOpen,
             Principal principal);
 }
