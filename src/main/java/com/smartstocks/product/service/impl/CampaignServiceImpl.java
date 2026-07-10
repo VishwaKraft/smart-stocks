@@ -5,6 +5,7 @@ import com.smartstocks.product.dto.CreateCampaignRequestDto;
 import com.smartstocks.product.models.Campaign;
 import com.smartstocks.product.repository.CampaignRepository;
 import com.smartstocks.product.repository.EmailOpenEventRepository;
+import com.smartstocks.product.repository.WhatsappMessageLogRepository;
 import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import java.util.Map;
 
 @Service
 public class CampaignServiceImpl implements ICampaignService {
@@ -39,6 +39,7 @@ public class CampaignServiceImpl implements ICampaignService {
 
     private final CampaignRepository campaignRepository;
     private final EmailOpenEventRepository emailOpenEventRepository;
+    private final WhatsappMessageLogRepository whatsappMessageLogRepository;
     private final String trackingBaseUrl;
 
     @Autowired
@@ -62,9 +63,11 @@ public class CampaignServiceImpl implements ICampaignService {
     public CampaignServiceImpl(
             CampaignRepository campaignRepository,
             EmailOpenEventRepository emailOpenEventRepository,
+            WhatsappMessageLogRepository whatsappMessageLogRepository,
             @Value("${app.tracking.base-url}") String trackingBaseUrl) {
         this.campaignRepository = campaignRepository;
         this.emailOpenEventRepository = emailOpenEventRepository;
+        this.whatsappMessageLogRepository = whatsappMessageLogRepository;
         this.trackingBaseUrl = normalizeBaseUrl(trackingBaseUrl);
     }
 
@@ -388,9 +391,13 @@ public class CampaignServiceImpl implements ICampaignService {
 
     private CampaignDto toDto(Campaign campaign) {
         long openCount = emailOpenEventRepository.countByCampaignId(campaign.getId());
-        if (openCount == 0) {
+        if (openCount == 0 && campaign.getCampaignCode() != null) {
             openCount = emailOpenEventRepository.countByCampaign(campaign.getCampaignCode());
         }
+
+        // Add WhatsApp Opens
+        long whatsappOpenCount = whatsappMessageLogRepository.countByCampaignIdAndStatus(campaign.getId(), "read");
+        openCount += whatsappOpenCount;
 
         return CampaignDto.builder()
                 .id(campaign.getId())

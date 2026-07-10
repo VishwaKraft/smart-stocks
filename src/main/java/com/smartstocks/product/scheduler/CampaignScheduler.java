@@ -5,6 +5,7 @@ import com.smartstocks.product.repository.CampaignActivityExecutionLogRepository
 import com.smartstocks.product.repository.CampaignActivityRepository;
 import com.smartstocks.product.repository.EmailBounceEventRepository;
 import com.smartstocks.product.repository.SegmentUserRepository;
+import com.smartstocks.product.repository.WhatsappMessageLogRepository;
 import com.smartstocks.product.service.ICampaignService;
 import com.smartstocks.product.service.impl.CampaignActivityServiceImpl;
 import com.smartstocks.product.service.provider.EmailProviderFactory;
@@ -48,6 +49,7 @@ public class CampaignScheduler {
     private final EmailProviderFactory emailProviderFactory;
     private final CampaignActivityServiceImpl activityService;
     private final ICampaignService campaignService;
+    private final WhatsappMessageLogRepository whatsappMessageLogRepository;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
@@ -143,7 +145,19 @@ public class CampaignScheduler {
                 SendResult result = whatsappProvider.send(phone, waTemplateName, waLanguage);
                 if (result.isSuccess()) {
                     sentCount++;
-                    log.debug("[Scheduler] WhatsApp sent to [{}] for activity [{}]", phone, activity.getId());
+                    String wamid = result.getProviderResponse();
+                    if (wamid != null && !wamid.isEmpty() && !wamid.equals("unknown")) {
+                        WhatsappMessageLog logEntry = WhatsappMessageLog.builder()
+                                .wamid(wamid)
+                                .campaignId(campaign.getId())
+                                .activityId(activity.getId())
+                                .phoneNumber(phone)
+                                .status("sent")
+                                .sentAt(LocalDateTime.now())
+                                .build();
+                        whatsappMessageLogRepository.save(logEntry);
+                    }
+                    log.debug("[Scheduler] WhatsApp sent to [{}] for activity [{}] with wamid [{}]", phone, activity.getId(), wamid);
                 } else {
                     bounceCount++;
                     log.warn("[Scheduler] WhatsApp failed for [{}], activity [{}]: {}",

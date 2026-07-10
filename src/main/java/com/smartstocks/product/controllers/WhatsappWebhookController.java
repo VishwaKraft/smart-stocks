@@ -9,8 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import com.smartstocks.product.models.WhatsappMessageLog;
+import com.smartstocks.product.repository.WhatsappMessageLogRepository;
 
 @RestController
 @RequestMapping("/api/webhooks/whatsapp")
@@ -20,6 +25,7 @@ public class WhatsappWebhookController {
     private static final Logger logger = LoggerFactory.getLogger(WhatsappWebhookController.class);
 
     private final CampaignEventLogger eventLogger;
+    private final WhatsappMessageLogRepository whatsappMessageLogRepository;
 
     @Value("${whatsapp.webhook.verify-token}")
     private String verifyToken;
@@ -71,6 +77,26 @@ public class WhatsappWebhookController {
                                     eventSubType = "WHATSAPP_INBOUND_MESSAGE";
                                 } else if (((Map<?, ?>) value).containsKey("statuses")) {
                                     eventSubType = "WHATSAPP_STATUS_UPDATE";
+                                    // Parse status update for open tracking
+                                    Object statuses = ((Map<?, ?>) value).get("statuses");
+                                    if (statuses instanceof java.util.List && !((java.util.List<?>) statuses).isEmpty()) {
+                                        Object firstStatus = ((java.util.List<?>) statuses).get(0);
+                                        if (firstStatus instanceof Map) {
+                                            String wamid = (String) ((Map<?, ?>) firstStatus).get("id");
+                                            String status = (String) ((Map<?, ?>) firstStatus).get("status");
+                                            
+                                            if (wamid != null && "read".equals(status)) {
+                                                Optional<WhatsappMessageLog> logOpt = whatsappMessageLogRepository.findByWamid(wamid);
+                                                if (logOpt.isPresent()) {
+                                                    WhatsappMessageLog messageLog = logOpt.get();
+                                                    messageLog.setStatus("read");
+                                                    messageLog.setReadAt(LocalDateTime.now());
+                                                    whatsappMessageLogRepository.save(messageLog);
+                                                    logger.info("Marked WhatsApp message [{}] as read for campaign {}", wamid, messageLog.getCampaignId());
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
