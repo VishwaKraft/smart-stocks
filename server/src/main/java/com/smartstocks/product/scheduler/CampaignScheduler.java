@@ -77,9 +77,10 @@ public class CampaignScheduler {
         LocalDateTime startedAt = LocalDateTime.now();
         Campaign campaign = activity.getCampaign();
         Template template = activity.getTemplate();
+        String templateName = (template != null) ? template.getName() : activity.getWhatsappTemplateName();
 
         log.info("[Scheduler] Executing activity [{}] for campaign [{}] using template [{}]",
-                activity.getId(), campaign.getName(), template.getName());
+                activity.getId(), campaign.getName(), templateName);
 
         // 1. Load all segment users for this activity's segment
         List<SegmentUser> segmentUsers = (activity.getSegment() != null)
