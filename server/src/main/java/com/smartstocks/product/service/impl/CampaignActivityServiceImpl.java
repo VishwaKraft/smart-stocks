@@ -42,6 +42,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final ICampaignService campaignService;
     private final TemplateRendererFactory templateRendererFactory;
 
+    @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
+    private String appSecret;
+
     @Override
     @Transactional
     public CampaignActivityDto createActivity(CreateActivityRequestDto request) {
@@ -326,7 +329,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             }
 
             com.smartstocks.product.service.provider.WhatsappProvider whatsappProvider = 
-                    new com.smartstocks.product.service.provider.WhatsappProvider(accessToken, phoneNumberId);
+                    new com.smartstocks.product.service.provider.WhatsappProvider(accessToken, phoneNumberId, appSecret);
 
             String testPhone = (emailIds != null && !emailIds.isEmpty()) ? emailIds.get(0) : "";
             if (testPhone.isEmpty()) {

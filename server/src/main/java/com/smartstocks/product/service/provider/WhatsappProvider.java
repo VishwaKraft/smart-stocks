@@ -10,6 +10,9 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Sends WhatsApp template messages via the Meta WhatsApp Business Cloud API.
@@ -24,12 +27,33 @@ public class WhatsappProvider {
 
     private final String accessToken;
     private final String phoneNumberId;
+    private final String appSecret;
     private final RestTemplate restTemplate;
 
-    public WhatsappProvider(String accessToken, String phoneNumberId) {
+    public WhatsappProvider(String accessToken, String phoneNumberId, String appSecret) {
         this.accessToken = accessToken;
         this.phoneNumberId = phoneNumberId;
+        this.appSecret = appSecret;
         this.restTemplate = new RestTemplate();
+    }
+
+    private String computeAppSecretProof(String token) {
+        if (appSecret == null || appSecret.isBlank()) {
+            return "";
+        }
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(appSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+            log.error("[WhatsappProvider] Failed to compute appsecret_proof", ex);
+            return "";
+        }
     }
 
     /**
@@ -42,6 +66,10 @@ public class WhatsappProvider {
      */
     public SendResult send(String toPhoneNumber, String templateName, String languageCode) {
         String url = GRAPH_API_BASE + "/" + phoneNumberId + "/messages";
+        String proof = computeAppSecretProof(accessToken);
+        if (proof != null && !proof.isEmpty()) {
+            url += "?appsecret_proof=" + proof;
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
