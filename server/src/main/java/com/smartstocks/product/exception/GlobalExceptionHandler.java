@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.client.UnknownHttpStatusCodeException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -53,6 +54,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         else if(ex instanceof InvalidStockSelection) errors.put("error", ex.getLocalizedMessage());
         else if(ex instanceof ConstraintViolationException) errors.put("error", "Payload is bad");
         else errors.put("INVALID UNIT", ex.getLocalizedMessage());
+        RootResponseDto<String> response = new RootResponseDto<>(400, HttpStatus.BAD_REQUEST,
+                ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
+        return new ResponseEntity<>(response, new HttpHeaders(), 400);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<RootResponseDto> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        String message = ex.getMostSpecificCause().getMessage();
+        if (message != null && message.contains("template_id") && message.contains("not-null")) {
+            errors.put("error", "template_id cannot be null. Ensure the campaign type is correct and a valid templateId is provided for EMAIL campaigns.");
+        } else if (message != null && message.contains("not-null")) {
+            errors.put("error", "A required field is missing: " + message);
+        } else {
+            errors.put("error", "Database constraint violation: " + message);
+        }
         RootResponseDto<String> response = new RootResponseDto<>(400, HttpStatus.BAD_REQUEST,
                 ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
         return new ResponseEntity<>(response, new HttpHeaders(), 400);

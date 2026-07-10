@@ -318,8 +318,43 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             } else {
                 throw new RuntimeException("Test email failed: " + result.getErrorMessage());
             }
+        } else if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
+            String accessToken = campaign.getMetaAccessToken();
+            String phoneNumberId = campaign.getMetaPhoneNumberId();
+            if (accessToken == null || accessToken.isEmpty() || phoneNumberId == null || phoneNumberId.isEmpty()) {
+                throw new IllegalStateException("WhatsApp is not authorized or configured for this campaign.");
+            }
+
+            com.smartstocks.product.service.provider.WhatsappProvider whatsappProvider = 
+                    new com.smartstocks.product.service.provider.WhatsappProvider(accessToken, phoneNumberId);
+
+            String testPhone = (emailIds != null && !emailIds.isEmpty()) ? emailIds.get(0) : "";
+            if (testPhone.isEmpty()) {
+                throw new IllegalArgumentException("A test phone number must be provided in the emailIds list.");
+            }
+
+            com.smartstocks.product.service.provider.SendResult result = whatsappProvider.send(
+                    testPhone,
+                    activity.getWhatsappTemplateName(),
+                    "en_US"
+            );
+
+            if (result.isSuccess()) {
+                activity.setStatus(ActivityStatus.READY);
+                activityRepository.save(activity);
+
+                // Emit test fire event
+                Map<String, Object> info = new HashMap<>();
+                info.put("activityId", id);
+                info.put("activityName", activity.getActivityName());
+                info.put("recipients", java.util.Collections.singletonList(testPhone));
+                info.put("whatsappResponse", result.getProviderResponse());
+                eventLogger.log("ACTIVITY_TEST_FIRED", info);
+            } else {
+                throw new RuntimeException("Test WhatsApp message failed: " + result.getErrorMessage());
+            }
         } else {
-            throw new UnsupportedOperationException("Test trigger currently only supports GMAIL.");
+            throw new UnsupportedOperationException("Test trigger currently only supports GMAIL and WHATSAPP.");
         }
     }
 
