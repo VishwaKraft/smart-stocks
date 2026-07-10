@@ -336,9 +336,14 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 throw new IllegalArgumentException("A test phone number must be provided in the emailIds list.");
             }
 
+            String waTemplateName = activity.getWhatsappTemplateName();
+            if (waTemplateName == null || waTemplateName.isBlank()) {
+                throw new IllegalArgumentException("A WhatsApp template name must be configured in the activity before testing.");
+            }
+
             com.smartstocks.product.service.provider.SendResult result = whatsappProvider.send(
                     testPhone,
-                    activity.getWhatsappTemplateName(),
+                    waTemplateName,
                     "en_US"
             );
 
@@ -374,6 +379,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         CampaignActivity clone = new CampaignActivity();
         clone.setCampaign(original.getCampaign());
         clone.setTemplate(original.getTemplate());
+        clone.setWhatsappTemplateName(original.getWhatsappTemplateName());
         clone.setSegment(original.getSegment());
         clone.setActivityName(newName);
         clone.setScheduleType(original.getScheduleType());
