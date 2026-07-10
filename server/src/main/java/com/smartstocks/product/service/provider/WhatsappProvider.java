@@ -98,10 +98,14 @@ public class WhatsappProvider {
             log.info("[WhatsappProvider] RESPONSE status={} body={}", response.getStatusCode(), response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                String msgId = response.getBody() != null
-                        ? String.valueOf(response.getBody().getOrDefault("messages", "unknown"))
-                        : "unknown";
-                return SendResult.ok(1, "WhatsApp message sent – id=" + msgId);
+                String msgId = "unknown";
+                if (response.getBody() != null && response.getBody().get("messages") instanceof List) {
+                    List<?> messages = (List<?>) response.getBody().get("messages");
+                    if (!messages.isEmpty() && messages.get(0) instanceof Map) {
+                        msgId = String.valueOf(((Map<?, ?>) messages.get(0)).get("id"));
+                    }
+                }
+                return SendResult.ok(1, msgId);
             } else {
                 return SendResult.failure("WhatsApp API error: " + response.getStatusCode());
             }
