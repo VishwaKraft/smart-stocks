@@ -49,6 +49,9 @@ public class CampaignScheduler {
     private final CampaignActivityServiceImpl activityService;
     private final ICampaignService campaignService;
 
+    @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
+    private String appSecret;
+
     /**
      * Trigger every minute (cron: second=0 of every minute).
      */
@@ -112,7 +115,8 @@ public class CampaignScheduler {
 
         WhatsappProvider whatsappProvider = new WhatsappProvider(
                 campaign.getMetaAccessToken(),
-                campaign.getMetaPhoneNumberId());
+                campaign.getMetaPhoneNumberId(),
+                appSecret);
 
         // Template name — use the WhatsApp template name from the activity
         String waTemplateName = activity.getWhatsappTemplateName();
