@@ -32,7 +32,7 @@ public class CampaignActivityExecutionLog {
     private Campaign campaign;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", nullable = false)
+    @JoinColumn(name = "template_id", nullable = true)
     private Template template;
 
     private LocalDateTime startedAt;
