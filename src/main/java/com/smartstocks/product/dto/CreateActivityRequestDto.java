@@ -31,6 +31,12 @@ public class CreateActivityRequestDto {
     /** Required for WHATSAPP campaigns – the approved Meta template name (e.g. "hello_world"). */
     private String whatsappTemplateName;
 
+    /** Required for VOICE campaigns */
+    private Long voiceTemplateId;
+
+    /** Language code for WHATSAPP campaigns */
+    private String whatsappLanguage;
+
     @NotNull(message = "Segment ID is required")
     private Long segmentId;
 

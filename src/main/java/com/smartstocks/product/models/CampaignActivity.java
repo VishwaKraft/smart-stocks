@@ -36,6 +36,18 @@ public class CampaignActivity {
     @Column(length = 255)
     private String whatsappTemplateName;
 
+    /**
+     * For WhatsApp campaigns: the language/locale code of the template (e.g. "en_US", "hi", "en").
+     * The scheduler uses this when calling the WhatsApp API to match the approved template language.
+     */
+    @Column(name = "whatsapp_language", length = 20)
+    private String whatsappLanguage = "en_US";
+
+    /** For VOICE campaigns: references the VoiceTemplate containing TTS text, language, and voice config. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voice_template_id")
+    private VoiceTemplate voiceTemplate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "segment_id")
     private Segment segment;
@@ -85,6 +97,13 @@ public class CampaignActivity {
     private LocalDateTime nextExecutionAt;
 
     private LocalDateTime lastExecutionAt;
+
+    /**
+     * Number of recipients loaded during the GENERATE stage.
+     * Displayed in the activity list to give visibility into campaign reach.
+     */
+    @Column(name = "recipient_count")
+    private Integer recipientCount;
 
     @CreationTimestamp
     @Column(updatable = false)

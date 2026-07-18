@@ -26,6 +26,9 @@ public class CampaignActivityDto {
     private Long templateId;
     private String templateName;
     private String whatsappTemplateName;
+    private String whatsappLanguage;
+    private Long voiceTemplateId;
+    private String voiceTemplateName;
     private Long segmentId;
     private String segmentName;
     private String activityName;
@@ -40,6 +43,7 @@ public class CampaignActivityDto {
     private ActivityStatus status;
     private boolean isDeleted;
     private List<Weekday> weekdays;
+    private Integer recipientCount;
     private LocalDateTime nextExecutionAt;
     private LocalDateTime lastExecutionAt;
     private LocalDateTime createdAt;

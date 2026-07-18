@@ -48,6 +48,22 @@ public class SegmentController {
         }
     }
 
+    @PostMapping("/s3-path")
+    public ResponseEntity<?> createS3PathSegment(@RequestBody Map<String, String> request) {
+        try {
+            String name = request.get("name");
+            String description = request.get("description");
+            String s3Path = request.get("s3Path");
+            if (name == null || s3Path == null) {
+                return ResponseEntity.badRequest().body("Name and S3 path are required");
+            }
+            Segment segment = segmentService.createS3PathSegment(name, description, s3Path);
+            return ResponseEntity.ok(segment);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to create S3 path segment: " + e.getMessage());
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<Segment>> getAllSegments() {
         return ResponseEntity.ok(segmentService.getAllSegments());

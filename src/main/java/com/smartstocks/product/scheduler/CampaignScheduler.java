@@ -13,6 +13,7 @@ import com.smartstocks.product.service.provider.GmailProvider;
 import com.smartstocks.product.service.provider.IEmailProvider;
 import com.smartstocks.product.service.provider.SendResult;
 import com.smartstocks.product.service.provider.WhatsappProvider;
+import com.smartstocks.product.service.provider.InfobipVoiceProvider;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
@@ -51,8 +52,16 @@ public class CampaignScheduler {
     private final ICampaignService campaignService;
     private final WhatsappMessageLogRepository whatsappMessageLogRepository;
 
+    private final com.smartstocks.product.repository.CampaignSegmentUserRepository campaignSegmentUserRepository;
+
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
+
+    @org.springframework.beans.factory.annotation.Value("${infobip.api-key:}")
+    private String infobipApiKey;
+
+    @org.springframework.beans.factory.annotation.Value("${infobip.base-url:}")
+    private String infobipBaseUrl;
 
     /**
      * Trigger every minute (cron: second=0 of every minute).
@@ -79,7 +88,10 @@ public class CampaignScheduler {
         LocalDateTime startedAt = LocalDateTime.now();
         Campaign campaign = activity.getCampaign();
         Template template = activity.getTemplate();
-        String templateName = (template != null) ? template.getName() : activity.getWhatsappTemplateName();
+        VoiceTemplate voiceTemplate = activity.getVoiceTemplate();
+        String templateName = (template != null) ? template.getName() : 
+                              (voiceTemplate != null) ? voiceTemplate.getName() : 
+                              activity.getWhatsappTemplateName();
 
         log.info("[Scheduler] Executing activity [{}] for campaign [{}] using template [{}]",
                 activity.getId(), campaign.getName(), templateName);
@@ -94,8 +106,10 @@ public class CampaignScheduler {
             return;
         }
 
-        // Branch on campaign type — WhatsApp vs Email
-        if (campaign.getCampaignType() == CampaignType.WHATSAPP) {
+        // Branch on campaign type
+        if (campaign.getCampaignType() == CampaignType.VOICE) {
+            executeVoiceActivity(activity, campaign, voiceTemplate, startedAt);
+        } else if (campaign.getCampaignType() == CampaignType.WHATSAPP) {
             executeWhatsappActivity(activity, campaign, segmentUsers, startedAt);
         } else {
             executeEmailActivity(activity, campaign, template, segmentUsers, startedAt, now);
@@ -121,13 +135,12 @@ public class CampaignScheduler {
                 campaign.getMetaPhoneNumberId(),
                 appSecret);
 
-        // Template name — use the WhatsApp template name from the activity
         String waTemplateName = activity.getWhatsappTemplateName();
         if (waTemplateName == null || waTemplateName.isBlank()) {
             log.error("[Scheduler] WhatsApp activity [{}] skipped – missing WhatsApp template name.", activity.getId());
             return;
         }
-        String waLanguage = "en_US";
+        String waLanguage = activity.getWhatsappLanguage() != null ? activity.getWhatsappLanguage() : "en_US";
 
         int sentCount = 0;
         int bounceCount = 0;
@@ -179,6 +192,106 @@ public class CampaignScheduler {
                 .activity(activity)
                 .campaign(campaign)
                 .template(activity.getTemplate())
+                .startedAt(startedAt)
+                .completedAt(LocalDateTime.now())
+                .status(sentCount > 0 ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED)
+                .recipientCount(sentCount)
+                .providerResponse(providerResponse)
+                .errorMessage(bounceCount > 0 ? bounceCount + " recipient(s) failed." : null)
+                .build();
+        logRepository.save(executionLog);
+
+        activity.setLastExecutionAt(LocalDateTime.now());
+        updateActivityAfterExecution(activity, LocalDateTime.now());
+        activityRepository.save(activity);
+    }
+
+    // -----------------------------------------------------------------------
+    // Voice execution path
+    // -----------------------------------------------------------------------
+    private void executeVoiceActivity(CampaignActivity activity, Campaign campaign,
+                                       VoiceTemplate voiceTemplate, LocalDateTime startedAt) {
+        if (infobipApiKey == null || infobipApiKey.isBlank()) {
+            log.error("[Scheduler] Voice activity [{}] skipped – missing infobip.api-key.", activity.getId());
+            return;
+        }
+        if (campaign.getInfobipSenderNumber() == null || campaign.getInfobipSenderNumber().isBlank()) {
+            log.error("[Scheduler] Voice activity [{}] skipped – no Infobip sender number configured.", activity.getId());
+            return;
+        }
+
+        InfobipVoiceProvider voiceProvider = new InfobipVoiceProvider(infobipApiKey, infobipBaseUrl);
+        String senderNumber = campaign.getInfobipSenderNumber();
+
+        // 1. Load CampaignSegmentUser (already populated during GENERATE stage)
+        List<CampaignSegmentUser> segmentUsers = campaignSegmentUserRepository.findByActivityId(activity.getId());
+        if (segmentUsers.isEmpty()) {
+            log.warn("[Scheduler] Voice activity [{}] has no generated recipients. Did you run /generate?", activity.getId());
+            return;
+        }
+
+        int sentCount = 0;
+        int bounceCount = 0;
+
+        for (CampaignSegmentUser recipient : segmentUsers) {
+            String phone = recipient.getPhoneNumber();
+            if (phone == null || phone.isBlank()) {
+                log.warn("[Scheduler] Recipient [{}] has no phone number – skipping for voice activity [{}]",
+                        recipient.getEmailId(), activity.getId());
+                bounceCount++;
+                continue;
+            }
+
+            try {
+                // Build variable map including extra segment data
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("firstName", recipient.getFirstName() != null ? recipient.getFirstName() : "");
+                variables.put("lastName", recipient.getLastName() != null ? recipient.getLastName() : "");
+                if (recipient.getData() != null) {
+                    variables.putAll(recipient.getData());
+                }
+
+                // Render the TTS message
+                ITemplateRenderer renderer = rendererFactory.get(RendererType.MUSTACHE);
+                RenderedTemplate rendered = renderer.render(
+                        "", // no subject
+                        voiceTemplate.getMessageText(),
+                        variables);
+                
+                String messageText = rendered.getRenderedBody();
+
+                SendResult result = voiceProvider.sendVoice(
+                        phone,
+                        senderNumber,
+                        messageText,
+                        voiceTemplate.getLanguage(),
+                        voiceTemplate.getVoiceName(),
+                        voiceTemplate.getVoiceGender()
+                );
+
+                if (result.isSuccess()) {
+                    sentCount++;
+                    log.debug("[Scheduler] Voice call queued to [{}] for activity [{}]", phone, activity.getId());
+                } else {
+                    bounceCount++;
+                    log.warn("[Scheduler] Voice failed for [{}], activity [{}]: {}",
+                            phone, activity.getId(), result.getErrorMessage());
+                    recordBounce(activity, campaign, phone, result);
+                }
+            } catch (Exception ex) {
+                bounceCount++;
+                log.error("[Scheduler] Exception sending Voice to [{}], activity [{}]: {}",
+                        phone, activity.getId(), ex.getMessage(), ex);
+                recordBounce(activity, campaign, phone, SendResult.failure("Exception: " + ex.getMessage()));
+            }
+        }
+
+        String providerResponse = String.format("voice: sent=%d, failed=%d, total=%d",
+                sentCount, bounceCount, segmentUsers.size());
+
+        CampaignActivityExecutionLog executionLog = CampaignActivityExecutionLog.builder()
+                .activity(activity)
+                .campaign(campaign)
                 .startedAt(startedAt)
                 .completedAt(LocalDateTime.now())
                 .status(sentCount > 0 ? ExecutionStatus.SUCCESS : ExecutionStatus.FAILED)
