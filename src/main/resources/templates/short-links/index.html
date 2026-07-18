@@ -39,6 +39,9 @@
             <button type="button" class="section-nav-btn" data-section="whatsapp-templates">
                 <span class="nav-icon">💬</span> WhatsApp Templates
             </button>
+            <button type="button" class="section-nav-btn" data-section="voice-templates">
+                <span class="nav-icon">🎙️</span> Voice Templates
+            </button>
             <button type="button" class="section-nav-btn" data-section="segments">
                 <span class="nav-icon">👥</span> Segments
             </button>
@@ -85,28 +88,48 @@
 
         <!-- ── Campaigns ── -->
         <section id="campaignPanel" class="panel" hidden>
-            <h2>Campaign Builder</h2>
-            <p class="panel-hint">Create a campaign to get a tracking pixel URL for email opens.</p>
-            <form id="campaignForm" class="form">
-                <div class="inputs stacked">
-                    <input type="text" id="campaignName" name="name" placeholder="Campaign name" required>
-                    <input type="text" id="campaignCode" name="campaignCode" placeholder="Custom code (optional)">
-                    <textarea id="campaignDescription" name="description" placeholder="Description (optional)"
-                        rows="3"></textarea>
+            <div class="campaign-form-card">
+                <h2>Campaign Builder</h2>
+                <p class="panel-hint">Create a campaign to send emails, WhatsApp messages, or voice calls to your audience segments.</p>
+                <form id="campaignForm" class="form stacked-full">
+                    <div class="form-group full-width">
+                        <label for="campaignName">Campaign Name *</label>
+                        <input type="text" id="campaignName" name="name" placeholder="e.g. Summer Sale 2025" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="campaignCode">Custom Code <span style="font-weight:400;color:#aaa">(optional)</span></label>
+                        <input type="text" id="campaignCode" name="campaignCode" placeholder="e.g. SUMMER25">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="campaignDescription">Description <span style="font-weight:400;color:#aaa">(optional)</span></label>
+                        <textarea id="campaignDescription" name="description" placeholder="What is this campaign about?" rows="2"></textarea>
+                    </div>
 
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label>Campaign Type *</label>
-                        <div class="radio-group" style="display: flex; gap: 16px; margin-top: 8px; margin-bottom: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
-                                <input type="radio" name="campaignType" value="EMAIL" checked> Email
+                        <div class="campaign-type-cards" id="campaignTypeCards">
+                            <label class="campaign-type-card selected" data-value="EMAIL">
+                                <input type="radio" name="campaignType" value="EMAIL" checked>
+                                <span class="card-icon">✉️</span>
+                                <span class="card-label">Email</span>
+                                <span class="card-desc">Send HTML emails with open tracking</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
-                                <input type="radio" name="campaignType" value="WHATSAPP"> WhatsApp
+                            <label class="campaign-type-card" data-value="WHATSAPP">
+                                <input type="radio" name="campaignType" value="WHATSAPP">
+                                <span class="card-icon">💬</span>
+                                <span class="card-label">WhatsApp</span>
+                                <span class="card-desc">Send messages via Meta Business API</span>
+                            </label>
+                            <label class="campaign-type-card" data-value="VOICE">
+                                <input type="radio" name="campaignType" value="VOICE">
+                                <span class="card-icon">🎙️</span>
+                                <span class="card-label">Voice</span>
+                                <span class="card-desc">Outbound TTS calls via Infobip</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="form-group" id="emailProviderGroup">
+                    <div class="form-group full-width" id="emailProviderGroup">
                         <label for="campaignEmailProvider">Email Provider</label>
                         <select id="campaignEmailProvider" name="emailProviderType">
                             <option value="">— none —</option>
@@ -118,23 +141,35 @@
                         </select>
                     </div>
 
-                    <div class="form-group" id="whatsappSenderGroup" hidden>
+                    <div class="form-group full-width" id="whatsappSenderGroup" hidden>
                         <label for="campaignWhatsappSender">WhatsApp Sender Number *</label>
                         <select id="campaignWhatsappSender" name="whatsappSenderNumber">
                             <option value="">— select number —</option>
-                            <option value="+919258844009">+919258844009</option>
+                            <option value="+919258844009">+919258844009 (Sandbox)</option>
                         </select>
+                        <small class="form-hint">This is your Meta-registered sender number.</small>
                     </div>
-                </div>
-                <button type="submit">Create Campaign</button>
-            </form>
-            <div id="campaignResult"></div>
+
+                    <div class="form-group full-width" id="voiceSenderGroup" hidden>
+                        <label for="campaignVoiceSender">Infobip Sender Number *</label>
+                        <select id="campaignVoiceSender" name="infobipSenderNumber">
+                            <option value="">— select number —</option>
+                            <option value="38515507799">38515507799 (Infobip Sandbox)</option>
+                        </select>
+                        <small class="form-hint">This is your Infobip-registered outbound number.</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">🚀 Create Campaign</button>
+                    </div>
+                </form>
+                <div id="campaignResult"></div>
+            </div>
 
             <!-- Campaign listing -->
-            <hr style="border:none;border-top:1px solid #e8ecf0;margin:28px 0 20px">
             <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin:0 0 16px">Your Campaigns</h3>
             <p class="empty-state" id="campaignEmpty">
-                No campaigns yet. Create one above to start tracking.
+                No campaigns yet. Create one above to get started.
             </p>
             <table class="data-table" id="campaignTable" hidden>
                 <thead>
@@ -143,7 +178,6 @@
                         <th>Type</th>
                         <th>Description</th>
                         <th>Provider / Sender</th>
-                        <th>Opens</th>
                         <th>Created</th>
                         <th>Actions</th>
                     </tr>
@@ -372,13 +406,146 @@
             </table>
         </section>
 
+        <!-- ── Voice Templates ── -->
+        <section id="voiceTemplatesPanel" class="panel" hidden>
+            <div class="panel-header">
+                <div>
+                    <h2>Voice Templates</h2>
+                    <p class="panel-hint">Manage your Infobip Voice templates. These templates define the text-to-speech message and voice settings for voice campaigns.</p>
+                </div>
+                <button type="button" id="newVoiceTemplateBtn" class="primary-btn">+ New Voice Template</button>
+            </div>
+
+            <div id="voiceTemplateFormWrapper" class="form-card" hidden style="margin-bottom: 24px; padding: 24px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <h3 id="voiceTemplateFormTitle" style="margin: 0 0 20px; font-size: 16px; font-weight: 700; color: #1a1a2e;">New Voice Template</h3>
+                <form id="voiceTemplateForm" class="form stacked-full">
+                    <input type="hidden" id="voiceTplId">
+
+                    <!-- Row 1: Template Name + Campaign -->
+                    <div class="form-row" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 2; min-width: 220px;">
+                            <label for="voiceTplName">Template Name *</label>
+                            <input type="text" id="voiceTplName" placeholder="e.g. Welcome Call" required
+                                style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                            <small style="color:#718096; font-size:11px;">Internal label to identify this template.</small>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 180px;">
+                            <label for="voiceTplCampaign">Link to Campaign (Optional)</label>
+                            <select id="voiceTplCampaign" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                                <option value="">— none —</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Infobip API fields header -->
+                    <div style="background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">🎙️</span>
+                        <div>
+                            <div style="font-size: 12px; font-weight: 700; color: #4c51bf; text-transform: uppercase; letter-spacing: 0.05em;">Infobip TTS Fields</div>
+                            <div style="font-size: 11px; color: #667eea;">These map directly to the Infobip <code>/tts/3/advanced</code> API payload.</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Language -->
+                    <div class="form-row" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="voiceTplLanguage">Language <code style="font-size:10px; background:#f1f5f9; padding:1px 4px; border-radius:3px;">language</code> *</label>
+                            <select id="voiceTplLanguage" required style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                                <option value="en" selected>English (en)</option>
+                                <option value="hi">Hindi (hi)</option>
+                                <option value="es">Spanish (es)</option>
+                                <option value="fr">French (fr)</option>
+                                <option value="de">German (de)</option>
+                                <option value="pt">Portuguese (pt)</option>
+                                <option value="ar">Arabic (ar)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Voice Name + Gender (nested voice object) -->
+                    <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 700; color: #4a5568; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                            <code style="background: #e2e8f0; padding: 1px 5px; border-radius: 3px; font-size: 11px;">voice</code> object
+                        </div>
+                        <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 150px; margin: 0;">
+                                <label for="voiceTplVoiceName">Voice Name <code style="font-size:10px; background:#f1f5f9; padding:1px 4px; border-radius:3px;">voice.name</code> *</label>
+                                <select id="voiceTplVoiceName" required style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                                    <option value="Joanna" selected>Joanna (Female, EN)</option>
+                                    <option value="Matthew">Matthew (Male, EN)</option>
+                                    <option value="Aditi">Aditi (Female, HI)</option>
+                                    <option value="Raveena">Raveena (Female, HI)</option>
+                                    <option value="Conchita">Conchita (Female, ES)</option>
+                                    <option value="Enrique">Enrique (Male, ES)</option>
+                                    <option value="Celine">Celine (Female, FR)</option>
+                                    <option value="Mathieu">Mathieu (Male, FR)</option>
+                                </select>
+                                <small style="color:#718096; font-size:11px;">Infobip-supported TTS voice name.</small>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 130px; margin: 0;">
+                                <label for="voiceTplVoiceGender">Gender <code style="font-size:10px; background:#f1f5f9; padding:1px 4px; border-radius:3px;">voice.gender</code> *</label>
+                                <select id="voiceTplVoiceGender" required style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
+                                    <option value="female" selected>Female</option>
+                                    <option value="male">Male</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Text -->
+                    <div class="form-group full-width" style="margin-bottom: 16px;">
+                        <label for="voiceTplMessageText">Message Text <code style="font-size:10px; background:#f1f5f9; padding:1px 4px; border-radius:3px;">text</code> *</label>
+                        <textarea id="voiceTplMessageText" rows="4"
+                            placeholder="e.g. Welcome to Smart Stocks! This is a voice message from your campaign." required
+                            style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; resize: vertical;"
+                            oninput="updateVoicePayloadPreview()"></textarea>
+                        <small style="color:#718096; font-size:11px;">This text will be spoken aloud via Infobip's text-to-speech engine.</small>
+                    </div>
+
+                    <!-- Live API Payload Preview -->
+                    <div id="voicePayloadPreview" style="background:#1e1e2e; border-radius:8px; padding:14px 16px; margin-bottom:16px; font-family: 'Courier New', monospace; font-size:12px; color:#cdd6f4; overflow-x:auto; display:block;">
+                        <div style="font-size:10px; color:#a6adc8; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">📋 Live Infobip Payload Preview</div>
+                        <pre id="voicePayloadPreviewCode" style="margin:0; white-space:pre-wrap; word-break:break-word;">{
+  "language": "en",
+  "text": "...",
+  "voice": {
+    "name": "Joanna",
+    "gender": "female"
+  }
+}</pre>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; gap: 12px;">
+                        <button type="submit" class="primary-btn" id="voiceTplSaveBtn">💾 Save Template</button>
+                        <button type="button" class="secondary-btn" id="voiceTplCancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table of Voice Templates -->
+            <p class="empty-state" id="voiceTemplateEmpty">
+                No Voice templates loaded.
+            </p>
+            <table class="data-table" id="voiceTemplateTable" hidden>
+                <thead>
+                    <tr>
+                        <th>Template Name</th>
+                        <th>Language</th>
+                        <th>Voice (Gender)</th>
+                        <th>Message Text</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="voiceTemplateTableBody"></tbody>
+            </table>
+        </section>
+
         <!-- ── Activities ── -->
         <section id="activityPanel" class="panel" hidden>
             <div class="panel-header">
                 <div>
                     <h2>Activities</h2>
-                    <p class="panel-hint">Schedule one-time or recurring email sends. Each send automatically includes
-                        the campaign tracking pixel.</p>
+                    <p class="panel-hint">Schedule one-time or recurring sends for any campaign type — email, WhatsApp, or voice calls.</p>
                 </div>
                 <button type="button" id="newActivityBtn" class="primary-btn">+ New Activity</button>
             </div>
@@ -406,6 +573,23 @@
                             <label for="actWaTemplate">WhatsApp Template *</label>
                             <select id="actWaTemplate">
                                 <option value="">— select a WhatsApp template —</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="actWaLanguageGroup" hidden>
+                            <label for="actWaLanguage">WhatsApp Language *</label>
+                            <select id="actWaLanguage">
+                                <option value="en" selected>English (en)</option>
+                                <option value="en_US">English US (en_US)</option>
+                                <option value="es">Spanish (es)</option>
+                                <option value="pt_BR">Portuguese (pt_BR)</option>
+                                <option value="fr">French (fr)</option>
+                                <option value="de">German (de)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="actVoiceTemplateGroup" hidden>
+                            <label for="actVoiceTemplate">Voice Template *</label>
+                            <select id="actVoiceTemplate">
+                                <option value="">— select a Voice template —</option>
                             </select>
                         </div>
                     </div>
@@ -560,6 +744,7 @@
                 <div class="segment-tabs">
                     <button type="button" class="tab-btn active" data-tab="csvTab">Upload CSV</button>
                     <button type="button" class="tab-btn" data-tab="sqlTab">SQL Query</button>
+                    <button type="button" class="tab-btn" data-tab="s3Tab">S3 Path</button>
                 </div>
 
                 <form id="segmentForm" class="form stacked-full">
@@ -590,6 +775,14 @@
                                 rows="4"></textarea>
                             <small class="form-hint">Query should select columns alias 'userid', 'emailid' (mandatory),
                                 'phone_number'.</small>
+                        </div>
+                    </div>
+
+                    <div id="s3TabContent" class="tab-content" hidden>
+                        <div class="form-group full-width">
+                            <label for="segS3Path">S3 Path *</label>
+                            <input type="text" id="segS3Path" placeholder="s3://my-bucket/path/to/segment.csv">
+                            <small class="form-hint">Path to a CSV file in S3 containing the segment data.</small>
                         </div>
                     </div>
 
@@ -644,12 +837,14 @@
 
     <!-- ===================== TEST FIRE MODAL ===================== -->
     <div id="testFireModal" class="modal">
-        <div class="modal-content">
-            <h3>Test Fire Activity</h3>
-            <p class="panel-hint">Enter comma-separated email addresses to receive the test email.</p>
+        <div class="modal-content" style="min-width: 360px; max-width: 460px; width: 90%;">
+            <div style="font-size: 24px; margin-bottom: 8px;" id="testFireIcon">✉️</div>
+            <h3 id="testFireTitle" style="margin: 0 0 6px; color: #1a1a2e;">Test Fire Activity</h3>
+            <p class="panel-hint" id="testFireHint" style="margin-bottom: 16px;">Enter comma-separated email addresses to receive the test.</p>
             <div class="form-group full-width">
-                <textarea id="testFireEmails" placeholder="user1@example.com, user2@example.com" rows="3"
-                    style="width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-family: Inter; resize: vertical;"></textarea>
+                <label id="testFireLabel" for="testFireRecipients" style="font-size:12px;font-weight:600;color:#555;">Email Addresses *</label>
+                <textarea id="testFireRecipients" placeholder="user1@example.com, user2@example.com" rows="3"
+                    style="width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; font-family: inherit; font-size: 14px; resize: vertical;"></textarea>
             </div>
             <div class="modal-buttons" style="margin-top: 16px;">
                 <button id="confirmTestFire" class="primary-btn">Send Test</button>
@@ -741,6 +936,7 @@
         window.API_ACTIVITIES_URL = '/api/activities';
         window.API_SEGMENTS_URL = '/api/segments';
         window.API_WHATSAPP_TEMPLATES_URL = '/api/whatsapp/templates';
+        window.API_VOICE_TEMPLATES_URL = '/api/voice/templates';
     </script>
     <script th:src="@{/js/short-links/app.js}"></script>
 </body>

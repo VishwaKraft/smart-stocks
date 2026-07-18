@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const campaignPanel         = document.getElementById("campaignPanel");
     const templatePanel         = document.getElementById("templatePanel");
     const whatsappTemplatesPanel = document.getElementById("whatsappTemplatesPanel");
+    const voiceTemplatesPanel   = document.getElementById("voiceTemplatesPanel");
     const activityPanel         = document.getElementById("activityPanel");
     const segmentPanel          = document.getElementById("segmentPanel");
     const modal                 = document.getElementById("deleteModal");
@@ -107,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
             campaigns: campaignPanel,
             templates: templatePanel,
             "whatsapp-templates": whatsappTemplatesPanel,
+            "voice-templates": voiceTemplatesPanel,
             activities: activityPanel,
             segments: segmentPanel
         };
@@ -127,9 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (section === "whatsapp-templates") {
             loadWaCampaignDropdown();
             loadWhatsappTemplates();
+        } else if (section === "voice-templates") {
+            loadVoiceTemplates();
+            loadVoiceTemplateCampaignDropdown();
         } else if (section === "activities") {
-            loadActivityTable();
-            loadCampaignDropdowns();
+            loadCampaignDropdowns().then(() => loadActivityTable());
             loadTemplateDropdowns();
             loadSegmentDropdownForActivity();
         } else if (section === "segments") {
@@ -263,8 +267,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('input[name="campaignType"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const isWhatsApp = e.target.value === 'WHATSAPP';
-            document.getElementById('emailProviderGroup').hidden = isWhatsApp;
+            const isVoice = e.target.value === 'VOICE';
+            document.getElementById('emailProviderGroup').hidden = isWhatsApp || isVoice;
             document.getElementById('whatsappSenderGroup').hidden = !isWhatsApp;
+            if (document.getElementById('voiceSenderGroup')) document.getElementById('voiceSenderGroup').hidden = !isVoice;
+        });
+    });
+
+    // Campaign type card selector — visual selection handler
+    document.querySelectorAll('.campaign-type-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.campaign-type-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            // Trigger the hidden radio change
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
         });
     });
 
@@ -278,15 +295,21 @@ document.addEventListener("DOMContentLoaded", () => {
             description:       document.getElementById("campaignDescription").value.trim() || null,
             campaignType:      campaignType,
             emailProviderType: campaignType === 'EMAIL' ? (document.getElementById("campaignEmailProvider").value || null) : null,
-            whatsappSenderNumber: campaignType === 'WHATSAPP' ? (document.getElementById("campaignWhatsappSender").value || null) : null
+            whatsappSenderNumber: campaignType === 'WHATSAPP' ? (document.getElementById("campaignWhatsappSender").value || null) : null,
+            infobipSenderNumber: campaignType === 'VOICE' ? (document.getElementById("campaignVoiceSender").value || null) : null
         };
         if (!payload.name) return;
         try {
             const campaign = await apiFetch(apiCampaignsUrl, { method: "POST", body: JSON.stringify(payload) });
             renderCampaignResult(campaign);
             e.target.reset();
+            // Reset card selection to EMAIL
+            document.querySelectorAll('.campaign-type-card').forEach(c => c.classList.remove('selected'));
+            const emailCard = document.querySelector('.campaign-type-card[data-value="EMAIL"]');
+            if (emailCard) emailCard.classList.add('selected');
             document.getElementById('emailProviderGroup').hidden = false;
             document.getElementById('whatsappSenderGroup').hidden = true;
+            if (document.getElementById('voiceSenderGroup')) document.getElementById('voiceSenderGroup').hidden = true;
             refreshCampaignCache();
             loadCampaignTable();
             showToast("Campaign created!", "success");
@@ -316,10 +339,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 let providerSenderHtml = '<span class="muted">—</span>';
                 if (c.campaignType === 'WHATSAPP' && c.whatsappSenderNumber) {
                     providerSenderHtml = `<span class="badge badge-default">Sender: ${escHtml(c.whatsappSenderNumber)}</span>`;
+                } else if (c.campaignType === 'VOICE' && c.infobipSenderNumber) {
+                    providerSenderHtml = `<span class="badge badge-default">Sender: ${escHtml(c.infobipSenderNumber)}</span>`;
                 } else if (c.emailProviderType) {
                     providerSenderHtml = `<span class="badge badge-default">${escHtml(c.emailProviderType)}</span>`;
                 }
-                const typeBadge = `<span class="badge badge-default">${escHtml(c.campaignType || 'EMAIL')}</span>`;
+                const typeMap = { EMAIL: 'badge-email', WHATSAPP: 'badge-whatsapp', VOICE: 'badge-voice' };
+                const typeCls = typeMap[c.campaignType] || 'badge-default';
+                const typeLabel = { EMAIL: '✉️ Email', WHATSAPP: '💬 WhatsApp', VOICE: '🎙️ Voice' }[c.campaignType] || (c.campaignType || 'EMAIL');
+                const typeBadge = `<span class="badge ${typeCls}">${typeLabel}</span>`;
                 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
@@ -327,12 +355,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${typeBadge}</td>
                     <td class="truncate" style="max-width:180px">${escHtml(c.description || "—")}</td>
                     <td>${providerSenderHtml}</td>
-                    <td>${c.openCount ?? 0}</td>
                     <td>${fmtDate(c.createdAt)}</td>
                     <td class="table-actions">
                         ${c.emailProviderType === 'GMAIL' ? `<button class="primary-btn btn-xs" data-auth-gmail="${c.id}">Sign in with Gmail</button>` : ''}
                         ${c.campaignType === 'WHATSAPP' ? `<button class="primary-btn btn-xs" style="background: linear-gradient(135deg, #25d366, #128c7e);" data-auth-meta="${c.id}">🔑 Sign in with Meta</button>` : ''}
-                        ${c.trackingPixelUrl && c.campaignType !== 'WHATSAPP' ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
+                        ${c.trackingPixelUrl && c.campaignType === 'EMAIL' ? `<button class="secondary-btn btn-xs" data-copy-pixel="${escHtml(c.trackingPixelUrl)}">Copy Pixel</button>` : ''}
                         <button class="danger-btn" data-delete-campaign="${c.id}" data-delete-name="${escHtml(c.name)}">Delete</button>
                     </td>`;
                 tbody.appendChild(tr);
@@ -651,8 +678,10 @@ document.addEventListener("DOMContentLoaded", () => {
         activityForm.reset();
         const emailGrp = document.getElementById("actEmailTemplateGroup");
         const waGrp = document.getElementById("actWaTemplateGroup");
+        const waLangGrp = document.getElementById("actWaLanguageGroup");
         if (emailGrp) emailGrp.hidden = true;
         if (waGrp) waGrp.hidden = true;
+        if (waLangGrp) waLangGrp.hidden = true;
     });
 
     async function loadSegmentDropdownForActivity() {
@@ -693,16 +722,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const c = campaignsById[campaignId];
         const emailGrp = document.getElementById("actEmailTemplateGroup");
         const waGrp = document.getElementById("actWaTemplateGroup");
+        const waLangGrp = document.getElementById("actWaLanguageGroup");
+        const voiceGrp = document.getElementById("actVoiceTemplateGroup");
+        
         if (c && c.campaignType === "WHATSAPP") {
             if (emailGrp) emailGrp.hidden = true;
             if (waGrp) waGrp.hidden = false;
+            if (waLangGrp) waLangGrp.hidden = false;
+            if (voiceGrp) voiceGrp.hidden = true;
             await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
+        } else if (c && c.campaignType === "VOICE") {
+            if (emailGrp) emailGrp.hidden = true;
+            if (waGrp) waGrp.hidden = true;
+            if (waLangGrp) waLangGrp.hidden = true;
+            if (voiceGrp) voiceGrp.hidden = false;
+            await loadVoiceTemplatesForActivity(c.id);
         } else if (c && c.campaignType === "EMAIL") {
             if (emailGrp) emailGrp.hidden = false;
             if (waGrp) waGrp.hidden = true;
+            if (waLangGrp) waLangGrp.hidden = true;
+            if (voiceGrp) voiceGrp.hidden = true;
+            await loadTemplateDropdowns();
         } else {
             if (emailGrp) emailGrp.hidden = true;
             if (waGrp) waGrp.hidden = true;
+            if (waLangGrp) waLangGrp.hidden = true;
+            if (voiceGrp) voiceGrp.hidden = true;
         }
     });
 
@@ -720,11 +765,33 @@ document.addEventListener("DOMContentLoaded", () => {
             templates.forEach(t => {
                 const opt = document.createElement("option");
                 opt.value = t.name;
-                opt.textContent = t.name;
+                opt.textContent = `${t.name} (${t.language})`;
                 sel.appendChild(opt);
             });
         } catch (err) {
             console.error(err);
+            sel.innerHTML = '<option value="">— error loading templates —</option>';
+        }
+    }
+
+    async function loadVoiceTemplatesForActivity(campaignId) {
+        const sel = document.getElementById("actVoiceTemplate");
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— loading Voice templates... —</option>';
+        try {
+            const params = new URLSearchParams();
+            if (campaignId) params.append("campaignId", campaignId);
+            const res = await apiFetch(`/api/voice/templates?${params}`);
+            const templates = res || [];
+            sel.innerHTML = '<option value="">— select a Voice template —</option>';
+            templates.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.id;
+                opt.textContent = t.name;
+                sel.appendChild(opt);
+            });
+        } catch (e) {
+            console.error(e);
             sel.innerHTML = '<option value="">— error loading templates —</option>';
         }
     }
@@ -758,8 +825,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const payload = {
             campaignId:    actCampaignId,
-            templateId:    isWa ? null : (Number(document.getElementById("actTemplate").value) || null),
+            templateId:    isWa ? null : (c && c.campaignType === "VOICE" ? (Number(document.getElementById("actVoiceTemplate").value) || null) : (Number(document.getElementById("actTemplate").value) || null)),
             whatsappTemplateName: isWa ? document.getElementById("actWaTemplate").value : null,
+            whatsappLanguage: isWa ? document.getElementById("actWaLanguage").value : null,
             segmentId:     Number(document.getElementById("actSegment").value) || null,
             activityName:  document.getElementById("actName").value.trim() || null,
             scheduleType:  schedType,
@@ -774,8 +842,8 @@ document.addEventListener("DOMContentLoaded", () => {
             status:            document.getElementById("actStatus").value || "ACTIVE"
         };
 
-        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName) || !payload.scheduleType) {
-            showToast("Campaign, Template and Schedule Type are required", "error");
+        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName && !(c && c.campaignType === 'VOICE' && payload.templateId !== undefined)) || !payload.scheduleType) {
+            showToast("Campaign, Template, and Schedule Type are required", "error");
             return;
         }
 
@@ -817,6 +885,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     COMPLETED: "badge-completed", CANCELLED: "badge-cancelled"
                 }[a.status] || "badge-default";
                 const isCompleted = a.status === "COMPLETED" || a.status === "CANCELLED";
+                // Look up campaign type for this activity
+                const actCampaign = campaignsById[a.campaignId];
+                const actCampaignType = (actCampaign && actCampaign.campaignType) || a.campaignType || 'EMAIL';
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>${escHtml(a.activityName || "—")}</strong></td>
@@ -830,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <button class="secondary-btn btn-xs" data-clone-act="${a.id}" data-clone-name="${escHtml(a.activityName || '')}">Clone</button>
                             <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
                         ` : `
-                            <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}">Test Trigger</button>
+                            <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}" data-campaign-type="${actCampaignType}">Test Trigger</button>
                             <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
                             <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
                             <button class="danger-btn" data-cancel-act="${a.id}">Cancel</button>
@@ -851,18 +922,34 @@ document.addEventListener("DOMContentLoaded", () => {
                         const c = campaignsById[a.campaignId];
                         const emailGrp = document.getElementById("actEmailTemplateGroup");
                         const waGrp = document.getElementById("actWaTemplateGroup");
+                        const waLangGrp = document.getElementById("actWaLanguageGroup");
+                        const voiceGrp = document.getElementById("actVoiceTemplateGroup");
                         if (c && c.campaignType === "WHATSAPP") {
                             if (emailGrp) emailGrp.hidden = true;
                             if (waGrp) waGrp.hidden = false;
+                            if (waLangGrp) waLangGrp.hidden = false;
+                            if (voiceGrp) voiceGrp.hidden = true;
                             await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
                             document.getElementById("actWaTemplate").value = a.whatsappTemplateName || "";
+                            document.getElementById("actWaLanguage").value = a.whatsappLanguage || "en";
+                        } else if (c && c.campaignType === "VOICE") {
+                            if (emailGrp) emailGrp.hidden = true;
+                            if (waGrp) waGrp.hidden = true;
+                            if (waLangGrp) waLangGrp.hidden = true;
+                            if (voiceGrp) voiceGrp.hidden = false;
+                            await loadVoiceTemplatesForActivity(c.id);
+                            document.getElementById("actVoiceTemplate").value = a.templateId;
                         } else if (c && c.campaignType === "EMAIL") {
                             if (emailGrp) emailGrp.hidden = false;
                             if (waGrp) waGrp.hidden = true;
+                            if (waLangGrp) waLangGrp.hidden = true;
+                            if (voiceGrp) voiceGrp.hidden = true;
                             document.getElementById("actTemplate").value   = a.templateId;
                         } else {
                             if (emailGrp) emailGrp.hidden = true;
                             if (waGrp) waGrp.hidden = true;
+                            if (waLangGrp) waLangGrp.hidden = true;
+                            if (voiceGrp) voiceGrp.hidden = true;
                         }
                         
                         await loadSegmentDropdownForActivity();
@@ -920,8 +1007,31 @@ document.addEventListener("DOMContentLoaded", () => {
             activityTableBody.querySelectorAll("[data-test-trigger-act]").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const actId = btn.dataset.testTriggerAct;
-                    document.getElementById("testFireEmails").value = "";
+                    // Determine campaign type for this activity
+                    const actRow = btn.closest('tr');
+                    const campaignName = actRow ? actRow.querySelector('td:nth-child(2)')?.textContent : '';
+                    // Look up campaign type from the activity's campaignId via the row's data
+                    const campaignType = btn.dataset.campaignType || 'EMAIL';
+                    const isVoiceOrWa = (campaignType === 'VOICE' || campaignType === 'WHATSAPP');
+
+                    document.getElementById("testFireRecipients").value = "";
                     document.getElementById("confirmTestFire").dataset.actId = actId;
+                    document.getElementById("confirmTestFire").dataset.campaignType = campaignType;
+
+                    const icon = { EMAIL: '✉️', WHATSAPP: '💬', VOICE: '🎙️' }[campaignType] || '✉️';
+                    const title = { EMAIL: 'Test Email Send', WHATSAPP: 'Test WhatsApp Send', VOICE: 'Test Voice Call' }[campaignType] || 'Test Fire Activity';
+                    const hint = isVoiceOrWa
+                        ? 'Enter a phone number to receive the test (with country code, e.g. +91xxxxxxxxxx).'
+                        : 'Enter comma-separated email addresses to receive the test.';
+                    const label = isVoiceOrWa ? 'Phone Number *' : 'Email Addresses *';
+                    const placeholder = isVoiceOrWa ? '+91xxxxxxxxxx' : 'user1@example.com, user2@example.com';
+
+                    document.getElementById("testFireIcon").textContent = icon;
+                    document.getElementById("testFireTitle").textContent = title;
+                    document.getElementById("testFireHint").textContent = hint;
+                    document.getElementById("testFireLabel").textContent = label;
+                    document.getElementById("testFireRecipients").placeholder = placeholder;
+
                     testFireModal.style.display = "flex";
                 });
             });
@@ -1006,6 +1116,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (type === "activity") url = `${apiActivitiesUrl}/${id}`;
                 else if (type === "link") url = `${apiLinksUrl}/${id}`;
                 else if (type === "campaign") url = `${apiCampaignsUrl}/${id}`;
+                else if (type === "voice-template") url = `${window.API_VOICE_TEMPLATES_URL}/${id}`;
 
                 await fetch(url, { method: "DELETE" });
 
@@ -1013,6 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (type === "activity") loadActivityTable();
                 else if (type === "link") loadShortLinksTable();
                 else if (type === "campaign") { loadCampaignTable(); refreshCampaignCache(); }
+                else if (type === "voice-template") loadVoiceTemplates();
             }
 
             showToast("Deleted successfully", "success");
@@ -1036,21 +1148,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("confirmTestFire").addEventListener("click", async (e) => {
         const actId = e.target.dataset.actId;
-        const emailsStr = document.getElementById("testFireEmails").value.trim();
-        const emailIds = emailsStr ? emailsStr.split(",").map(s => s.trim()).filter(s => s) : [];
+        const campaignType = e.target.dataset.campaignType || 'EMAIL';
+        const recipientsStr = document.getElementById("testFireRecipients").value.trim();
+        const recipients = recipientsStr ? recipientsStr.split(",").map(s => s.trim()).filter(s => s) : [];
+
+        if (!recipients.length) {
+            showToast(campaignType === 'EMAIL' ? "Please enter at least one email address" : "Please enter a phone number", "error");
+            return;
+        }
 
         try {
             e.target.disabled = true;
             e.target.textContent = "Sending...";
-            
+
+            const isVoiceOrWa = (campaignType === 'VOICE' || campaignType === 'WHATSAPP');
+            const payload = isVoiceOrWa
+                ? { phoneNumbers: recipients }
+                : recipients; // email: send plain array (existing backend format)
+
             await apiFetch(`${apiActivitiesUrl}/${actId}/test-trigger`, {
                 method: "POST",
-                body: JSON.stringify(emailIds)
+                body: JSON.stringify(payload)
             });
-            
-            showToast("Test mail triggered successfully!", "success");
+
+            const successMsg = { EMAIL: "Test email triggered!", WHATSAPP: "Test WhatsApp message triggered!", VOICE: "Test voice call triggered!" }[campaignType] || "Test triggered successfully!";
+            showToast(successMsg, "success");
             testFireModal.style.display = "none";
-            loadActivityTable(); // To update status badge
+            loadActivityTable();
         } catch (err) {
             showToast("Test failed: " + err.message, "error");
         } finally {
@@ -1106,7 +1230,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const tabId = e.target.dataset.tab;
             document.getElementById("csvTabContent").hidden = (tabId !== "csvTab");
             document.getElementById("sqlTabContent").hidden = (tabId !== "sqlTab");
-            document.getElementById("segmentType").value = (tabId === "csvTab") ? "CSV" : "SQL";
+            document.getElementById("s3TabContent").hidden = (tabId !== "s3Tab");
+            
+            let segmentType = "CSV";
+            if (tabId === "sqlTab") segmentType = "SQL";
+            else if (tabId === "s3Tab") segmentType = "S3";
+            document.getElementById("segmentType").value = segmentType;
         });
     });
 
@@ -1149,13 +1278,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     const msg = await res.text();
                     throw new Error(msg);
                 }
-            } else {
+            } else if (type === "SQL") {
                 const sqlQuery = document.getElementById("segSqlQuery").value.trim();
                 if (!sqlQuery) throw new Error("Please enter an SQL query");
                 
                 await apiFetch(`${apiSegmentsUrl}/sql`, {
                     method: "POST",
                     body: JSON.stringify({ name, description, sqlQuery })
+                });
+            } else if (type === "S3") {
+                const s3Path = document.getElementById("segS3Path").value.trim();
+                if (!s3Path) throw new Error("Please enter an S3 Path");
+                
+                await apiFetch(`${apiSegmentsUrl}/s3-path`, {
+                    method: "POST",
+                    body: JSON.stringify({ name, description, s3Path })
                 });
             }
             
@@ -1666,6 +1803,186 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
+       VOICE TEMPLATES PANEL
+    ====================================================== */
+    const voiceTemplateEmpty = document.getElementById("voiceTemplateEmpty");
+    const voiceTemplateTable = document.getElementById("voiceTemplateTable");
+    const voiceTemplateTableBody = document.getElementById("voiceTemplateTableBody");
+    const newVoiceTemplateBtn = document.getElementById("newVoiceTemplateBtn");
+    const voiceTemplateFormWrapper = document.getElementById("voiceTemplateFormWrapper");
+    const voiceTemplateForm = document.getElementById("voiceTemplateForm");
+    const voiceTemplateFormTitle = document.getElementById("voiceTemplateFormTitle");
+    const voiceTplId = document.getElementById("voiceTplId");
+
+    if (newVoiceTemplateBtn) {
+        newVoiceTemplateBtn.addEventListener("click", () => {
+            if (voiceTemplateForm) voiceTemplateForm.reset();
+            if (voiceTplId) voiceTplId.value = "";
+            if (voiceTemplateFormTitle) voiceTemplateFormTitle.textContent = "New Voice Template";
+            const vName = document.getElementById("voiceTplVoiceName");
+            const vGender = document.getElementById("voiceTplVoiceGender");
+            if (vName) vName.value = "Joanna";
+            if (vGender) vGender.value = "female";
+            if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = false;
+            if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.scrollIntoView({ behavior: "smooth" });
+            updateVoicePayloadPreview();
+        });
+    }
+
+    if (document.getElementById("voiceTplCancelBtn")) {
+        document.getElementById("voiceTplCancelBtn").addEventListener("click", () => {
+            if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = true;
+            if (voiceTemplateForm) voiceTemplateForm.reset();
+        });
+    }
+
+    if (voiceTemplateForm) {
+        voiceTemplateForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = voiceTplId ? voiceTplId.value : "";
+            const payload = {
+                name: document.getElementById("voiceTplName").value.trim(),
+                language: document.getElementById("voiceTplLanguage").value,
+                voiceName: document.getElementById("voiceTplVoiceName").value,
+                voiceGender: document.getElementById("voiceTplVoiceGender").value,
+                messageText: document.getElementById("voiceTplMessageText").value.trim(),
+                isActive: true,
+                campaignId: document.getElementById("voiceTplCampaign")?.value ? Number(document.getElementById("voiceTplCampaign").value) : null
+            };
+            try {
+                if (id) {
+                    await apiFetch(`${window.API_VOICE_TEMPLATES_URL}/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+                    showToast("Voice template updated successfully!", "success");
+                } else {
+                    await apiFetch(window.API_VOICE_TEMPLATES_URL, { method: "POST", body: JSON.stringify(payload) });
+                    showToast("Voice template created successfully!", "success");
+                }
+                if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = true;
+                if (voiceTemplateForm) voiceTemplateForm.reset();
+                loadVoiceTemplates();
+            } catch (err) {
+                showToast("Error saving template: " + err.message, "error");
+            }
+        });
+    }
+
+    // Voice name → auto-fill gender
+    const voiceTplVoiceNameSel = document.getElementById("voiceTplVoiceName");
+    const voiceTplVoiceGenderSel = document.getElementById("voiceTplVoiceGender");
+    const VOICE_GENDER_MAP = {
+        "Joanna": "female", "Celine": "female", "Aditi": "female",
+        "Raveena": "female", "Conchita": "female",
+        "Matthew": "male", "Mathieu": "male", "Enrique": "male"
+    };
+    if (voiceTplVoiceNameSel) {
+        voiceTplVoiceNameSel.addEventListener("change", () => {
+            const g = VOICE_GENDER_MAP[voiceTplVoiceNameSel.value];
+            if (g && voiceTplVoiceGenderSel) voiceTplVoiceGenderSel.value = g;
+            updateVoicePayloadPreview();
+        });
+    }
+    if (voiceTplVoiceGenderSel) voiceTplVoiceGenderSel.addEventListener("change", updateVoicePayloadPreview);
+    const voiceTplLangSel = document.getElementById("voiceTplLanguage");
+    if (voiceTplLangSel) voiceTplLangSel.addEventListener("change", updateVoicePayloadPreview);
+
+    // Live preview function (also exposed globally for oninput)
+    window.updateVoicePayloadPreview = function() {
+        const pre = document.getElementById("voicePayloadPreviewCode");
+        if (!pre) return;
+        const lang = document.getElementById("voiceTplLanguage")?.value || "en";
+        const text = document.getElementById("voiceTplMessageText")?.value.trim() || "...";
+        const vName = document.getElementById("voiceTplVoiceName")?.value || "Joanna";
+        const vGender = document.getElementById("voiceTplVoiceGender")?.value || "female";
+        pre.textContent = JSON.stringify({
+            language: lang,
+            text: text,
+            voice: { name: vName, gender: vGender }
+        }, null, 2);
+    };
+
+    // Populate voice template campaign dropdown
+    async function loadVoiceTemplateCampaignDropdown() {
+        const sel = document.getElementById("voiceTplCampaign");
+        if (!sel) return;
+        try {
+            if (cachedCampaigns.length === 0) cachedCampaigns = await apiFetch(apiCampaignsUrl);
+            sel.innerHTML = '<option value="">— none —</option>';
+            cachedCampaigns.filter(c => c.campaignType === 'VOICE').forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.id;
+                opt.textContent = c.name;
+                sel.appendChild(opt);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadVoiceTemplates() {
+        if (!voiceTemplateTableBody) return;
+        try {
+            const templates = await apiFetch(window.API_VOICE_TEMPLATES_URL);
+            voiceTemplateTableBody.innerHTML = "";
+            if (!templates || templates.length === 0) {
+                voiceTemplateTable.hidden = true;
+                voiceTemplateEmpty.hidden = false;
+                return;
+            }
+            voiceTemplateTable.hidden = false;
+            voiceTemplateEmpty.hidden = true;
+
+            templates.forEach(t => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escHtml(t.name)}</strong></td>
+                    <td>${escHtml(t.language)}</td>
+                    <td>${escHtml(t.voiceName)} (${escHtml(t.voiceGender)})</td>
+                    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(t.messageText)}">
+                        ${escHtml(t.messageText)}
+                    </td>
+                    <td class="table-actions">
+                        <button class="secondary-btn btn-xs" data-edit-vt="${t.id}">Edit</button>
+                        <button class="danger-btn btn-xs" data-del-vt="${t.id}" data-name="${escHtml(t.name)}">Delete</button>
+                    </td>
+                `;
+                voiceTemplateTableBody.appendChild(tr);
+            });
+
+            // Edit
+            voiceTemplateTableBody.querySelectorAll("[data-edit-vt]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.editVt;
+                    try {
+                        const t = await apiFetch(`${window.API_VOICE_TEMPLATES_URL}/${id}`);
+                        voiceTplId.value = t.id;
+                        document.getElementById("voiceTplName").value = t.name || "";
+                        document.getElementById("voiceTplLanguage").value = t.language || "en";
+                        document.getElementById("voiceTplVoiceName").value = t.voiceName || "Joanna";
+                        document.getElementById("voiceTplVoiceGender").value = t.voiceGender || "female";
+                        document.getElementById("voiceTplMessageText").value = t.messageText || "";
+                        if (voiceTemplateFormTitle) voiceTemplateFormTitle.textContent = "Edit Voice Template";
+                        if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = false;
+                        if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.scrollIntoView({ behavior: "smooth" });
+                        updateVoicePayloadPreview();
+                    } catch (e) {
+                        showToast("Failed to load template", "error");
+                    }
+                });
+            });
+
+            // Delete
+            voiceTemplateTableBody.querySelectorAll("[data-del-vt]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    deleteContext = { type: "voice-template", id: btn.dataset.delVt };
+                    deleteModalMessage.innerHTML = `Are you sure you want to delete Voice template <strong>${btn.dataset.name}</strong>?`;
+                    modal.classList.add("show");
+                });
+            });
+        } catch (e) {
+            console.error(e);
+            showToast("Failed to load Voice templates", "error");
+        }
+    }
+
+    /* ======================================================
        BOOTSTRAP
     ====================================================== */
     const urlParams = new URLSearchParams(window.location.search);
@@ -1701,6 +2018,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
+
 
     // Pre-load templates for campaign and activity forms
     loadTemplateDropdowns();
