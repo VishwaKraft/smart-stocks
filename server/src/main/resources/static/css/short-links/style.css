@@ -924,3 +924,135 @@ body.editor-active .main {
     border: 1px solid #dde3ea;
     border-bottom-left-radius: 4px;
 }
+
+/* ── Campaign Type Cards ──────────────────────────────────── */
+.campaign-type-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.campaign-type-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border: 2px solid #e8ecf0;
+    border-radius: 12px;
+    background: #fafbfc;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.campaign-type-card:hover {
+    border-color: #c084fc;
+    background: #fdf4ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(142,36,170,.08);
+}
+
+.campaign-type-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.campaign-type-card.selected {
+    border-color: #8e24aa;
+    background: linear-gradient(135deg, #fdf4ff, #f3e8ff);
+    box-shadow: 0 4px 16px rgba(142,36,170,.18);
+}
+
+.campaign-type-card.selected .card-icon {
+    transform: scale(1.1);
+}
+
+.card-icon {
+    font-size: 28px;
+    line-height: 1;
+    transition: transform .2s ease;
+}
+
+.card-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: .1px;
+}
+
+.card-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.campaign-type-card.selected .card-label {
+    color: #6a1b9a;
+}
+
+.campaign-type-card.selected .card-desc {
+    color: #9c27b0;
+}
+
+/* Checkmark for selected state */
+.campaign-type-card::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid #e8ecf0;
+    transition: all .2s ease;
+}
+
+.campaign-type-card.selected::after {
+    background: #8e24aa;
+    border-color: #8e24aa;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size: 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+@media (max-width: 640px) {
+    .campaign-type-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Campaign builder form card wrapper ───────────────────── */
+.campaign-form-card {
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    max-width: 100%;
+}
+
+.campaign-form-card h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.campaign-form-card .panel-hint {
+    margin: 0 0 20px;
+}
+
+/* ── Channel badge in table ───────────────────────────────── */
+.badge-email   { background: #e8f0fe; color: #1a73e8; }
+.badge-whatsapp { background: #e8f5e9; color: #1b5e20; }
+.badge-voice   { background: #f3e8ff; color: #6a1b9a; }
