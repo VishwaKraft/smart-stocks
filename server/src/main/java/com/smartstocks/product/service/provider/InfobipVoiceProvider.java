@@ -80,7 +80,7 @@ public class InfobipVoiceProvider {
 
             // Extract message ID from response if available
             String messageId = extractMessageId(response.getBody());
-            return SendResult.success(messageId != null ? messageId : "queued");
+            return SendResult.ok(1, messageId != null ? messageId : "queued");
 
         } catch (HttpClientErrorException ex) {
             log.error("[InfobipVoiceProvider] HTTP error sending voice to [{}]: status={}, body={}",
