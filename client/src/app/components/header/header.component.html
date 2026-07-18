@@ -20,10 +20,10 @@
                 </a>
             </div>
             <div>
-                <div *ngIf="!isLogin">
+                <div *ngIf="!isLogin" class="d-flex align-items-center">
+                    <button mat-button routerLink="/careers" class="me-3 d-none d-sm-inline-block">Careers</button>
                     <button class="custom-btn me-2 me-sm-3" mat-raised-button (click)="onLogin()">Login</button>
-                    <button class="custom-btn me-sm-3" mat-raised-button (click)="onSignUp()">Sign
-                        Up</button>
+                    <button class="custom-btn me-sm-3" mat-raised-button (click)="onSignUp()">Sign Up</button>
                 </div>
                 <button style="background-color: transparent; border: none; display: flex;
                 align-items: baseline;" class="px-2" [matMenuTriggerFor]="menu" *ngIf="isLogin">
@@ -32,6 +32,7 @@
                 <mat-menu #menu="matMenu">
                     <button mat-menu-item routerLink="/user/profile">Profile</button>
                     <button mat-menu-item routerLink="/home">Home</button>
+                    <button mat-menu-item routerLink="/careers">Careers</button>
                     <button mat-menu-item routerLink="/discover/top-gainer">Discover</button>
                     <button mat-menu-item routerLink="/user/sandbox/dashboard">Inventory</button>
                     <button mat-menu-item (click)="onLogOut()">Logout</button>

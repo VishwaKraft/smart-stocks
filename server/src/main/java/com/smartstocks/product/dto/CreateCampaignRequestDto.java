@@ -24,6 +24,8 @@ public class CreateCampaignRequestDto {
 
     private String whatsappSenderNumber;
 
+    private String infobipSenderNumber;
+
     /** Optional: email delivery provider for this campaign */
     private EmailProviderType emailProviderType;
 }

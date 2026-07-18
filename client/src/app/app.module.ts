@@ -8,6 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material/material.module';
 import { FooterComponent } from './components/footer/footer.component';
 import { HeaderComponent } from './components/header/header.component';
+import { CareerComponent } from './components/career/career.component';
 import { BannerComponent } from './components/dashboard/banner/banner.component';
 import { CartContainerComponent } from './components/dashboard/cart-container/cart-container.component';
 import { CartComponent } from './components/dashboard/cart-container/cart/cart.component';
@@ -61,6 +62,7 @@ import { OurTeamComponent } from './components/dashboard/our-team/our-team.compo
     AppComponent,
     FooterComponent,
     HeaderComponent,
+    CareerComponent,
     BannerComponent,
     CartContainerComponent,
     CartComponent,

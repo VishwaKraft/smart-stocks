@@ -73,3 +73,7 @@ meta:
     client-id: ${META_CLIENT_ID:810077728726088}
     client-secret: ${META_CLIENT_SECRET:733bf16c1751c5619692ff0611588909}
 
+infobip:
+  api-key: ${INFOBIP_API_KEY:019e9d922d08db00481276bcc51cb5f4-2574a83f-8814-4a55-80bc-efc3c47f652c}
+  base-url: ${INFOBIP_BASE_URL:https://api.infobip.com}
+  people-base-url: ${INFOBIP_PEOPLE_BASE_URL:https://m91qm6.api.infobip.com}

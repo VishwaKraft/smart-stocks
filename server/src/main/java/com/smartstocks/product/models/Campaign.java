@@ -56,6 +56,10 @@ public class Campaign {
     @Column(length = 64)
     private String metaPhoneNumberId;
 
+    /** Phone number used as the "from" in Infobip voice (TTS) campaigns (e.g. "38515507799"). */
+    @Column(name = "infobip_sender_number", length = 32)
+    private String infobipSenderNumber;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

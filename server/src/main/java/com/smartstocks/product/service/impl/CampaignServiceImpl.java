@@ -80,18 +80,10 @@ public class CampaignServiceImpl implements ICampaignService {
         campaign.setCampaignCode(campaignCode);
         campaign.setName(request.getName().trim());
         campaign.setDescription(trimToNull(request.getDescription()));
-
-        if (request.getCampaignType() != null) {
-            campaign.setCampaignType(request.getCampaignType());
-        }
-
-        if (request.getWhatsappSenderNumber() != null && !request.getWhatsappSenderNumber().isBlank()) {
-            campaign.setWhatsappSenderNumber(request.getWhatsappSenderNumber());
-        }
-
-        if (request.getEmailProviderType() != null) {
-            campaign.setEmailProviderType(request.getEmailProviderType());
-        }
+        campaign.setCampaignType(request.getCampaignType() != null ? request.getCampaignType() : com.smartstocks.product.models.CampaignType.EMAIL);
+        campaign.setWhatsappSenderNumber(trimToNull(request.getWhatsappSenderNumber()));
+        campaign.setInfobipSenderNumber(trimToNull(request.getInfobipSenderNumber()));
+        campaign.setEmailProviderType(request.getEmailProviderType());
 
         Campaign saved = campaignRepository.save(campaign);
 

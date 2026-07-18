@@ -7,10 +7,14 @@ import com.smartstocks.product.repository.CampaignActivityRepository;
 import com.smartstocks.product.repository.CampaignActivityWeekdayRepository;
 import com.smartstocks.product.repository.CampaignRepository;
 import com.smartstocks.product.repository.SegmentRepository;
+import com.smartstocks.product.repository.SegmentUserRepository;
 import com.smartstocks.product.repository.TemplateRepository;
+import com.smartstocks.product.repository.VoiceTemplateRepository;
+import com.smartstocks.product.repository.CampaignSegmentUserRepository;
 import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignActivityService;
 import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.service.provider.InfobipPeopleProvider;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
 import lombok.RequiredArgsConstructor;
@@ -37,13 +41,22 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final CampaignActivityWeekdayRepository weekdayRepository;
     private final CampaignRepository campaignRepository;
     private final TemplateRepository templateRepository;
+    private final VoiceTemplateRepository voiceTemplateRepository;
     private final SegmentRepository segmentRepository;
+    private final SegmentUserRepository segmentUserRepository;
+    private final CampaignSegmentUserRepository campaignSegmentUserRepository;
     private final CampaignEventLogger eventLogger;
     private final ICampaignService campaignService;
     private final TemplateRendererFactory templateRendererFactory;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
+
+    @org.springframework.beans.factory.annotation.Value("${infobip.api-key:}")
+    private String infobipApiKey;
+
+    @org.springframework.beans.factory.annotation.Value("${infobip.people-base-url:}")
+    private String infobipPeopleBaseUrl;
 
     @Override
     @Transactional
@@ -58,6 +71,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
         Template template = null;
+        VoiceTemplate voiceTemplate = null;
+
         if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.EMAIL) {
             if (request.getTemplateId() == null) {
                 throw new IllegalArgumentException("Template ID is required for EMAIL campaigns.");
@@ -69,6 +84,13 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             if (request.getWhatsappTemplateName() == null || request.getWhatsappTemplateName().trim().isEmpty()) {
                 throw new IllegalArgumentException("WhatsApp template name is required for WHATSAPP campaigns.");
             }
+        } else if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.VOICE) {
+            if (request.getVoiceTemplateId() == null) {
+                throw new IllegalArgumentException("Voice template ID is required for VOICE campaigns.");
+            }
+            voiceTemplate = voiceTemplateRepository.findById(request.getVoiceTemplateId())
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .orElseThrow(() -> new IllegalArgumentException("Active voice template not found: " + request.getVoiceTemplateId()));
         }
 
         // Segment is mandatory
@@ -81,9 +103,13 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         CampaignActivity activity = new CampaignActivity();
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        activity.setVoiceTemplate(voiceTemplate);
+
         if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
             activity.setWhatsappTemplateName(request.getWhatsappTemplateName().trim());
+            activity.setWhatsappLanguage(request.getWhatsappLanguage() != null ? request.getWhatsappLanguage() : "en_US");
         }
+        
         activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
         activity.setScheduleType(request.getScheduleType());
@@ -94,8 +120,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         activity.setEndDate(request.getEndDate());
         activity.setDayOfMonth(request.getDayOfMonth());
         activity.setTimezone(request.getTimezone() != null ? request.getTimezone() : "UTC");
-        // Status always starts as NEW; use activate/pause actions to change it
-        activity.setStatus(ActivityStatus.NEW);
+        
+        // Status always starts as GENERATING; user must trigger generation which moves it to NEW
+        activity.setStatus(ActivityStatus.GENERATING);
         activity.setDeleted(false);
         activity.setNextExecutionAt(computeNextExecution(activity, LocalDateTime.now()));
 
@@ -156,6 +183,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + request.getCampaignId()));
 
         Template template = null;
+        VoiceTemplate voiceTemplate = null;
+
         if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.EMAIL) {
             if (request.getTemplateId() == null) {
                 throw new IllegalArgumentException("Template ID is required for EMAIL campaigns.");
@@ -167,6 +196,13 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             if (request.getWhatsappTemplateName() == null || request.getWhatsappTemplateName().trim().isEmpty()) {
                 throw new IllegalArgumentException("WhatsApp template name is required for WHATSAPP campaigns.");
             }
+        } else if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.VOICE) {
+            if (request.getVoiceTemplateId() == null) {
+                throw new IllegalArgumentException("Voice template ID is required for VOICE campaigns.");
+            }
+            voiceTemplate = voiceTemplateRepository.findById(request.getVoiceTemplateId())
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .orElseThrow(() -> new IllegalArgumentException("Active voice template not found: " + request.getVoiceTemplateId()));
         }
 
         Segment segment = null;
@@ -177,10 +213,14 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
         activity.setCampaign(campaign);
         activity.setTemplate(template);
+        activity.setVoiceTemplate(voiceTemplate);
+
         if (campaign.getCampaignType() == com.smartstocks.product.models.CampaignType.WHATSAPP) {
             activity.setWhatsappTemplateName(request.getWhatsappTemplateName().trim());
+            activity.setWhatsappLanguage(request.getWhatsappLanguage() != null ? request.getWhatsappLanguage() : "en_US");
         } else {
             activity.setWhatsappTemplateName(null);
+            activity.setWhatsappLanguage("en_US");
         }
         activity.setSegment(segment);
         activity.setActivityName(request.getActivityName());
@@ -412,6 +452,73 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         return toDto(saved);
     }
 
+    /**
+     * Extracts users from the segment and puts them into CampaignSegmentUser.
+     * Optionally registers people in Infobip for VOICE campaigns.
+     * Changes status from GENERATING to NEW.
+     */
+    @Transactional
+    public CampaignActivityDto generateActivityData(Long id) {
+        CampaignActivity activity = activityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+
+        if (activity.getStatus() != ActivityStatus.GENERATING) {
+            throw new IllegalStateException("Activity is not in GENERATING state.");
+        }
+
+        Segment segment = activity.getSegment();
+        if (segment == null) {
+            throw new IllegalStateException("No segment attached to this activity.");
+        }
+
+        List<com.smartstocks.product.models.SegmentUser> segmentUsers = segmentUserRepository.findBySegmentId(segment.getId());
+
+        InfobipPeopleProvider peopleProvider = null;
+        if (activity.getCampaign().getCampaignType() == com.smartstocks.product.models.CampaignType.VOICE) {
+            if (infobipApiKey == null || infobipApiKey.isBlank()) {
+                throw new IllegalStateException("Infobip API key is not configured.");
+            }
+            peopleProvider = new InfobipPeopleProvider(infobipApiKey, infobipPeopleBaseUrl);
+        }
+
+        campaignSegmentUserRepository.deleteAllByActivityId(id);
+
+        int count = 0;
+        for (com.smartstocks.product.models.SegmentUser su : segmentUsers) {
+            CampaignSegmentUser csu = new CampaignSegmentUser();
+            csu.setActivity(activity);
+            csu.setEmailId(su.getEmailId());
+            csu.setPhoneNumber(su.getPhoneNumber());
+            csu.setUserId(su.getUserId());
+            csu.setData(su.getData());
+
+            if (peopleProvider != null && csu.getPhoneNumber() != null && !csu.getPhoneNumber().isBlank()) {
+                String personId = peopleProvider.createPerson(csu);
+                if (personId != null) {
+                    csu.setInfobipPersonCreated(true);
+                    if (!personId.equals("existing")) {
+                        csu.setInfobipPersonId(personId);
+                    }
+                }
+            }
+
+            campaignSegmentUserRepository.save(csu);
+            count++;
+        }
+
+        activity.setRecipientCount(count);
+        activity.setStatus(ActivityStatus.NEW);
+        CampaignActivity saved = activityRepository.save(activity);
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("activityId", saved.getId());
+        info.put("activityName", saved.getActivityName());
+        info.put("recipientCount", count);
+        eventLogger.log("ACTIVITY_GENERATED", info);
+
+        return toDto(saved);
+    }
+
     // -----------------------------------------------------------------------
     // Internal helpers
     // -----------------------------------------------------------------------
@@ -488,6 +595,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .templateId(a.getTemplate() != null ? a.getTemplate().getId() : null)
                 .templateName(a.getTemplate() != null ? a.getTemplate().getName() : null)
                 .whatsappTemplateName(a.getWhatsappTemplateName())
+                .whatsappLanguage(a.getWhatsappLanguage())
+                .voiceTemplateId(a.getVoiceTemplate() != null ? a.getVoiceTemplate().getId() : null)
+                .voiceTemplateName(a.getVoiceTemplate() != null ? a.getVoiceTemplate().getName() : null)
                 .segmentId(a.getSegment() != null ? a.getSegment().getId() : null)
                 .segmentName(a.getSegment() != null ? a.getSegment().getName() : null)
                 .activityName(a.getActivityName())
@@ -502,6 +612,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .status(a.getStatus())
                 .isDeleted(a.isDeleted())
                 .weekdays(weekdays)
+                .recipientCount(a.getRecipientCount())
                 .nextExecutionAt(a.getNextExecutionAt())
                 .lastExecutionAt(a.getLastExecutionAt())
                 .createdAt(a.getCreatedAt())

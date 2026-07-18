@@ -23,10 +23,12 @@ import { AuthGuard } from './services/auth-guard.service';
 import { MarketIntroComponent } from './components/university/market-intro/market-intro.component';
 import { LandingComponent } from './components/university/landing/landing.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { CareerComponent } from './components/career/career.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: "home", component: DashboardComponent },
+  { path: "careers", component: CareerComponent },
   { path: "stockDetails/:symbol", component: StockDetailsComponent },
   { path: "graph/:symbol", component: GraphComponent },
   { path: "signup", component: SignupModalComponent },

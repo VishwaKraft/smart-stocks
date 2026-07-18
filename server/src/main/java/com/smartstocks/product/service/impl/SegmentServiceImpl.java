@@ -8,7 +8,10 @@ import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,66 +124,7 @@ public class SegmentServiceImpl implements ISegmentService {
         eventLogger.log("SEGMENT_CREATED", eventInfo);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String headerLine = reader.readLine();
-            if (headerLine != null) {
-                String[] headers = headerLine.split(",");
-                int emailIdx = -1, userIdx = -1, phoneIdx = -1;
-                for (int i = 0; i < headers.length; i++) {
-                    String h = headers[i].trim().toLowerCase();
-                    if (h.equals("emailid") || h.equals("email"))
-                        emailIdx = i;
-                    if (h.equals("userid") || h.equals("id"))
-                        userIdx = i;
-                    if (h.equals("phone_number") || h.equals("phonenumber") || h.equals("phone"))
-                        phoneIdx = i;
-                }
-
-                if (emailIdx == -1) {
-                    throw new IllegalArgumentException("CSV must contain an 'emailid' column");
-                }
-
-                // Identify indices of extra (non-special) columns for template variable data
-                final int finalEmailIdx = emailIdx;
-                final int finalUserIdx = userIdx;
-                final int finalPhoneIdx = phoneIdx;
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(",", -1);
-                    if (parts.length > emailIdx) {
-                        String email = parts[emailIdx].trim();
-                        if (!email.isEmpty()) {
-                            SegmentUser su = new SegmentUser();
-                            su.setSegment(segment);
-                            su.setEmailId(email);
-                            if (userIdx != -1 && parts.length > userIdx)
-                                su.setUserId(parts[userIdx].trim());
-                            if (phoneIdx != -1 && parts.length > phoneIdx)
-                                su.setPhoneNumber(parts[phoneIdx].trim());
-
-                            // Collect extra columns into data map for template rendering
-                            Map<String, Object> extraData = new java.util.HashMap<>();
-                            for (int i = 0; i < headers.length; i++) {
-                                if (i == finalEmailIdx || i == finalUserIdx || i == finalPhoneIdx) continue;
-                                String key = headers[i].trim();
-                                String val = parts.length > i ? parts[i].trim() : "";
-                                if (!key.isEmpty()) {
-                                    extraData.put(key, val);
-                                }
-                            }
-                            // Also expose standard fields as template variables
-                            extraData.put("email", email);
-                            if (su.getUserId() != null) extraData.put("userId", su.getUserId());
-                            if (su.getPhoneNumber() != null) extraData.put("phoneNumber", su.getPhoneNumber());
-                            if (!extraData.isEmpty()) {
-                                su.setData(extraData);
-                            }
-
-                            segmentUserRepository.save(su);
-                        }
-                    }
-                }
-            }
+            parseCsvAndSaveUsers(segment, reader);
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse CSV", e);
         }
@@ -237,6 +181,118 @@ public class SegmentServiceImpl implements ISegmentService {
         eventLogger.log("SEGMENT_CREATED", eventInfo);
 
         return segment;
+    }
+
+    @Override
+    @Transactional
+    public Segment createS3PathSegment(String name, String description, String s3Path) {
+        // e.g. s3://bucket-name/segments/file.csv
+        if (!s3Path.startsWith("s3://")) {
+            throw new IllegalArgumentException("S3 path must start with s3://");
+        }
+        
+        String withoutPrefix = s3Path.substring(5);
+        int slashIdx = withoutPrefix.indexOf('/');
+        if (slashIdx == -1) {
+            throw new IllegalArgumentException("Invalid S3 path format.");
+        }
+        String bucket = withoutPrefix.substring(0, slashIdx);
+        String key = withoutPrefix.substring(slashIdx + 1);
+
+        log.info("Downloading CSV from S3 bucket: {}, key: {}", bucket, key);
+
+        Segment segment = new Segment();
+        segment.setName(name);
+        segment.setDescription(description);
+        segment.setSegmentType("S3");
+        segment.setS3Path(s3Path);
+        segment = segmentRepository.save(segment);
+
+        Map<String, Object> eventInfo = new java.util.HashMap<>();
+        eventInfo.put("segmentId", segment.getId());
+        eventInfo.put("segmentName", segment.getName());
+        eventInfo.put("s3Path", segment.getS3Path());
+        eventLogger.log("SEGMENT_CREATED", eventInfo);
+
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(s3Object))) {
+                parseCsvAndSaveUsers(segment, reader);
+            }
+        } catch (AwsServiceException e) {
+            log.error("AmazonServiceException downloading from S3: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to download CSV from S3. Error: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse CSV from S3: " + e.getMessage(), e);
+        }
+
+        return segment;
+    }
+
+    private void parseCsvAndSaveUsers(Segment segment, BufferedReader reader) throws IOException {
+        String headerLine = reader.readLine();
+        if (headerLine != null) {
+            String[] headers = headerLine.split(",");
+            int emailIdx = -1, userIdx = -1, phoneIdx = -1;
+            for (int i = 0; i < headers.length; i++) {
+                String h = headers[i].trim().toLowerCase();
+                if (h.equals("emailid") || h.equals("email"))
+                    emailIdx = i;
+                if (h.equals("userid") || h.equals("id"))
+                    userIdx = i;
+                if (h.equals("phone_number") || h.equals("phonenumber") || h.equals("phone"))
+                    phoneIdx = i;
+            }
+
+            if (emailIdx == -1) {
+                throw new IllegalArgumentException("CSV must contain an 'emailid' column");
+            }
+
+            final int finalEmailIdx = emailIdx;
+            final int finalUserIdx = userIdx;
+            final int finalPhoneIdx = phoneIdx;
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",", -1);
+                if (parts.length > emailIdx) {
+                    String email = parts[emailIdx].trim();
+                    if (!email.isEmpty()) {
+                        SegmentUser su = new SegmentUser();
+                        su.setSegment(segment);
+                        su.setEmailId(email);
+                        if (userIdx != -1 && parts.length > userIdx)
+                            su.setUserId(parts[userIdx].trim());
+                        if (phoneIdx != -1 && parts.length > phoneIdx)
+                            su.setPhoneNumber(parts[phoneIdx].trim());
+
+                        Map<String, Object> extraData = new java.util.HashMap<>();
+                        for (int i = 0; i < headers.length; i++) {
+                            if (i == finalEmailIdx || i == finalUserIdx || i == finalPhoneIdx) continue;
+                            String key = headers[i].trim();
+                            String val = parts.length > i ? parts[i].trim() : "";
+                            if (!key.isEmpty()) {
+                                extraData.put(key, val);
+                            }
+                        }
+                        extraData.put("email", email);
+                        if (su.getUserId() != null) extraData.put("userId", su.getUserId());
+                        if (su.getPhoneNumber() != null) extraData.put("phoneNumber", su.getPhoneNumber());
+                        if (!extraData.isEmpty()) {
+                            su.setData(extraData);
+                        }
+
+                        segmentUserRepository.save(su);
+                    }
+                }
+            }
+        }
     }
 
     @Override

@@ -1,0 +1,115 @@
+<app-header></app-header>
+
+<div class="career-page">
+    <!-- Hero Section -->
+    <section class="hero-section text-center text-white">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-lg-8 offset-lg-2 mt-5 wow fadeInUp" data-wow-delay="0.2s">
+                    <h1 class="display-4 fw-bold mb-4">Join the Smart Stocks Team</h1>
+                    <p class="lead mb-0">Help us democratize financial intelligence and empower investors worldwide.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Open Positions Section -->
+    <section class="positions-section py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
+                <h2 class="fw-bold section-title">Open Positions</h2>
+                <div class="divider mx-auto mb-4"></div>
+                <p class="text-muted">Discover your next career move and build the future of fintech with us.</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10" *ngFor="let job of jobs; let i = index">
+                    <div class="job-card wow fadeInUp" [attr.data-wow-delay]="(0.2 + (i * 0.1)) + 's'">
+                        <div class="job-card-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="job-title mb-2">{{ job.title }}</h3>
+                                <div class="job-meta">
+                                    <span class="badge bg-primary-soft me-2"><i class="fas fa-briefcase me-1"></i> {{ job.department }}</span>
+                                    <span class="badge bg-secondary-soft me-2"><i class="fas fa-map-marker-alt me-1"></i> {{ job.location }}</span>
+                                    <span class="badge bg-info-soft"><i class="fas fa-clock me-1"></i> {{ job.type }}</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary apply-btn px-4 py-2" (click)="apply(job.title)">
+                                Apply Now <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="job-card-body mt-4">
+                            <p class="job-description">{{ job.description }}</p>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <h5 class="fw-bold mb-3"><i class="fas fa-check-circle text-primary me-2"></i> Responsibilities</h5>
+                                    <ul class="job-list">
+                                        <li *ngFor="let res of job.responsibilities">{{ res }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3"><i class="fas fa-star text-warning me-2"></i> Requirements</h5>
+                                    <ul class="job-list">
+                                        <li *ngFor="let req of job.requirements">{{ req }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fallback if no jobs -->
+                <div class="col-12 text-center py-5" *ngIf="jobs.length === 0">
+                    <div class="empty-state">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>No open positions right now</h4>
+                        <p class="text-muted">Check back later or send us your resume at careers&#64;smartstocks.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Perks Section -->
+    <section class="perks-section py-5 bg-light">
+        <div class="container py-5">
+            <div class="row text-center">
+                <div class="col-12 mb-5">
+                    <h2 class="fw-bold section-title">Why Smart Stocks?</h2>
+                </div>
+                
+                <div class="col-md-4 mb-4 mb-md-0 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="perk-card">
+                        <div class="icon-wrapper bg-primary-soft text-primary mx-auto mb-4">
+                            <i class="fas fa-laptop-house fa-2x"></i>
+                        </div>
+                        <h4>Remote First</h4>
+                        <p class="text-muted">Work from anywhere. We value results over office hours.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="perk-card">
+                        <div class="icon-wrapper bg-success-soft text-success mx-auto mb-4">
+                            <i class="fas fa-heartbeat fa-2x"></i>
+                        </div>
+                        <h4>Health & Wellness</h4>
+                        <p class="text-muted">Comprehensive medical, dental, and wellness programs.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="perk-card">
+                        <div class="icon-wrapper bg-warning-soft text-warning mx-auto mb-4">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h4>Growth & Equity</h4>
+                        <p class="text-muted">Generous equity packages and continuous learning stipends.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<app-footer></app-footer>

@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface ISegmentService {
     Segment uploadCsvSegment(String name, String description, MultipartFile file);
     Segment createSqlSegment(String name, String description, String sqlQuery);
+    Segment createS3PathSegment(String name, String description, String s3Path);
     List<Segment> getAllSegments();
     Optional<Segment> getSegmentById(Long id);
     void deleteSegment(Long id);
