@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { EventTrackingService } from '../../services/event-tracking.service';
 
 @Component({
   selector: 'app-career',
@@ -31,13 +32,29 @@ export class CareerComponent implements OnInit {
     }
   ];
 
-  constructor() { }
+  constructor(private eventTracker: EventTrackingService) { }
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
   }
 
   apply(jobTitle: string) {
-    alert(`Thank you for your interest in the ${jobTitle} position! Our hiring portal will open soon.`);
+    const name = window.prompt("Please enter your name:");
+    if (!name) return;
+    
+    const email = window.prompt("Please enter your email:");
+    if (!email) return;
+
+    const phone = window.prompt("Please enter your phone number:");
+    if (!phone) return;
+
+    this.eventTracker.trackEvent('JOB_APPLICATION', {
+      jobTitle: jobTitle,
+      applicantName: name,
+      applicantEmail: email,
+      applicantPhone: phone
+    });
+
+    alert(`Thank you, ${name}! Your interest in the ${jobTitle} position has been recorded.`);
   }
 }

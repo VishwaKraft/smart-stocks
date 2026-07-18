@@ -25,6 +25,22 @@ export class EventTrackingService {
     });
   }
 
+  public trackEvent(eventType: string, eventInfo: any = {}): void {
+    const userId = this.getUserId();
+    
+    const payload = {
+      event_type: eventType,
+      user_id: userId,
+      event_info: eventInfo
+    };
+
+    // Fire and forget
+    this.http.post(this.apiUrl, payload).subscribe({
+      next: () => {},
+      error: (err) => console.debug('Event tracking failed', err)
+    });
+  }
+
   private trackPageView(url: string): void {
     const userId = this.getUserId();
     
