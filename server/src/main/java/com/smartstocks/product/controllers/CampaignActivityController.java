@@ -5,6 +5,7 @@ import com.smartstocks.product.dto.CreateActivityRequestDto;
 import com.smartstocks.product.dto.ExecutionLogDto;
 import com.smartstocks.product.service.ICampaignActivityService;
 import com.smartstocks.product.service.IExecutionLogService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/activities")
 @CrossOrigin(origins = "*")
@@ -35,6 +37,7 @@ public class CampaignActivityController {
             CampaignActivityDto created = activityService.createActivity(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException ex) {
+            log.error("[CampaignActivityController] Bad Request when creating activity: {}", ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -73,6 +76,7 @@ public class CampaignActivityController {
             CampaignActivityDto updated = activityService.updateActivity(id, request);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException ex) {
+            log.error("[CampaignActivityController] Bad Request when updating activity {}: {}", id, ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -101,6 +105,7 @@ public class CampaignActivityController {
             CampaignActivityDto dto = activityService.activateActivity(id);
             return ResponseEntity.ok(dto);
         } catch (IllegalArgumentException | IllegalStateException ex) {
+            log.error("[CampaignActivityController] Bad Request when activating activity {}: {}", id, ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -115,6 +120,7 @@ public class CampaignActivityController {
             CampaignActivityDto dto = activityService.pauseActivity(id);
             return ResponseEntity.ok(dto);
         } catch (IllegalArgumentException | IllegalStateException ex) {
+            log.error("[CampaignActivityController] Bad Request when pausing activity {}: {}", id, ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -138,6 +144,7 @@ public class CampaignActivityController {
             activityService.testTrigger(id, emailIds);
             return ResponseEntity.ok("Test trigger executed successfully. Activity is now READY.");
         } catch (IllegalArgumentException | IllegalStateException | UnsupportedOperationException ex) {
+            log.error("[CampaignActivityController] Bad Request when test triggering activity {}: {}", id, ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body("Test failed: " + ex.getMessage());
@@ -153,6 +160,7 @@ public class CampaignActivityController {
             CampaignActivityDto cloned = activityService.cloneActivity(id, newName);
             return ResponseEntity.status(HttpStatus.CREATED).body(cloned);
         } catch (IllegalArgumentException ex) {
+            log.error("[CampaignActivityController] Bad Request when cloning activity {}: {}", id, ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }

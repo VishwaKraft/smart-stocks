@@ -825,7 +825,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const payload = {
             campaignId:    actCampaignId,
-            templateId:    isWa ? null : (c && c.campaignType === "VOICE" ? (Number(document.getElementById("actVoiceTemplate").value) || null) : (Number(document.getElementById("actTemplate").value) || null)),
+            templateId:    c && c.campaignType === "EMAIL" ? (Number(document.getElementById("actTemplate").value) || null) : null,
+            voiceTemplateId: c && c.campaignType === "VOICE" ? (Number(document.getElementById("actVoiceTemplate").value) || null) : null,
             whatsappTemplateName: isWa ? document.getElementById("actWaTemplate").value : null,
             whatsappLanguage: isWa ? document.getElementById("actWaLanguage").value : null,
             segmentId:     Number(document.getElementById("actSegment").value) || null,
@@ -842,7 +843,7 @@ document.addEventListener("DOMContentLoaded", () => {
             status:            document.getElementById("actStatus").value || "ACTIVE"
         };
 
-        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName && !(c && c.campaignType === 'VOICE' && payload.templateId !== undefined)) || !payload.scheduleType) {
+        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName && !payload.voiceTemplateId) || !payload.scheduleType) {
             showToast("Campaign, Template, and Schedule Type are required", "error");
             return;
         }
@@ -938,7 +939,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (waLangGrp) waLangGrp.hidden = true;
                             if (voiceGrp) voiceGrp.hidden = false;
                             await loadVoiceTemplatesForActivity(c.id);
-                            document.getElementById("actVoiceTemplate").value = a.templateId;
+                            document.getElementById("actVoiceTemplate").value = a.voiceTemplateId || "";
                         } else if (c && c.campaignType === "EMAIL") {
                             if (emailGrp) emailGrp.hidden = false;
                             if (waGrp) waGrp.hidden = true;
