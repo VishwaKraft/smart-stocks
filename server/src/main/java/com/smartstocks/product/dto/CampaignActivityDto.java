@@ -44,6 +44,7 @@ public class CampaignActivityDto {
     private boolean isDeleted;
     private List<Weekday> weekdays;
     private Integer recipientCount;
+    private Long segmentCount;
     private LocalDateTime nextExecutionAt;
     private LocalDateTime lastExecutionAt;
     private LocalDateTime createdAt;

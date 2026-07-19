@@ -38,4 +38,7 @@ public class Segment {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Transient
+    private Long userCount;
 }

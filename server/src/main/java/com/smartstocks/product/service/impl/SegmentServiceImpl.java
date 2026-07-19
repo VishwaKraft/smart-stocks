@@ -298,13 +298,18 @@ public class SegmentServiceImpl implements ISegmentService {
     @Override
     @Transactional(readOnly = true)
     public List<Segment> getAllSegments() {
-        return segmentRepository.findAll();
+        List<Segment> segments = segmentRepository.findAll();
+        segments.forEach(segment -> segment.setUserCount(segmentUserRepository.countBySegmentId(segment.getId())));
+        return segments;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Segment> getSegmentById(Long id) {
-        return segmentRepository.findById(id);
+        return segmentRepository.findById(id).map(segment -> {
+            segment.setUserCount(segmentUserRepository.countBySegmentId(id));
+            return segment;
+        });
     }
 
     @Override

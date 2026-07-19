@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SegmentUserRepository extends JpaRepository<SegmentUser, Long> {
     List<SegmentUser> findBySegmentId(Long segmentId);
+    long countBySegmentId(Long segmentId);
 }
