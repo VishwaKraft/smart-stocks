@@ -34,5 +34,11 @@ public interface ICampaignActivityService {
     void testTrigger(Long id, java.util.List<String> emailIds);
 
     CampaignActivityDto cloneActivity(Long id, String newName);
+
+    /**
+     * Extracts users from the segment and registers them if needed.
+     * Changes status from GENERATING to NEW.
+     */
+    CampaignActivityDto generateActivityData(Long id);
 }
 
