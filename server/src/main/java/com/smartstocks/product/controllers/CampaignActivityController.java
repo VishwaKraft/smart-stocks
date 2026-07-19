@@ -164,5 +164,20 @@ public class CampaignActivityController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
+
+    /**
+     * POST /api/activities/{id}/generate
+     * Triggers generation of recipients and moves status from GENERATING to NEW.
+     */
+    @PostMapping("/{id}/generate")
+    public ResponseEntity<?> generateActivityData(@PathVariable Long id) {
+        try {
+            CampaignActivityDto generated = activityService.generateActivityData(id);
+            return ResponseEntity.ok(generated);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            log.error("[CampaignActivityController] Bad Request when generating activity data {}: {}", id, ex.getMessage());
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }
 

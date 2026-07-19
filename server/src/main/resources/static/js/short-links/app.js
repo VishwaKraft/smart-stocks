@@ -902,6 +902,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <button class="secondary-btn btn-xs" data-clone-act="${a.id}" data-clone-name="${escHtml(a.activityName || '')}">Clone</button>
                             <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
                         ` : `
+                            ${a.status === 'GENERATING' ? `<button class="primary-btn btn-xs" data-generate-act="${a.id}">Generate</button>` : ''}
                             <button class="secondary-btn btn-xs" data-test-trigger-act="${a.id}" data-campaign-type="${actCampaignType}">Test Trigger</button>
                             <button class="secondary-btn btn-xs" data-edit-act="${a.id}">Edit</button>
                             <button class="secondary-btn btn-xs" data-logs-act="${a.id}">Logs</button>
@@ -987,6 +988,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("cloneActivityName").value = (btn.dataset.cloneName || "") + " – Copy";
                     document.getElementById("confirmClone").dataset.actId = btn.dataset.cloneAct;
                     cloneModal.style.display = "flex";
+                });
+            });
+
+            // Generate
+            activityTableBody.querySelectorAll("[data-generate-act]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    if (!confirm("Are you sure you want to generate recipients for this activity?")) return;
+                    try {
+                        const actId = btn.dataset.generateAct;
+                        btn.disabled = true;
+                        btn.textContent = "Generating...";
+                        await apiFetch(`${apiActivitiesUrl}/${actId}/generate`, { method: "POST" });
+                        showToast("Activity generated successfully!", "success");
+                        loadActivityTable();
+                    } catch (err) {
+                        showToast("Error generating activity: " + err.message, "error");
+                        btn.disabled = false;
+                        btn.textContent = "Generate";
+                    }
                 });
             });
 
