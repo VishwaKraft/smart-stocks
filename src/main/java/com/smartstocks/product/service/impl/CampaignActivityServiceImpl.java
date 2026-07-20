@@ -335,9 +335,6 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     Map<String, Object> apiResponse = restTemplate.getForObject(templateObj.getDataSourceUrl(), Map.class);
                     if (apiResponse != null) {
                         testVariables.putAll(apiResponse);
-                        if (apiResponse.containsKey("data")) {
-                            testVariables.put("articles", apiResponse.get("data"));
-                        }
                     }
                 } catch (Exception e) {
                     log.error("[CampaignActivityServiceImpl] Failed to fetch external data during testTrigger from URL: {}", templateObj.getDataSourceUrl(), e);

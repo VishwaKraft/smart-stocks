@@ -36,7 +36,7 @@ public class TemplateServiceImpl implements ITemplateService {
         template.setName(request.getName().trim());
         template.setSubject(request.getSubject().trim());
         template.setHtmlBody(request.getHtmlBody());
-        template.setRendererType(RendererType.DEFAULT);
+        template.setRendererType(RendererType.HANDLEBARS);
         template.setIsActive(true);
         if (request.getDataSourceUrl() != null) {
             template.setDataSourceUrl(request.getDataSourceUrl().trim());
