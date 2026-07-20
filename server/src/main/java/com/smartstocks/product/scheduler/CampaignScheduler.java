@@ -17,14 +17,18 @@ import com.smartstocks.product.service.provider.InfobipVoiceProvider;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
+import com.smartstocks.product.service.IShortLinkService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -51,10 +55,14 @@ public class CampaignScheduler {
     private final CampaignActivityServiceImpl activityService;
     private final ICampaignService campaignService;
     private final WhatsappMessageLogRepository whatsappMessageLogRepository;
+    private final IShortLinkService shortLinkService;
 
     private final com.smartstocks.product.repository.CampaignSegmentUserRepository campaignSegmentUserRepository;
 
     private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
+    @Value("${app.short-link.base-url:http://localhost:8080}")
+    private String shortLinkBaseUrl;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
@@ -362,8 +370,10 @@ public class CampaignScheduler {
                         activity.getId(),
                         nonce);
 
+                String finalBody = shortenLinksInHtml(bodyWithPixel, campaign.getCampaignCode(), recipient.getUserId());
+
                 RenderedTemplate emailContent = new RenderedTemplate(
-                        rendered.getRenderedSubject(), bodyWithPixel);
+                        rendered.getRenderedSubject(), finalBody);
 
                 // 4d. Send via provider (single recipient per call)
                 lastResult = emailProvider.send(emailContent, Collections.singletonList(emailId));
@@ -463,6 +473,41 @@ public class CampaignScheduler {
             vars.putAll(recipient.getData());
         }
         return vars;
+    }
+
+    private String shortenLinksInHtml(String html, String campaignCode, String userId) {
+        if (html == null) return null;
+        String baseUrl = shortLinkBaseUrl.endsWith("/") ? shortLinkBaseUrl : shortLinkBaseUrl + "/";
+        
+        StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile("href\\s*=\\s*\"([^\"]+)\"").matcher(html);
+        while (matcher.find()) {
+            String originalUrl = matcher.group(1);
+            // Skip tracking pixels, internal refs, or already shortened links
+            if ((originalUrl.startsWith("http://") || originalUrl.startsWith("https://")) 
+                 && !originalUrl.contains("/pixel") 
+                 && !originalUrl.contains(baseUrl)) {
+                
+                String shortId = shortLinkService.shortenLink(originalUrl, null);
+                String shortUrl = baseUrl + "s/" + shortId;
+                
+                StringBuilder fullUrl = new StringBuilder(shortUrl);
+                boolean hasQuery = false;
+                if (campaignCode != null) {
+                    fullUrl.append("?campaign=").append(campaignCode);
+                    hasQuery = true;
+                }
+                if (userId != null) {
+                    fullUrl.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                }
+                
+                matcher.appendReplacement(sb, "href=\"" + fullUrl.toString() + "\"");
+            } else {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     /**
