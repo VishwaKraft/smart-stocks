@@ -42,6 +42,12 @@ export class UserService {
     return this.http.post(`${environment.serverUrl}/user/token`, body, { 'headers': headers })
   }
 
+  googleLogin(token: string): Observable<any> {
+    const headers = { 'content-type': 'application/json' }
+    const body = JSON.stringify({ token });
+    return this.http.post(`${environment.serverUrl}/user/google-login`, body, { 'headers': headers })
+  }
+
   getUser(): Observable<any> {
     return this.http.get(`${environment.serverUrl}/user/profile`)
   }

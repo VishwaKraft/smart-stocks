@@ -82,6 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(
                         "/stock/**",
                         "/user/token",
+                        "/user/google-login",
                         "/user/signup",
                         "/swagger-ui/**",
                         "/swagger-ui.html",

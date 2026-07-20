@@ -8,7 +8,8 @@ export const environment = {
   modelUrl: 'http://localhost:5000',
   // Massive Stock Market API — get your key at https://massive.com/dashboard/keys
   massiveApiUrl: 'https://api.massive.com',
-  massiveApiKey: 'YGtR9Qi9j4axrqEqZ4pEGxp7F5N29ATb'
+  massiveApiKey: 'YGtR9Qi9j4axrqEqZ4pEGxp7F5N29ATb',
+  googleClientId: '44421379309-pdeqjdtbcag0tr0cbt3hqlvr1qde0hk0.apps.googleusercontent.com'
 };
 
 /*

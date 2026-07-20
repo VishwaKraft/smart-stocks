@@ -3,6 +3,9 @@ import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@ang
 import { MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { UserService } from 'src/app/services/user.service';
+import { environment } from 'src/environments/environment';
+
+declare var google: any;
 
 @Component({
   selector: 'app-login-modal',
@@ -22,6 +25,36 @@ export class LoginModalComponent implements OnInit {
       email: [null, [Validators.required]],
       password: [null, [Validators.required]],
     });
+
+    if (typeof google !== 'undefined') {
+      google.accounts.id.initialize({
+        client_id: environment.googleClientId,
+        callback: this.handleCredentialResponse.bind(this)
+      });
+    }
+  }
+
+  handleCredentialResponse(response: any) {
+    if (response.credential) {
+      this.userService.googleLogin(response.credential).subscribe(
+        data => {
+          localStorage.setItem("token", data.data.token);
+          this.toastr.success("Login Successfull!", "", {
+            closeButton: true,
+            "positionClass": "toast-bottom-right",
+          });
+          this.userService.isLoginSubject.next(true);
+          this.dialogRef.close();
+        },
+        error => {
+          console.log('Something went wrong !');
+          this.toastr.error("Google Login failed", "", {
+            closeButton: true,
+            "positionClass": "toast-bottom-right",
+          });
+        }
+      );
+    }
   }
 
   onSubmit() {
@@ -48,10 +81,14 @@ export class LoginModalComponent implements OnInit {
   }
 
   signInWithGoogle() {
-    this.toastr.info("Google Sign-In is currently being set up by the admin.", "Coming Soon", {
-      closeButton: true,
-      positionClass: "toast-bottom-right",
-    });
+    if (typeof google !== 'undefined') {
+      google.accounts.id.prompt();
+    } else {
+      this.toastr.error("Google Identity service not loaded", "", {
+        closeButton: true,
+        positionClass: "toast-bottom-right",
+      });
+    }
   }
 
 }
