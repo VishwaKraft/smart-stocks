@@ -5,7 +5,10 @@
 export const environment = {
   production: false,
   serverUrl: 'http://localhost:8080',
-  modelUrl: 'http://localhost:5000'
+  modelUrl: 'http://localhost:5000',
+  // Massive Stock Market API — get your key at https://massive.com/dashboard/keys
+  massiveApiUrl: 'https://api.massive.com',
+  massiveApiKey: 'YGtR9Qi9j4axrqEqZ4pEGxp7F5N29ATb'
 };
 
 /*

@@ -1,36 +1,104 @@
-<div class="wow fadeInUp discover-container mb-5" data-wow-duration="3s">
-    <span class="mat-display-3">Discover Stocks in India</span>
-    <div>
-        <a routerLink="/discover/top-gainer">
-            <button mat-raised-button>DISCOVER STOCKS</button>
-        </a>
-        <a routerLink="/discover/top-gainer">
-            <button mat-raised-button>TOP GAINER STOCKS</button>
-        </a>
-        <a routerLink="/discover/top-loser">
-            <button mat-raised-button>TOP LOSERS STOCKS</button>
-        </a>
-        <a routerLink="/discover/recommendation">
-            <button mat-raised-button>RECOMMENDED STOCKS</button>
-        </a>
-    </div>
-    <div>
-        <mat-form-field class="example-full-width" id="searchField" appearance="fill" color=warn>
-            <mat-label>Search Stocks</mat-label>
-            <input matInput placeholder="TATA STEEL" (keyup)="makeSubject($event)" autocomplete="off">
-        </mat-form-field>
-    </div>
-    <div>
-        <ul *ngIf="results">
-            <li *ngFor="let result of results | slice:0:5" class="py-2">
-                <a routerLink="/stockDetails/{{ result.symbol }}">
-                    {{ result.shortName }}
-                </a>
-            </li>
-        </ul>
-    </div>
+<div class="discover-section">
+    <div class="container py-5">
 
-    <a routerLink="/discover/all-stocks">
-        <button mat-raised-button>VIEW ALL STOCKS</button>
-    </a>
+        <!-- Section Header -->
+        <div class="section-header mb-5">
+            <div class="section-header-top">
+                <div>
+                    <div class="section-eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        Live Market Data
+                    </div>
+                    <h2 class="section-title">Explore the Market</h2>
+                    <p class="section-subtitle">Discover top opportunities across the U.S. stock market in real-time.</p>
+                </div>
+                <div class="search-wrapper">
+                    <div class="search-field">
+                        <mat-icon class="search-icon">search</mat-icon>
+                        <input
+                            class="search-input"
+                            placeholder="Search by company or ticker..."
+                            (keyup)="makeSubject($event)"
+                            autocomplete="off"
+                        />
+                    </div>
+                    <div class="search-results-container" *ngIf="results && results.length > 0">
+                        <ul class="search-results">
+                            <li *ngFor="let result of results | slice:0:6">
+                                <a routerLink="/stockDetails/{{ result.symbol }}" class="search-result-row">
+                                    <div class="result-ticker">{{ result.symbol }}</div>
+                                    <div class="result-name">{{ result.shortName }}</div>
+                                    <mat-icon class="result-arrow">arrow_forward_ios</mat-icon>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Cards -->
+        <div class="category-grid">
+            <a routerLink="/discover/all-stocks" class="category-card card-all">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <mat-icon>bar_chart</mat-icon>
+                </div>
+                <div class="card-content">
+                    <h4>All Stocks</h4>
+                    <p>Browse the full universe of listed securities</p>
+                </div>
+                <mat-icon class="card-arrow">east</mat-icon>
+            </a>
+
+            <a routerLink="/discover/top-gainer" class="category-card card-gainer">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <mat-icon>trending_up</mat-icon>
+                </div>
+                <div class="card-content">
+                    <h4>Top Gainers</h4>
+                    <p>Stocks posting the highest gains today</p>
+                </div>
+                <mat-icon class="card-arrow">east</mat-icon>
+            </a>
+
+            <a routerLink="/discover/top-loser" class="category-card card-loser">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <mat-icon>trending_down</mat-icon>
+                </div>
+                <div class="card-content">
+                    <h4>Top Losers</h4>
+                    <p>Stocks with the steepest declines today</p>
+                </div>
+                <mat-icon class="card-arrow">east</mat-icon>
+            </a>
+
+            <a routerLink="/discover/recommendation" class="category-card card-reco">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <mat-icon>auto_awesome</mat-icon>
+                </div>
+                <div class="card-content">
+                    <h4>Recommended</h4>
+                    <p>AI-curated picks tailored for you</p>
+                </div>
+                <mat-icon class="card-arrow">east</mat-icon>
+            </a>
+
+            <a routerLink="/discover/best-month" class="category-card card-month">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrap">
+                    <mat-icon>workspace_premium</mat-icon>
+                </div>
+                <div class="card-content">
+                    <h4>Best of Month</h4>
+                    <p>This month's top performing stocks</p>
+                </div>
+                <mat-icon class="card-arrow">east</mat-icon>
+            </a>
+        </div>
+
+    </div>
 </div>

@@ -3,49 +3,104 @@
 
 <head>
     <meta charset="utf-8">
-    <title>SmartStocks</title>
+    <title>Herculean by VishwaKraft</title>
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="./assets/logobulb-removebg-preview.png">
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:ital,wght@0,200;0,300;0,400;0,500;1,100;1,200;1,300;1,400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;0,400;0,500;1,100;1,200;1,300;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     </style>
 </head>
 <style>
+    :root {
+      --primary-color: #1d4ed8;
+      --primary-color-dark: #1e40af;
+      --primary-glow: rgba(29, 78, 216, 0.35);
+      --bg-color: #080d1a;
+      --bg-secondary: #0d1526;
+      --text-color: #94a3b8;
+      --heading-color: #f1f5f9;
+      --card-bg: #0f1c35;
+      --card-bg-hover: #162040;
+      --border-color: rgba(29, 78, 216, 0.2);
+      --border-subtle: rgba(255,255,255,0.06);
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+    }
+
     * {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', 'Poppins', sans-serif;
+        box-sizing: border-box;
     }
-    
-    .mat-form-field-flex {
-        background-color: white !important;
-        border: 0;
-    }
-    
+
     body {
         margin: 0;
         margin-top: 4rem;
         padding: 0;
-        box-sizing: border-box;
-        font-family: 'Poppins', sans-serif;
-        background-color: #f4f7f9;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
-    
+
     html {
         scroll-behavior: smooth;
     }
-    
-    .mat-display-2 {
-        color: #ff6702 !important;
-        font-weight: 500 !important;
+
+    .mat-form-field-flex {
+        background-color: var(--card-bg) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 8px !important;
     }
-    
+
+    .mat-label, .mat-form-field-label {
+        color: var(--text-color) !important;
+    }
+
+    .mat-input-element {
+        color: var(--heading-color) !important;
+        caret-color: var(--primary-color) !important;
+    }
+
+    .mat-display-2 {
+        color: var(--primary-color) !important;
+        font-weight: 700 !important;
+    }
+
     mat-dialog-container {
         padding: 0 !important;
         border-radius: 1rem !important;
+        background: var(--card-bg) !important;
+    }
+
+    .mat-menu-panel {
+        background: var(--card-bg) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+    }
+
+    .mat-menu-item {
+        color: var(--text-color) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    .mat-menu-item:hover {
+        background: var(--glass-bg) !important;
+        color: var(--heading-color) !important;
+    }
+
+    ::selection {
+        background: var(--primary-color);
+        color: #fff;
     }
 </style>
 

@@ -1,19 +1,32 @@
 .header-design {
-    background: #fff;
-    border-bottom: .1rem solid #F2F2F2;
+    background: rgba(26, 31, 46, 0.85) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border-subtle) !important;
     position: fixed;
     top: 0;
-    color: #FF6700;
-    z-index: 2;
+    width: 100%;
+    z-index: 100;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
 a {
     text-decoration: none;
-    color: #FF6700;
+    color: var(--primary-color);
 }
 
 #appName {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--primary-color), #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .example-spacer {
@@ -21,24 +34,57 @@ a {
 }
 
 button {
-    color: #FF6700;
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: color 0.2s ease !important;
+}
+
+button:hover {
+    color: var(--heading-color) !important;
 }
 
 .custom-btn {
-    background: #FF6700;
-    color: #F2F2F2;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark)) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    padding: 0.4rem 1.2rem !important;
+    box-shadow: 0 0 20px var(--primary-glow) !important;
+    transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+    border: none !important;
+}
+
+.custom-btn:hover {
+    box-shadow: 0 0 35px var(--primary-glow) !important;
+    transform: translateY(-1px) !important;
 }
 
 .sidenav {
     width: 16rem;
+    background: var(--card-bg) !important;
+    border-right: 1px solid var(--border-subtle) !important;
 }
 
 .sidenav button {
     display: block;
-    padding: 6px 24px;
+    padding: 10px 24px;
     text-align: left;
     width: 100%;
-    font-size: large;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-color);
+    border-radius: 8px;
+    margin: 2px 8px;
+    width: calc(100% - 16px);
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidenav button:hover {
+    background: var(--glass-bg);
+    color: var(--heading-color);
 }
 
 .sidenav .mat-toolbar {
@@ -50,7 +96,7 @@ button {
 }
 
 .material-icons {
-    color: #FF6700;
+    color: var(--primary-color);
 }
 
 #image {
@@ -65,4 +111,56 @@ button {
 
 #profileIcon {
     font-size: 2rem;
+    color: var(--primary-color);
+    transition: color 0.2s, filter 0.2s;
+}
+
+#profileIcon:hover {
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+/* Persistent nav links */
+.main-nav {
+    gap: 0.25rem;
+}
+
+.nav-link-item {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-color) !important;
+    text-decoration: none;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    transition: background 0.2s ease, color 0.2s ease;
+    -webkit-text-fill-color: var(--text-color);
+    background: transparent;
+    white-space: nowrap;
+}
+
+.nav-link-item:hover {
+    background: var(--glass-bg);
+    color: var(--heading-color) !important;
+    -webkit-text-fill-color: var(--heading-color);
+}
+
+.nav-link-item.nav-active {
+    color: var(--primary-color) !important;
+    -webkit-text-fill-color: #60a5fa;
+    background: rgba(29, 78, 216,0.1);
+    font-weight: 600;
+}
+
+.nav-btn-ghost {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 8px !important;
+    padding: 0.35rem 1rem !important;
+    transition: border-color 0.2s, color 0.2s !important;
+}
+
+.nav-btn-ghost:hover {
+    border-color: rgba(29, 78, 216,0.5) !important;
+    color: var(--heading-color) !important;
 }

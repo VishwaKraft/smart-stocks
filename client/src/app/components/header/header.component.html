@@ -11,19 +11,32 @@
     </mat-sidenav>
     <mat-sidenav-content>
         <mat-toolbar class="sticky-top header-design px-sm-4">
-            <div class="flex-grow-1">
+            <div class="flex-grow-1 d-flex align-items-center">
                 <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle();" style="outline-style: none;" *ngIf="isSideNav">
                     <mat-icon>menu</mat-icon>
                 </button>
                 <a routerLink="/">
-                    <span id="appName"><img id="image" src="assets/logobulb.PNG"></span>
+                    <span id="appName" style="display: flex; flex-direction: column; justify-content: center; line-height: 1.1;">
+                        <span style="font-weight: 800; font-size: 1.4rem; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #1d4ed8, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.03em;">
+                            <mat-icon style="font-size: 1.5rem; height: 1.5rem; width: 1.5rem; -webkit-text-fill-color: #1d4ed8;">bolt</mat-icon>Herculean
+                        </span>
+                        <span style="font-size: 0.62rem; font-weight: 600; color: #9ca3af; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px;">by VishwaKraft</span>
+                    </span>
                 </a>
             </div>
-            <div>
-                <div *ngIf="!isLogin" class="d-flex align-items-center">
-                    <button mat-button routerLink="/careers" class="me-3 d-none d-sm-inline-block">Careers</button>
-                    <button class="custom-btn me-2 me-sm-3" mat-raised-button (click)="onLogin()">Login</button>
-                    <button class="custom-btn me-sm-3" mat-raised-button (click)="onSignUp()">Sign Up</button>
+
+            <!-- Main Nav Links (always visible on larger screens) -->
+            <div class="main-nav d-none d-md-flex align-items-center">
+                <a routerLink="/home" routerLinkActive="nav-active" class="nav-link-item">Home</a>
+                <a routerLink="/discover/top-gainer" routerLinkActive="nav-active" class="nav-link-item">Discover</a>
+                <a routerLink="/careers" routerLinkActive="nav-active" class="nav-link-item">Careers</a>
+                <a routerLink="/university" routerLinkActive="nav-active" class="nav-link-item">University</a>
+            </div>
+
+            <div class="d-flex align-items-center ms-3">
+                <div *ngIf="!isLogin" class="d-flex align-items-center gap-2">
+                    <button class="nav-btn-ghost" mat-button (click)="onLogin()">Login</button>
+                    <button class="custom-btn" mat-raised-button (click)="onSignUp()">Sign Up</button>
                 </div>
                 <button style="background-color: transparent; border: none; display: flex;
                 align-items: baseline;" class="px-2" [matMenuTriggerFor]="menu" *ngIf="isLogin">
@@ -34,6 +47,7 @@
                     <button mat-menu-item routerLink="/home">Home</button>
                     <button mat-menu-item routerLink="/careers">Careers</button>
                     <button mat-menu-item routerLink="/discover/top-gainer">Discover</button>
+                    <button mat-menu-item routerLink="/university">University</button>
                     <button mat-menu-item routerLink="/user/sandbox/dashboard">Inventory</button>
                     <button mat-menu-item (click)="onLogOut()">Logout</button>
                 </mat-menu>

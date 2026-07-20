@@ -1,118 +1,149 @@
+/* ── Card Shell ─────────────────────────────────────────────────────── */
 mat-card {
-    height: auto;
-    width: auto;
-    /* border: 2px solid #ff6700; */
-    padding: 0rem;
-    margin: 0rem;
-    border-radius: 0rem;
-    font-family: 'Poppins', sans-serif;
-    border-radius: 1rem;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif !important;
 }
 
-.demo-table {
-    width: 100%;
-    font-family: 'Poppins', sans-serif;
-}
-
-.mat-row .mat-cell {
-    border-bottom: 1px solid transparent;
-    border-top: 1px solid transparent;
-    cursor: pointer;
-}
-
-.mat-row:hover .mat-cell {
-    border-color: currentColor;
-}
-
-.demo-row-is-clicked {
-    font-weight: bold;
-}
-
-.grad {
-    /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-    background-image: linear-gradient(to right, #ff6702, #ffd1b2);
+/* ── Card Header ─────────────────────────────────────────────────────── */
+mat-card-header {
+    background: linear-gradient(135deg, rgba(29, 78, 216,0.15), rgba(29, 78, 216,0.05)) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    border-radius: 0 !important;
+    padding: 1.25rem 1.5rem !important;
 }
 
 .heading {
-    font-size: 1.5rem;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: var(--heading-color) !important;
+    letter-spacing: -0.02em !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-table {
-    width: 100%;
-    box-shadow: none;
-    font-family: 'Poppins', sans-serif;
-}
-
-td {
-    font-size: 1rem;
-}
-
-th {
-    font-size: 1rem;
-}
-
-table {
-    width: 100%;
-    /* width: 30% */
-}
-
-td,
-input {
-    color: #575A89;
-    cursor: pointer;
-}
-
-mat-paginator,
-mat-label,
-th,
-mat-form-field {
-    color: #FF6700;
-}
-
-.mat-row .mat-cell {
-    transition: transform .6s;
-    /* Animation */
-}
-
-.mat-row:hover .mat-cell {
-    border-color: #FF6700;
-    background: #F2F2F2;
-}
-
-.mat-elevation-z2 {
-    width: 90%;
-    border-left: 3px solid #FF6700;
-    border-radius: 8px;
-}
-
-.grad {
-    /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-    background-image: linear-gradient(to right, #ff6702, #ffd1b2);
-}
-
-mat-card-header {
-    /* background-color: #ffd1b2; */
-    border-radius: 1rem 1rem 0rem 0rem;
-    color: white;
-}
-
-mat-card-title {
-    padding: 1rem;
+.heading::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    box-shadow: 0 0 8px var(--primary-glow);
+    flex-shrink: 0;
 }
 
 mat-card-content {
-    padding: 1rem;
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* ── Days input + GO button ───────────────────────────────────────────── */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+    border-color: var(--border-subtle) !important;
+    border-radius: 8px !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+    border-color: var(--primary-color) !important;
+}
+
+::ng-deep .mat-form-field-label {
+    color: var(--text-color) !important;
+}
+
+::ng-deep .mat-input-element {
+    color: var(--heading-color) !important;
+    caret-color: var(--primary-color) !important;
 }
 
 button {
-    background: #FF6700;
-    color: #F2F2F2;
-    border-radius: 1rem;
-    border: 0;
-    margin: 1rem;
-    padding: .5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark)) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.25rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    font-family: 'Inter', sans-serif !important;
+    cursor: pointer;
+    margin: 0.25rem 0.5rem !important;
+    transition: box-shadow 0.2s, transform 0.2s !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+    letter-spacing: 0.04em !important;
 }
 
-.center {
-    text-align: center;
+button:hover {
+    box-shadow: 0 0 25px var(--primary-glow) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ── Table ───────────────────────────────────────────────────────────── */
+table {
+    width: 100%;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+::ng-deep .mat-header-row {
+    background: transparent !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+::ng-deep .mat-header-cell {
+    color: var(--text-color) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    border-bottom: none !important;
+    background: transparent !important;
+}
+
+::ng-deep .mat-row {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+    cursor: pointer;
+    transition: background 0.15s !important;
+}
+
+::ng-deep .mat-row:hover {
+    background: var(--glass-bg) !important;
+}
+
+::ng-deep .mat-cell {
+    color: var(--text-color) !important;
+    font-size: 0.88rem !important;
+    border-bottom: none !important;
+    padding: 0.85rem 1rem !important;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+::ng-deep .mat-progress-bar-fill::after {
+    background-color: var(--primary-color) !important;
+}
+
+::ng-deep .mat-progress-bar-buffer {
+    background-color: rgba(29, 78, 216,0.1) !important;
+}
+
+/* ── Paginator ───────────────────────────────────────────────────────── */
+::ng-deep .mat-paginator {
+    background: transparent !important;
+    color: var(--text-color) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.82rem !important;
+    border-top: 1px solid var(--border-subtle) !important;
+}
+
+::ng-deep .mat-paginator-icon {
+    fill: var(--text-color) !important;
+}
+
+::ng-deep .mat-select-value {
+    color: var(--text-color) !important;
 }

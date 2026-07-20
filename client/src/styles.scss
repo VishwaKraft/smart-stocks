@@ -2,6 +2,25 @@ app-root {
     font-family: 'Poppins', sans-serif;
 }
 
+:root {
+  --primary-color: #1d4ed8;
+  --primary-color-dark: #1e40af;
+  --primary-glow: rgba(29, 78, 216, 0.35);
+  --bg-color: #080d1a;
+  --bg-secondary: #0d1526;
+  --text-color: #94a3b8;
+  --heading-color: #f1f5f9;
+  --card-bg: #0f1c35;
+  --card-bg-hover: #162040;
+  --border-color: rgba(29, 78, 216, 0.2);
+  --border-subtle: rgba(255,255,255,0.06);
+  --glass-bg: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --success-color: #10b981;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+}
+
 // regular style toast
 @import '~ngx-toastr/toastr';
 .table-responsive {
@@ -44,11 +63,45 @@ app-root {
 
  ::-webkit-scrollbar-thumb {
     border-radius: 5px;
-    background: #888;
+    background: #374151;
 }
 
  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #1d4ed8;
+}
+
+/* ============================================================
+   GLOBAL ORANGE PURGE — replace all legacy #FF6700 with theme
+   ============================================================ */
+[style*="FF6700"],
+[style*="ff6700"] {
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Override orange buttons app-wide */
+button[style*="FF6700"],
+button[style*="ff6700"] {
+  background: var(--primary-color) !important;
+  color: #fff !important;
+}
+
+/* Toastr */
+.toast-success {
+  background-color: var(--primary-color) !important;
+}
+
+/* Angular Material active/accent fallback */
+.mat-accent .mat-progress-bar-fill::after,
+.mat-accent.mat-slider .mat-slider-thumb,
+.mat-accent .mat-slider-thumb {
+  background-color: var(--primary-color) !important;
+}
+
+.active {
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
 }
 
 
@@ -59,4 +112,133 @@ app-root {
     padding: 5rem;
     background-color: grey;
     height: 80vh;
+}
+
+/* ============================================================
+   GLOBAL ANGULAR MATERIAL — DARK THEME OVERRIDES
+   ============================================================ */
+
+.mat-card {
+    background: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-subtle) !important;
+    box-shadow: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.mat-toolbar {
+    background: transparent !important;
+    color: var(--heading-color) !important;
+}
+
+.mat-table {
+    background: transparent !important;
+}
+
+.mat-header-row {
+    background: transparent !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+.mat-header-cell {
+    color: var(--text-color) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.07em !important;
+    text-transform: uppercase !important;
+    border-bottom: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.mat-row {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+    cursor: pointer;
+    transition: background 0.15s !important;
+}
+
+.mat-row:hover {
+    background: var(--glass-bg) !important;
+}
+
+.mat-cell {
+    color: var(--text-color) !important;
+    border-bottom: none !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.88rem !important;
+}
+
+.mat-paginator {
+    background: transparent !important;
+    color: var(--text-color) !important;
+    font-family: 'Inter', sans-serif !important;
+    border-top: 1px solid var(--border-subtle) !important;
+}
+
+.mat-paginator-page-size-label,
+.mat-paginator-range-label {
+    color: var(--text-color) !important;
+    font-size: 0.82rem !important;
+}
+
+.mat-select-value,
+.mat-select-arrow {
+    color: var(--text-color) !important;
+}
+
+.mat-select-panel {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 10px !important;
+}
+
+.mat-option {
+    color: var(--text-color) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.mat-option:hover,
+.mat-option.mat-active {
+    background: var(--glass-bg) !important;
+    color: var(--heading-color) !important;
+}
+
+.mat-chip.mat-standard-chip {
+    background: rgba(29, 78, 216,0.1) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(29, 78, 216,0.25) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.mat-dialog-container {
+    background: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 16px !important;
+}
+
+.mat-divider {
+    border-top-color: var(--border-subtle) !important;
+}
+
+.mat-sort-header-arrow {
+    color: var(--primary-color) !important;
+}
+
+.mat-sort-header-button {
+    color: var(--text-color) !important;
+}
+
+.mat-raised-button {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark)) !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px var(--primary-glow) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    border-radius: 8px !important;
+}
+
+.mat-raised-button.custom-btn {
+    border-radius: 8px !important;
 }
