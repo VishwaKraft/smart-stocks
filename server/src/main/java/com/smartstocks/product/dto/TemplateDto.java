@@ -23,4 +23,5 @@ public class TemplateDto {
     private Long createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String dataSourceUrl;
 }

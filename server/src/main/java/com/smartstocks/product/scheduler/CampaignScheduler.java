@@ -54,6 +54,8 @@ public class CampaignScheduler {
 
     private final com.smartstocks.product.repository.CampaignSegmentUserRepository campaignSegmentUserRepository;
 
+    private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
 
@@ -320,6 +322,24 @@ public class CampaignScheduler {
         int bounceCount = 0;
         SendResult lastResult = null;
 
+        // Fetch external data if dataSourceUrl is present
+        Map<String, Object> externalData = new HashMap<>();
+        if (template.getDataSourceUrl() != null && !template.getDataSourceUrl().isBlank()) {
+            try {
+                Map<String, Object> apiResponse = restTemplate.getForObject(template.getDataSourceUrl(), Map.class);
+                if (apiResponse != null) {
+                    externalData.putAll(apiResponse);
+                    // For the news api which returns { "data": [...] }, alias it to "articles" for convenience
+                    if (apiResponse.containsKey("data")) {
+                        externalData.put("articles", apiResponse.get("data"));
+                    }
+                }
+            } catch (Exception e) {
+                log.error("[Scheduler] Failed to fetch external data from URL: {}", template.getDataSourceUrl(), e);
+                // Depending on requirements, we could abort here or proceed without data
+            }
+        }
+
         // 4. Send one email per recipient
         for (SegmentUser recipient : segmentUsers) {
             String emailId = recipient.getEmailId();
@@ -327,6 +347,7 @@ public class CampaignScheduler {
             try {
                 // 4a. Build per-recipient template variables
                 Map<String, Object> variables = buildVariables(recipient);
+                variables.putAll(externalData); // Merge external data
 
                 // 4b. Render subject + body with per-recipient variables
                 RenderedTemplate rendered = renderer.render(

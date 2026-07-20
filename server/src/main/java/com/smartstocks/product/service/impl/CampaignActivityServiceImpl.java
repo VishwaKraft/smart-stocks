@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
     private final CampaignActivityRepository activityRepository;
@@ -57,6 +58,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
     @org.springframework.beans.factory.annotation.Value("${infobip.people-base-url:}")
     private String infobipPeopleBaseUrl;
+
+    private org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @Override
     @Transactional
@@ -326,11 +329,26 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     activity.getId(),
                     nonce);
             
-            // Render actual template with empty variables for test
+            Map<String, Object> testVariables = new HashMap<>();
+            if (templateObj.getDataSourceUrl() != null && !templateObj.getDataSourceUrl().isBlank()) {
+                try {
+                    Map<String, Object> apiResponse = restTemplate.getForObject(templateObj.getDataSourceUrl(), Map.class);
+                    if (apiResponse != null) {
+                        testVariables.putAll(apiResponse);
+                        if (apiResponse.containsKey("data")) {
+                            testVariables.put("articles", apiResponse.get("data"));
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("[CampaignActivityServiceImpl] Failed to fetch external data during testTrigger from URL: {}", templateObj.getDataSourceUrl(), e);
+                }
+            }
+
+            // Render actual template with variables for test
             com.smartstocks.product.service.renderer.RenderedTemplate rendered = renderer.render(
                     templateObj.getSubject(),
                     htmlWithPixel,
-                    new HashMap<>()
+                    testVariables
             );
             com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
                     rendered,

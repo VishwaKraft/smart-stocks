@@ -21,4 +21,6 @@ public class UpdateTemplateRequestDto {
     private String htmlBody;
 
     private Boolean isActive;
+
+    private String dataSourceUrl;
 }
