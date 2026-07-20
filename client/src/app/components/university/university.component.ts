@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { UserService } from 'src/app/services/user.service';
+import { LoginModalComponent } from '../header/login-modal/login-modal.component';
 
 @Component({
   selector: 'app-university',
@@ -11,7 +13,13 @@ import { UserService } from 'src/app/services/user.service';
 export class UniversityComponent implements OnInit {
 
   isLogin: boolean
-  constructor(private userService: UserService, private toastr: ToastrService, private router: Router) { }
+
+  constructor(
+    private userService: UserService, 
+    private toastr: ToastrService, 
+    private router: Router,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
@@ -23,10 +31,13 @@ export class UniversityComponent implements OnInit {
 
   redirect() {
     if (this.isLogin === false) {
-      this.toastr.error("Please Login !", "", {
+      this.toastr.info("Please login to access the Sandbox", "", {
         closeButton: true,
-        "positionClass": "toast-bottom-right",
-      })
+        positionClass: "toast-bottom-right",
+      });
+      const dialogConfig = new MatDialogConfig();
+      dialogConfig.autoFocus = true;
+      this.dialog.open(LoginModalComponent, dialogConfig);
     } else {
       this.router.navigate(['/user/sandbox/dashboard']);
     }

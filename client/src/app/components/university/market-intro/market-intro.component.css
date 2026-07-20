@@ -1,3 +1,200 @@
-ngb-carousel{
+/* General Page Styles */
+.university-page {
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    font-family: 'Inter', 'Poppins', sans-serif;
+    color: var(--text-color);
+    padding-bottom: 3rem;
+}
 
+/* Hero Section */
+.uni-hero-section {
+    padding-top: 4rem;
+    padding-bottom: 3rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.fw-black {
+    font-weight: 900;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #60a5fa, var(--primary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-muted-light {
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.badge-accent {
+    background: rgba(29, 78, 216, 0.1);
+    border: 1px solid rgba(29, 78, 216, 0.3);
+    color: var(--primary-color);
+    padding: 0.5rem 1.25rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Glowing Orbs */
+.glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    opacity: 0.4;
+    animation: float 10s infinite ease-in-out alternate;
+}
+
+.orb-primary {
+    width: 300px;
+    height: 300px;
+    background: rgba(29, 78, 216, 0.6);
+    top: -50px;
+    left: 10%;
+}
+
+.orb-secondary {
+    width: 250px;
+    height: 250px;
+    background: rgba(96, 165, 250, 0.4);
+    bottom: 0;
+    right: 15%;
+    animation-delay: -5s;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(30px, -30px); }
+}
+
+/* Lesson Cards */
+.lesson-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.lesson-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    border-color: rgba(29, 78, 216, 0.3);
+}
+
+.lesson-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(29, 78, 216, 0.1);
+    color: var(--primary-color);
+}
+
+.lesson-icon {
+    font-size: 2rem;
+    height: 2rem;
+    width: 2rem;
+}
+
+.lesson-title {
+    color: var(--heading-color);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.lesson-text {
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+/* Specialty Cards */
+.highlight-card {
+    background: linear-gradient(145deg, var(--card-bg), rgba(29, 78, 216, 0.05));
+    border-left: 4px solid var(--primary-color);
+}
+
+.border-gradient {
+    position: relative;
+    background: var(--card-bg);
+    background-clip: padding-box;
+    border: 1px solid transparent;
+}
+
+.border-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    z-index: -1;
+    margin: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--primary-color), transparent, var(--primary-color-dark));
+}
+
+.bg-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: var(--card-bg);
+}
+
+/* Instruments Box */
+.instrument-box {
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    height: 100%;
+    transition: transform 0.2s ease;
+}
+
+.instrument-box:hover {
+    transform: scale(1.05);
+    background: rgba(29, 78, 216, 0.05);
+    border-color: rgba(29, 78, 216, 0.3);
+}
+
+.instrument-icon {
+    font-size: 2.5rem;
+    height: 2.5rem;
+    width: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.instrument-box h5 {
+    color: var(--heading-color);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.text-primary { color: #60a5fa !important; }
+.text-success { color: #34d399 !important; }
+.text-warning { color: #fbbf24 !important; }
+.text-danger { color: #f87171 !important; }
+
+/* Global Button Override */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(29, 78, 216, 0.3) !important;
 }

@@ -1,19 +1,71 @@
-<div class="container my-5">
-    <router-outlet></router-outlet>
+<div class="university-layout">
+    <!-- Main Content Area -->
+    <div class="content-wrapper">
+        <router-outlet></router-outlet>
+    </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-3">
-            <button routerLink="/university/" routerLinkActive="sld" [routerLinkActiveOptions]="{exact: true}" class="but">Market 101</button>
-        </div>
-        <div class="col-lg-1">
-            <img class="right-icon" src="assets/darrow.png">
-        </div>
-        <div class="col-lg-3">
-            <button routerLink="/university/market-intro" routerLinkActive="sld" class="but">Guidelines</button>
-        </div>
-        <div class="col-lg-1"><img class="right-icon" src="assets/darrow.png"></div>
-        <div class="col-lg-3">
-            <button (click)="redirect()" class="but">Market Sandbox</button>
+    <!-- Sticky Bottom Navigation Stepper -->
+    <div class="stepper-nav-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-12 col-xl-10">
+                    <div class="stepper-card">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            
+                            <!-- Step 1 -->
+                            <button class="step-btn flex-grow-1" routerLink="/university/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                                <div class="step-content">
+                                    <mat-icon class="step-icon">school</mat-icon>
+                                    <div class="step-text">
+                                        <span class="step-label">Module 1</span>
+                                        <span class="step-title">Market 101</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <mat-icon class="step-divider d-none d-md-block">chevron_right</mat-icon>
+
+                            <!-- Step 2 -->
+                            <button class="step-btn flex-grow-1" routerLink="/university/market-intro" routerLinkActive="active">
+                                <div class="step-content">
+                                    <mat-icon class="step-icon">menu_book</mat-icon>
+                                    <div class="step-text">
+                                        <span class="step-label">Module 2</span>
+                                        <span class="step-title">Guidelines</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <mat-icon class="step-divider d-none d-md-block">chevron_right</mat-icon>
+
+                            <!-- Step 3 -->
+                            <button class="step-btn flex-grow-1" routerLink="/university/buffett" routerLinkActive="active">
+                                <div class="step-content">
+                                    <mat-icon class="step-icon">lightbulb</mat-icon>
+                                    <div class="step-text">
+                                        <span class="step-label">Module 3</span>
+                                        <span class="step-title">Early Investing</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <mat-icon class="step-divider d-none d-md-block">chevron_right</mat-icon>
+
+                            <!-- Step 4 -->
+                            <button class="step-btn flex-grow-1" (click)="redirect()">
+                                <div class="step-content">
+                                    <mat-icon class="step-icon">rocket_launch</mat-icon>
+                                    <div class="step-text">
+                                        <span class="step-label">Module 4</span>
+                                        <span class="step-title">Practice Sandbox</span>
+                                    </div>
+                                </div>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

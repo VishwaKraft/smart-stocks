@@ -1,26 +1,65 @@
-<mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">Let's Get You In</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+<div class="login-modal-container">
+    <div class="modal-header d-flex justify-content-between align-items-center mb-4">
         <div>
-            <div class="profile-details">
-                <form [formGroup]="LoginForm" (ngSubmit)="onSubmit()" class="px-5">
-
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Email</mat-label>
-                        <input matInput placeholder="email" formControlName="email">
-                    </mat-form-field>
-
-                    <mat-form-field class="example-full-width" appearance="fill" color="warn">
-                        <mat-label>Password</mat-label>
-                        <input matInput placeholder="Password" [type]="hide ? 'password' : 'text'" formControlName="password" required>
-                        <mat-icon color="warn" matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </mat-form-field>
-
-                    <button mat-raised-button type="submit" [disabled]="!LoginForm.valid">LOGIN</button>
-                </form>
-            </div>
+            <h2 class="fw-bold mb-1 title-gradient">Welcome Back</h2>
+            <p class="text-muted small mb-0">Sign in to your Smart Stocks account</p>
         </div>
-    </mat-card-content>
-</mat-card>
+        <button mat-icon-button (click)="dialogRef.close()" class="close-btn text-muted">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <div class="modal-body">
+        <!-- Google Sign-in Button -->
+        <button class="btn btn-google w-100 mb-4 d-flex align-items-center justify-content-center gap-2" (click)="signInWithGoogle()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.7 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            <span class="fw-bold">Sign in with Google</span>
+        </button>
+
+        <div class="divider d-flex align-items-center mb-4">
+            <hr class="flex-grow-1 border-secondary opacity-25">
+            <span class="mx-3 text-muted small">or sign in with email</span>
+            <hr class="flex-grow-1 border-secondary opacity-25">
+        </div>
+
+        <form [formGroup]="LoginForm" (ngSubmit)="onSubmit()">
+            
+            <div class="mb-3">
+                <label class="form-label text-muted small fw-bold">EMAIL ADDRESS</label>
+                <div class="input-group custom-input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                        <mat-icon style="font-size: 1.2rem; height: 1.2rem; width: 1.2rem;">mail</mat-icon>
+                    </span>
+                    <input type="email" class="form-control border-start-0 ps-0" placeholder="name@example.com" formControlName="email">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small fw-bold">PASSWORD</label>
+                <div class="input-group custom-input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                        <mat-icon style="font-size: 1.2rem; height: 1.2rem; width: 1.2rem;">lock</mat-icon>
+                    </span>
+                    <input [type]="hide ? 'password' : 'text'" class="form-control border-start-0 border-end-0 px-0" placeholder="Enter your password" formControlName="password">
+                    <span class="input-group-text bg-transparent border-start-0 text-muted cursor-pointer" (click)="hide = !hide">
+                        <mat-icon style="font-size: 1.2rem; height: 1.2rem; width: 1.2rem;">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold mb-3 shadow-sm" [disabled]="!LoginForm.valid">
+                Sign In
+            </button>
+            
+            <div class="text-center">
+                <a href="javascript:void(0)" class="text-decoration-none small text-primary hover-glow">Forgot password?</a>
+            </div>
+        </form>
+    </div>
+</div>

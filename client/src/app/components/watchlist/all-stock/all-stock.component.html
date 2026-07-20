@@ -1,48 +1,119 @@
-<mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">{{title}}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+<div class="all-stocks-container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
-            <div class="table-responsive">
-                <table mat-table [dataSource]="allStocksTable">
-                    <ng-container matColumnDef="symbol">
-                        <th mat-header-cell *matHeaderCellDef> Symbol </th>
-                        <td mat-cell *matCellDef="let element"> {{element.symbol}} </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="previousClose">
-                        <th mat-header-cell *matHeaderCellDef> Previous Price </th>
-                        <td mat-cell *matCellDef="let element"> {{element.previousClose}} </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="currentPrice">
-                        <th mat-header-cell *matHeaderCellDef> Current Price </th>
-                        <td mat-cell *matCellDef="let element"> {{element.currentPrice}} </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="change">
-                        <th mat-header-cell *matHeaderCellDef> Change</th>
-                        <td mat-cell *matCellDef="let element"> {{element.change}} </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="changePercentage">
-                        <th mat-header-cell *matHeaderCellDef> Change(%)</th>
-                        <td mat-cell *matCellDef="let element"> {{element.changePercentage}} </td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="diplayedColumnsAllStocks"></tr>
-                    <tr mat-row *matRowDef="let row; columns: diplayedColumnsAllStocks;" (click)="clickedRecommendation(row)">
-                    </tr>
-
-                </table>
-                <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn">
-                </mat-progress-bar>
+            <div class="section-eyebrow mb-2">
+                <span class="eyebrow-dot"></span>
+                Market Screener
             </div>
-            <div *ngIf="!requireLoader">
-                <Button *ngIf="allStockPageNo != 0" (click)="goBackAllStock()">Prev</Button>
-                <button (click)="goToNextAllStock()">Next</button>
+            <h2 class="section-title mb-0">All <span class="text-accent">Stocks</span></h2>
+        </div>
+        <div class="text-muted" style="font-size: 0.9rem;">
+            Powered by Massive API
+        </div>
+    </div>
+
+    <!-- Filters (Horizontal) -->
+    <div class="filters-card mb-4">
+        <div class="row align-items-center">
+            
+            <!-- Search Input -->
+            <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                <div class="search-input-wrapper">
+                    <mat-icon class="search-icon">search</mat-icon>
+                    <input type="text" class="form-control custom-search" placeholder="Search company or ticker..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
+                </div>
+            </div>
+
+            <!-- Market Cap Filter (Chips) -->
+            <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="filter-chip" *ngFor="let cap of marketCaps" [class.active]="cap.selected" (click)="toggleFilter(marketCaps, cap)">
+                        {{cap.label}}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Sector Filter (Dropdown or Chips) -->
+            <div class="col-lg-4 col-md-12">
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="filter-chip" *ngFor="let sector of sectors" [class.active]="sector.selected" (click)="toggleFilter(sectors, sector)">
+                        {{sector.label}}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Clear Action -->
+            <div class="col-lg-1 col-md-12 text-lg-end text-start mt-3 mt-lg-0">
+                <button class="btn btn-link text-danger p-0 text-decoration-none" (click)="clearAllFilters()" style="font-size: 0.85rem;" *ngIf="searchQuery || getSelectedCount() > 0">Clear</button>
             </div>
         </div>
-    </mat-card-content>
-</mat-card>
+    </div>
+
+    <!-- Right Content: Data Table -->
+    <div class="table-card">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Fetching real-time market data...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && filteredStocks.length === 0" class="empty-state text-center py-5">
+            <mat-icon class="mb-3" style="font-size: 3rem; height: 3rem; width: 3rem; color: #475569;">search_off</mat-icon>
+            <h4>No stocks found</h4>
+            <p class="text-muted">Try adjusting your filters or search query.</p>
+        </div>
+
+        <!-- Results Table -->
+        <div *ngIf="!isLoading && filteredStocks.length > 0" class="table-responsive">
+            <table class="table custom-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Company</th>
+                        <th scope="col" class="text-end">Sector</th>
+                        <th scope="col" class="text-end">Market Price</th>
+                        <th scope="col" class="text-end">Change</th>
+                        <th scope="col" class="text-end">Change (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let stock of filteredStocks" (click)="navigateToStock(stock.ticker)" class="stock-row">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="stock-avatar me-3">
+                                    {{stock.ticker.charAt(0)}}
+                                </div>
+                                <div>
+                                    <div class="stock-ticker">{{stock.ticker}}</div>
+                                    <div class="stock-name">{{stock.name}}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end align-middle text-muted">
+                            <span class="badge bg-secondary-soft">{{stock.sector}}</span>
+                        </td>
+                        <td class="text-end align-middle fw-bold">
+                            {{stock.price > 0 ? (stock.price | currency:'USD') : '--'}}
+                        </td>
+                        <td class="text-end align-middle" [ngClass]="{'text-success': stock.change > 0, 'text-danger': stock.change < 0}">
+                            {{stock.price > 0 ? formatChange(stock.change) : '--'}}
+                        </td>
+                        <td class="text-end align-middle" [ngClass]="{'text-success': stock.changePerc > 0, 'text-danger': stock.changePerc < 0}">
+                            <div class="change-pill" [ngClass]="stock.changePerc >= 0 ? 'bg-success-soft' : 'bg-danger-soft'">
+                                {{stock.price > 0 ? formatChange(stock.changePerc) + '%' : '--'}}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Results Count -->
+        <div class="card-footer bg-transparent border-top p-3 text-end text-muted" *ngIf="!isLoading && filteredStocks.length > 0">
+            Showing {{filteredStocks.length}} result(s)
+        </div>
+    </div>
+</div>

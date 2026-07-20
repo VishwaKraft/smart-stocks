@@ -1,66 +1,132 @@
-#main {
-    margin-top: 5%;
+/* Layout */
+.university-layout {
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 140px; /* Space for sticky nav */
+    background: var(--bg-color);
 }
 
-#mi {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+.content-wrapper {
+    width: 100%;
 }
 
-#bottom {
-    display: flex;
-    margin-top: 5%;
-    justify-content: center;
+/* Stepper Navigation */
+.stepper-nav-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 0;
+    background: linear-gradient(to top, var(--bg-color) 60%, transparent);
+    z-index: 1000;
 }
 
-.pf {
-    font-family: Roboto;
-    justify-items: center;
-    color: #5c5f8d;
+.stepper-card {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-.unic {
-    margin: 10px;
-}
-
-.unica {
-    margin: 10px;
+/* Step Buttons */
+.step-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    padding: 0.75rem 1.25rem;
+    color: #94a3b8;
+    transition: all 0.3s ease;
     text-align: left;
+    outline: none;
+}
+
+.step-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+}
+
+.step-btn.active {
+    background: linear-gradient(135deg, rgba(29, 78, 216, 0.2), rgba(29, 78, 216, 0.05));
+    border-color: rgba(29, 78, 216, 0.3);
+    color: white;
+}
+
+.step-btn.active .step-icon {
+    color: var(--primary-color);
+}
+
+.step-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.step-icon {
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+    color: #64748b;
+    transition: color 0.3s ease;
+}
+
+.step-text {
     display: flex;
     flex-direction: column;
-    justify-content: center;
 }
 
-.but {
-    background-color: #ffd1b2;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: #575A89;
+.step-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px;
 }
 
-#image {
-    width: 637px;
-    height: 373px;
-    left: 59px;
-    top: 151px;
+.step-btn.active .step-label {
+    color: var(--primary-color);
 }
 
-.right-icon {
-    margin-right: 15px;
-    margin-left: 15px;
-    height: 55px;
-    width: 50px;
+.step-title {
+    font-size: 0.95rem;
+    font-weight: 600;
 }
-.sld {
-    background-color: #ff6b06;
-    height: 60px;
-    width: 240px;
-    font-size: medium;
-    font-family: Roboto;
-    border-color: transparent;
-    color: white;
+
+/* Dividers */
+.step-divider {
+    color: #475569;
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stepper-nav-wrapper {
+        padding: 1rem;
+    }
+    .stepper-card {
+        padding: 0.5rem;
+        border-radius: 16px;
+    }
+    .step-btn {
+        padding: 0.5rem;
+        flex-grow: 1;
+        justify-content: center;
+        text-align: center;
+    }
+    .step-content {
+        flex-direction: column;
+        gap: 4px;
+        align-items: center;
+    }
+    .step-label {
+        display: none;
+    }
+    .step-title {
+        font-size: 0.75rem;
+    }
 }

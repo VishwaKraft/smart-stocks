@@ -1,10 +1,15 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { RecommendationFive } from 'src/app/Interface/RecommendationFive';
 import { GainerLooserService } from 'src/app/services/gainer-looser.service';
+
+interface StockDisplay {
+  ticker: string;
+  name: string;
+  price: number;
+  change: number;
+  changePerc: number;
+  sector: string;
+}
 
 @Component({
   selector: 'app-recommendation',
@@ -13,13 +18,8 @@ import { GainerLooserService } from 'src/app/services/gainer-looser.service';
 })
 export class RecommendationComponent implements OnInit {
 
-  title = " Top Recommendated Stock for Today"
-  recommendationData: RecommendationFive[] = [];
-  recommendationTable: MatTableDataSource<RecommendationFive>;
-  displayedColumnsRecomd: string[] = ['longName', 'currentPrice', 'previousClose', 'changePercentage', 'change']
-
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  title = "Top Recommended Stocks for Today";
+  recommendationData: StockDisplay[] = [];
   requireLoader: boolean = true;
 
   constructor(private router: Router, private gainerLooserService: GainerLooserService) { }
@@ -27,32 +27,37 @@ export class RecommendationComponent implements OnInit {
   ngOnInit(): void {
     window.scrollTo(0, 0);
     this.gainerLooserService.getTopLooser().subscribe(v => {
-      this.gainerLooserService
-        .getTopRecommendation(v.data.stock.exploreCompanyList.TOP_LOSERS[0].stats.symbol + '.NS')
-        .subscribe(value => {
-          value.data.forEach(element => {
-            this.recommendationData.push({
-              symbol: element.symbol,
-              longName: element.longName,
-              currentPrice: element.currentPrice.fmt,
-              previousClose: element.previousClose.fmt,
-              changePercentage: element.changePercentage.fmt,
-              change: element.change.fmt
-            })
-          });
+      // Find the first top loser to pass as symbol, appending '.NS' as the legacy code did
+      const symbol = v.data.stock.exploreCompanyList.TOP_LOSERS[0].stats.symbol + '.NS';
+      
+      this.gainerLooserService.getTopRecommendation(symbol).subscribe({
+        next: (value) => {
+          if (value && value.data) {
+            value.data.forEach((element: any) => {
+              this.recommendationData.push({
+                ticker: element.symbol,
+                name: element.longName || element.symbol,
+                price: parseFloat(element.currentPrice?.raw || element.currentPrice?.fmt?.replace(/,/g, '') || '0'),
+                change: parseFloat(element.change?.raw || element.change?.fmt?.replace(/,/g, '') || '0'),
+                changePerc: parseFloat(element.changePercentage?.raw || element.changePercentage?.fmt?.replace(/[%+,]/g, '') || '0'),
+                sector: 'AI Pick'
+              });
+            });
+          }
           this.requireLoader = false;
-          this.recommendationTable = new MatTableDataSource(this.recommendationData);
-          this.recommendationTable.paginator = this.paginator;
-          this.recommendationTable.sort = this.sort
-          // console.log(this.displayedColumns)
-
-        })
-    })
+        },
+        error: () => {
+          this.requireLoader = false;
+        }
+      });
+    });
   }
 
-  clickedRecommendation(row: any) {
-    console.log(row.symbol)
-    this.router.navigate(['/stockDetails/' + row.symbol]);
+  clickedRecommendation(ticker: string) {
+    this.router.navigate(['/stockDetails/' + ticker]);
   }
 
+  formatChange(val: number): string {
+    return val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2);
+  }
 }

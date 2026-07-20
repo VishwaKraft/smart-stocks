@@ -1,116 +1,147 @@
-<div class="container my-5">
-    <ngb-carousel style="color: white;"  [showNavigationArrows]="true" [showNavigationIndicators]="true" [keyboard]="true" [interval]="100000" [pauseOnHover]="true" [wrap]="true" [activeId]="'sliderOne'">
+<div class="university-page">
+    <!-- Hero Section -->
+    <div class="uni-hero-section position-relative">
+        <!-- Abstract glowing background elements -->
+        <div class="glow-orb orb-primary"></div>
+        <div class="glow-orb orb-secondary"></div>
+        
+        <div class="container text-center position-relative z-1 py-5">
+            <div class="badge-accent mb-3 d-inline-flex align-items-center">
+                <mat-icon class="me-2" style="font-size: 1.1rem; height: 1.1rem; width: 1.1rem;">school</mat-icon>
+                Module 1
+            </div>
+            <h1 class="hero-title display-4 fw-black mb-3">Welcome to <br><span class="text-gradient">Smart Stocks University</span></h1>
+            <p class="hero-subtitle lead text-muted-light mx-auto" style="max-width: 600px;">
+                Your journey to mastering the financial markets begins here. Learn the fundamentals of trading, understand key instruments, and take control of your financial future.
+            </p>
+        </div>
+    </div>
 
-        <ng-template ngbSlide id="sliderOne">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container text-center p-5">
-                        <h1>Welcome to Smart Stocks University </h1>
+    <!-- Course Modules Grid -->
+    <div class="container py-5">
+        <div class="row g-4">
+            
+            <!-- Lesson 1 -->
+            <div class="col-lg-6">
+                <div class="lesson-card h-100">
+                    <div class="lesson-icon-wrapper mb-4">
+                        <mat-icon class="lesson-icon">account_balance</mat-icon>
                     </div>
+                    <h3 class="lesson-title mb-3">What Is a Share Market?</h3>
+                    <p class="lesson-text">
+                        A share market is a place where shares are publicly issued and traded. A share serves as a document that validates your ownership in a company, and you can sell this document to others. 
+                    </p>
+                    <p class="lesson-text mb-0">
+                        A share market is a place where buyers and sellers meet for this exchange of documents. To facilitate the exchange publicly, a formal marketplace has been developed for investors to buy and sell their shares on.
+                    </p>
                 </div>
             </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderTwo">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>What Is a Share Market? </h1>
-                        <p> A share market is a place where shares are publicly issued and traded. A share serves as a document that validates your ownership in a company, and you can sell this document to others. A share market is a place where buyers and
-                            sellers meet for this exchange of documents. To facilitate the exchange publicly, a formal marketplace has been developed for investors to buy and sell their shares on. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderThree">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>What is a Share? </h1>
-                        <p> In simple words, a share indicates a unit of ownership of the particular company. If you are a shareholder of a company, it implies that you as an investor, hold a percentage of ownership of the issuing company. As a shareholder
-                            you stand to benefit in the event of the company’s profits, and also bear the disadvantages of the company’s losses. Shares are also known as stocks, equity, scrips etc. After purchasing them you will be known as a stockholder
-                            or a shareholder of the company. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderFour">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>Why shares? </h1>
-                        <p> All companies need money to run their business. Sometimes the profit acquired from selling goods or services is not sufficient to meet the working capital requirements. And so, companies invite normal people like you and me to
-                            put some money in their company so that they can run it efficiently and in return investors get a share of whatever profit they make. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderFive">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1>Difference b/w share market and stock market? </h1>
-                        <p> The key difference between share markets and stock markets is that the former only allows one to trade shares. The latter allows you to trade in financial instruments such as derivatives, bonds, mutual funds, as well as the shares
-                            of listed companies. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderSix">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <p> We cannot discuss stock market basics without addressing the key financial instruments that are traded on it. There are four categories of financial instruments traded on the stock exchange. They are shares, bonds, derivatives,
-                            and mutual funds. They are as follows: </p>
 
-                        <p> <b> Shares: </b> A share is a single unit of ownership in a company or financial asset</p>
-                        <p> <b> Bonds: </b> A bond is loan from an investor to a borrower such as a company or government
-                        </p>
-                        <p> <b> Mutual funds: </b> A mutual fund is a company that brings together money from many people and invests it in stocks, bonds or other assets</p>
-                        <p> <b> Derivatives: </b> A derivative is a contract between two parties which derives its value/price from an underlying asset </p>
+            <!-- Lesson 2 -->
+            <div class="col-lg-6">
+                <div class="lesson-card h-100">
+                    <div class="lesson-icon-wrapper mb-4" style="background: rgba(16, 185, 129, 0.1); color: #34d399;">
+                        <mat-icon class="lesson-icon">pie_chart</mat-icon>
                     </div>
+                    <h3 class="lesson-title mb-3">What is a Share?</h3>
+                    <p class="lesson-text">
+                        In simple words, a share indicates a unit of ownership of the particular company. If you are a shareholder of a company, it implies that you as an investor, hold a percentage of ownership of the issuing company. 
+                    </p>
+                    <p class="lesson-text mb-0">
+                        As a shareholder you stand to benefit in the event of the company’s profits, and also bear the disadvantages of the company’s losses. Shares are also known as stocks, equity, or scrips.
+                    </p>
                 </div>
             </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderSeven">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <p> Now that we understand the stock market meaning, one key aspect of stock market basics is that one can trade on one of two market segments. In other words, there are two types of share markets in India. These are primary markets
-                            and secondary markets.
-                        </p>
-                        <p>
-                            A primary share market is a place where a company first gets registered with the goal of raising money and issues a certain amount of shares. The goal of being publicly listed on a primary stock exchange is to raise money. This where a company gets registered
-                            to issue a certain amount of shares and raise money. If the company decides to sell its shares for the first time, this is known as an initial public offering. </p>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderEight">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container text-center p-5">
-                        <h1> Stay tuned to learn more!!
-                        </h1>
-                    </div>
-                </div>
-            </div>
-        </ng-template>
-        <ng-template ngbSlide id="sliderNine">
-            <div class="picsum-img-wrapper">
-                <div class="d-flex align-items-center board">
-                    <div class="container p-5">
-                        <h1> References:
-                        </h1>
-                        <p>
 
-                            https://economictimes.indiatimes.com/ </p>
-                        <p>https://www.investopedia.com </p>
-                        <p> Stock Market Basics - Learn Share Market Basics in India (groww.in)
+            <!-- Lesson 3 -->
+            <div class="col-lg-4">
+                <div class="lesson-card h-100">
+                    <div class="lesson-icon-wrapper mb-4" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;">
+                        <mat-icon class="lesson-icon">moving</mat-icon>
+                    </div>
+                    <h3 class="lesson-title mb-3">Why shares?</h3>
+                    <p class="lesson-text mb-0">
+                        All companies need money to run their business. Sometimes the profit acquired from selling goods or services is not sufficient to meet working capital requirements. Companies invite normal people to put money in their company to run it efficiently, and in return, investors get a share of whatever profit they make.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Lesson 4 -->
+            <div class="col-lg-8">
+                <div class="lesson-card h-100 highlight-card">
+                    <div class="d-flex flex-column h-100 justify-content-center">
+                        <div class="d-flex align-items-center mb-3">
+                            <mat-icon class="me-3" style="font-size: 2rem; height: 2rem; width: 2rem; color: var(--primary-color);">compare_arrows</mat-icon>
+                            <h3 class="lesson-title mb-0">Share Market vs. Stock Market</h3>
+                        </div>
+                        <p class="lesson-text mb-0">
+                            The key difference between share markets and stock markets is that the former only allows one to trade <strong>shares</strong>. The latter allows you to trade in various financial instruments such as derivatives, bonds, mutual funds, as well as the shares of listed companies.
                         </p>
-                        <p> Stock Market Courses Free Online for Beginners, Best Share Market Training, Trading Courses – NSE India </p>
                     </div>
                 </div>
             </div>
-        </ng-template>
-    </ngb-carousel>
+
+            <!-- Lesson 5: Instruments -->
+            <div class="col-12">
+                <div class="lesson-card border-gradient">
+                    <h3 class="lesson-title mb-4 text-center">Financial Instruments Traded</h3>
+                    <p class="lesson-text text-center mx-auto mb-5" style="max-width: 700px;">
+                        We cannot discuss stock market basics without addressing the key financial instruments that are traded on it. There are four categories of financial instruments traded on the stock exchange:
+                    </p>
+                    
+                    <div class="row g-4 text-center">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="instrument-box">
+                                <mat-icon class="instrument-icon text-primary">data_usage</mat-icon>
+                                <h5>Shares</h5>
+                                <p class="small text-muted">A single unit of ownership in a company or financial asset.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="instrument-box">
+                                <mat-icon class="instrument-icon text-success">receipt_long</mat-icon>
+                                <h5>Bonds</h5>
+                                <p class="small text-muted">A loan from an investor to a borrower such as a company or government.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="instrument-box">
+                                <mat-icon class="instrument-icon text-warning">groups</mat-icon>
+                                <h5>Mutual Funds</h5>
+                                <p class="small text-muted">A company that brings together money from many people and invests it.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="instrument-box">
+                                <mat-icon class="instrument-icon text-danger">timeline</mat-icon>
+                                <h5>Derivatives</h5>
+                                <p class="small text-muted">A contract between two parties which derives its value from an underlying asset.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lesson 6: Markets -->
+            <div class="col-12">
+                <div class="lesson-card bg-pattern">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h3 class="lesson-title mb-3">Primary vs. Secondary Markets</h3>
+                            <p class="lesson-text">
+                                Now that we understand the stock market meaning, one key aspect of stock market basics is that one can trade on one of two market segments.
+                            </p>
+                            <p class="lesson-text mb-0">
+                                A <strong>primary share market</strong> is a place where a company first gets registered with the goal of raising money and issues a certain amount of shares. If the company decides to sell its shares for the first time, this is known as an Initial Public Offering (IPO). The <strong>secondary market</strong> is where investors buy and sell those previously issued shares among themselves.
+                            </p>
+                        </div>
+                        <div class="col-md-5 text-center mt-4 mt-md-0">
+                            <mat-icon style="font-size: 8rem; height: 8rem; width: 8rem; color: rgba(29, 78, 216, 0.2);">storefront</mat-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>

@@ -40,7 +40,7 @@
                         </div>
                         <div class="method-details">
                             <h5>Headquarters</h5>
-                            <p>VishwaKraft Innovations<br/>Bangalore, India</p>
+                            <p>VishwaKraft Innovations<br/>Delhi NCR, India</p>
                         </div>
                     </div>
                 </div>
@@ -58,13 +58,13 @@
                             <div class="col-md-6 mb-3">
                                 <mat-form-field class="full-width" appearance="outline">
                                     <mat-label>First Name</mat-label>
-                                    <input matInput placeholder="e.g. John">
+                                    <input matInput placeholder="e.g. John" name="firstName" [(ngModel)]="firstName">
                                 </mat-form-field>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <mat-form-field class="full-width" appearance="outline">
                                     <mat-label>Last Name</mat-label>
-                                    <input matInput placeholder="e.g. Doe">
+                                    <input matInput placeholder="e.g. Doe" name="lastName" [(ngModel)]="lastName">
                                 </mat-form-field>
                             </div>
                         </div>
@@ -72,14 +72,14 @@
                         <div class="mb-3">
                             <mat-form-field class="full-width" appearance="outline">
                                 <mat-label>Email Address</mat-label>
-                                <input matInput type="email" placeholder="john@example.com">
+                                <input matInput type="email" placeholder="john@example.com" name="email" [(ngModel)]="email">
                             </mat-form-field>
                         </div>
 
                         <div class="mb-3">
                             <mat-form-field class="full-width" appearance="outline">
                                 <mat-label>How can we help?</mat-label>
-                                <textarea matInput rows="4" placeholder="Tell us about your project or issue..."></textarea>
+                                <textarea matInput rows="4" placeholder="Tell us about your project or issue..." name="message" [(ngModel)]="message"></textarea>
                             </mat-form-field>
                         </div>
 

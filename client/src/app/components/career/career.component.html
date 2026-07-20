@@ -1,12 +1,16 @@
-
 <div class="career-page">
     <!-- Hero Section -->
-    <section class="hero-section text-center text-white">
+    <section class="hero-section text-center">
+        <div class="hero-glow"></div>
         <div class="container h-100">
             <div class="row h-100 align-items-center">
                 <div class="col-lg-8 offset-lg-2 mt-5 wow fadeInUp" data-wow-delay="0.2s">
-                    <h1 class="display-4 fw-bold mb-4">Join the Smart Stocks Team</h1>
-                    <p class="lead mb-0">Help us democratize financial intelligence and empower investors worldwide.</p>
+                    <div class="section-eyebrow justify-content-center mb-3">
+                        <span class="eyebrow-dot"></span>
+                        Careers at VishwaKraft
+                    </div>
+                    <h1 class="display-4 fw-bold mb-4 text-white">Build the future of <span class="text-accent">Herculean</span></h1>
+                    <p class="lead mb-0 text-muted-light">Join our mission to democratize financial intelligence and empower investors worldwide with state-of-the-art tools.</p>
                 </div>
             </div>
         </div>
@@ -28,13 +32,13 @@
                             <div>
                                 <h3 class="job-title mb-2">{{ job.title }}</h3>
                                 <div class="job-meta">
-                                    <span class="badge bg-primary-soft me-2"><i class="fas fa-briefcase me-1"></i> {{ job.department }}</span>
-                                    <span class="badge bg-secondary-soft me-2"><i class="fas fa-map-marker-alt me-1"></i> {{ job.location }}</span>
-                                    <span class="badge bg-info-soft"><i class="fas fa-clock me-1"></i> {{ job.type }}</span>
+                                    <span class="badge bg-primary-soft me-2"><mat-icon class="me-1">business_center</mat-icon> {{ job.department }}</span>
+                                    <span class="badge bg-secondary-soft me-2"><mat-icon class="me-1">location_on</mat-icon> {{ job.location }}</span>
+                                    <span class="badge bg-info-soft"><mat-icon class="me-1">schedule</mat-icon> {{ job.type }}</span>
                                 </div>
                             </div>
                             <button class="btn btn-primary apply-btn px-4 py-2" (click)="apply(job.title)">
-                                Apply Now <i class="fas fa-arrow-right ms-2"></i>
+                                Apply Now <mat-icon class="ms-2" style="font-size: 1.1rem; height: 1.1rem; width: 1.1rem; vertical-align: middle;">arrow_forward</mat-icon>
                             </button>
                         </div>
                         
@@ -43,13 +47,13 @@
                             
                             <div class="row mt-4">
                                 <div class="col-md-6 mb-4 mb-md-0">
-                                    <h5 class="fw-bold mb-3"><i class="fas fa-check-circle text-primary me-2"></i> Responsibilities</h5>
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center"><mat-icon class="text-primary me-2">check_circle</mat-icon> Responsibilities</h5>
                                     <ul class="job-list">
                                         <li *ngFor="let res of job.responsibilities">{{ res }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h5 class="fw-bold mb-3"><i class="fas fa-star text-warning me-2"></i> Requirements</h5>
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center"><mat-icon class="text-warning me-2">star</mat-icon> Requirements</h5>
                                     <ul class="job-list">
                                         <li *ngFor="let req of job.requirements">{{ req }}</li>
                                     </ul>
@@ -62,9 +66,9 @@
                 <!-- Fallback if no jobs -->
                 <div class="col-12 text-center py-5" *ngIf="jobs.length === 0">
                     <div class="empty-state">
-                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <mat-icon class="fa-3x text-muted mb-3" style="font-size: 3rem; height: 3rem; width: 3rem;">search</mat-icon>
                         <h4>No open positions right now</h4>
-                        <p class="text-muted">Check back later or send us your resume at careers&#64;smartstocks.com</p>
+                        <p class="text-muted">Check back later or send us your resume at careers&#64;vishwakraft.com</p>
                     </div>
                 </div>
             </div>
@@ -72,17 +76,18 @@
     </section>
 
     <!-- Perks Section -->
-    <section class="perks-section py-5 bg-light">
+    <section class="perks-section py-5">
         <div class="container py-5">
             <div class="row text-center">
                 <div class="col-12 mb-5">
-                    <h2 class="fw-bold section-title">Why Smart Stocks?</h2>
+                    <h2 class="fw-bold section-title">Why VishwaKraft?</h2>
+                    <div class="divider mx-auto mb-4"></div>
                 </div>
                 
                 <div class="col-md-4 mb-4 mb-md-0 wow fadeInUp" data-wow-delay="0.1s">
                     <div class="perk-card">
                         <div class="icon-wrapper bg-primary-soft text-primary mx-auto mb-4">
-                            <i class="fas fa-laptop-house fa-2x"></i>
+                            <mat-icon style="font-size: 2rem; height: 2rem; width: 2rem;">computer</mat-icon>
                         </div>
                         <h4>Remote First</h4>
                         <p class="text-muted">Work from anywhere. We value results over office hours.</p>
@@ -91,7 +96,7 @@
                 <div class="col-md-4 mb-4 mb-md-0 wow fadeInUp" data-wow-delay="0.2s">
                     <div class="perk-card">
                         <div class="icon-wrapper bg-success-soft text-success mx-auto mb-4">
-                            <i class="fas fa-heartbeat fa-2x"></i>
+                            <mat-icon style="font-size: 2rem; height: 2rem; width: 2rem;">favorite</mat-icon>
                         </div>
                         <h4>Health & Wellness</h4>
                         <p class="text-muted">Comprehensive medical, dental, and wellness programs.</p>
@@ -100,7 +105,7 @@
                 <div class="col-md-4 wow fadeInUp" data-wow-delay="0.3s">
                     <div class="perk-card">
                         <div class="icon-wrapper bg-warning-soft text-warning mx-auto mb-4">
-                            <i class="fas fa-chart-line fa-2x"></i>
+                            <mat-icon style="font-size: 2rem; height: 2rem; width: 2rem;">trending_up</mat-icon>
                         </div>
                         <h4>Growth & Equity</h4>
                         <p class="text-muted">Generous equity packages and continuous learning stipends.</p>
@@ -110,4 +115,3 @@
         </div>
     </section>
 </div>
-

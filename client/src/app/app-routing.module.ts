@@ -18,6 +18,7 @@ import { AllStockComponent } from './components/watchlist/all-stock/all-stock.co
 import { MockStocksTableComponent } from './components/university/mock-stocks-table/mock-stocks-table.component';
 import { StockOrderHistoryComponent } from './components/university/stock-order-history/stock-order-history.component';
 import { PaymentHistoryComponent } from './components/university/payment-history/payment-history.component';
+import { BuffettLessonsComponent } from './components/university/buffett-lessons/buffett-lessons.component';
 import { SignupModalComponent } from './components/header/signup-modal/signup-modal.component';
 import { AuthGuard } from './services/auth-guard.service';
 import { MarketIntroComponent } from './components/university/market-intro/market-intro.component';
@@ -48,6 +49,7 @@ const routes: Routes = [
     path: "university", component: UniversityComponent, children: [
       { path: "", component: LandingComponent },
       { path: "market-intro", component: MarketIntroComponent },
+      { path: "buffett", component: BuffettLessonsComponent },
     ]
   },
   {

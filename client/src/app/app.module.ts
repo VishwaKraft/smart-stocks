@@ -50,6 +50,7 @@ import { MatCardModule } from '@angular/material/card';
 import { AddCreditsModalComponent } from './components/university/add-credits-modal/add-credits-modal.component';
 import { StocksSellTableComponent } from './components/university/stocks-sell-table/stocks-sell-table.component';
 import { MarketIntroComponent } from './components/university/market-intro/market-intro.component';
+import { BuffettLessonsComponent } from './components/university/buffett-lessons/buffett-lessons.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LandingComponent } from './components/university/landing/landing.component';
 import { ProfileComponent } from './components/profile/profile.component';
@@ -98,6 +99,7 @@ import { OurTeamComponent } from './components/dashboard/our-team/our-team.compo
     AddCreditsModalComponent,
     StocksSellTableComponent,
     MarketIntroComponent,
+    BuffettLessonsComponent,
     LandingComponent,
     ProfileComponent,
     SubscriptionModalComponent,

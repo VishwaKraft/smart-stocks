@@ -47,4 +47,11 @@ export class LoginModalComponent implements OnInit {
 
   }
 
+  signInWithGoogle() {
+    this.toastr.info("Google Sign-In is currently being set up by the admin.", "Coming Soon", {
+      closeButton: true,
+      positionClass: "toast-bottom-right",
+    });
+  }
+
 }

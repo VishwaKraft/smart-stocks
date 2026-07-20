@@ -1,9 +1,75 @@
-<div class="row my-5">
-    <div class="col-md-8">
-        <img id="image" src="assets/teaching.svg">
-    </div>
-    <div class="col-md-4 align-self-center">
-        <h2 class="pf"> In-Depth Stock Market Education</h2>
-        <h3 class="pf"> Online Learning with Mock Stock Market!!</h3>
+<div class="landing-page min-vh-100 d-flex align-items-center">
+    <!-- Background Elements -->
+    <div class="landing-blob blob-1"></div>
+    <div class="landing-blob blob-2"></div>
+
+    <div class="container py-5 position-relative z-1">
+        <div class="row align-items-center g-5">
+            
+            <!-- Left Side: Copy & CTA -->
+            <div class="col-lg-6 text-center text-lg-start">
+                <div class="badge-accent mb-4 d-inline-flex align-items-center">
+                    <mat-icon class="me-2" style="font-size: 1.1rem; height: 1.1rem; width: 1.1rem;">trending_up</mat-icon>
+                    Smart Stocks University
+                </div>
+                
+                <h1 class="display-3 fw-black mb-4 title-gradient">
+                    Master the <br>
+                    Stock Market
+                </h1>
+                
+                <p class="lead text-muted-light mb-5">
+                    Experience in-depth financial education combined with a real-time Mock Stock Market. Practice trading without the risk and become a confident investor.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5">
+                    <button class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-lg" routerLink="/university/market-intro">
+                        Start Learning
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg rounded-pill px-5 fw-bold" (click)="onTrySandbox()">
+                        Try Sandbox
+                    </button>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-4 stat-row">
+                    <div>
+                        <h3 class="fw-bold text-white mb-0">10k+</h3>
+                        <p class="small text-muted mb-0">Active Students</p>
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div>
+                        <h3 class="fw-bold text-white mb-0">100%</h3>
+                        <p class="small text-muted mb-0">Risk-Free</p>
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div>
+                        <h3 class="fw-bold text-white mb-0">Live</h3>
+                        <p class="small text-muted mb-0">Market Data</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Illustration & Cards -->
+            <div class="col-lg-6 position-relative">
+                <div class="illustration-wrapper">
+                    <!-- The existing teaching SVG, framed nicely -->
+                    <img id="image" src="assets/teaching.svg" class="img-fluid floating-img" alt="Teaching Illustration">
+                    
+                    <!-- Floating Glass Cards -->
+                    <div class="glass-card float-card-1">
+                        <mat-icon class="text-success mb-2">auto_graph</mat-icon>
+                        <h6 class="text-white mb-1 fw-bold">Live Sandbox</h6>
+                        <p class="small text-muted mb-0">Practice with $10,000</p>
+                    </div>
+
+                    <div class="glass-card float-card-2">
+                        <mat-icon class="text-primary mb-2">school</mat-icon>
+                        <h6 class="text-white mb-1 fw-bold">Market 101</h6>
+                        <p class="small text-muted mb-0">Expert guidelines</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
