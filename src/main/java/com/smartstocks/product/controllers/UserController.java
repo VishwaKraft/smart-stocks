@@ -10,6 +10,10 @@ import com.smartstocks.product.models.User;
 import com.smartstocks.product.service.IUserService;
 import com.smartstocks.product.util.ResponseMessage;
 import com.smartstocks.product.util.UtilityMethods;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +60,9 @@ public class UserController {
 
     @Value("${upstream.details.url}")
     private String detailsUrl;
+
+    @Value("${google.client.id}")
+    private String googleClientId;
 
     @Autowired
     private HttpEntity headers;
@@ -105,6 +112,51 @@ public class UserController {
         RootResponseDto<TokenResponse> response = new RootResponseDto<>(200, HttpStatus.OK,
                 ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, new TokenResponse("Bearer " + token));
         return new ResponseEntity(response, new HttpHeaders(), 200);
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<RootResponseDto<TokenResponse>> googleLogin(@Valid @RequestBody GoogleLoginDto googleLoginDto) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(googleLoginDto.getToken());
+            if (idToken != null) {
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail();
+                
+                if (!userService.isEmailTaken(email)) {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setFirstName((String) payload.get("given_name"));
+                    newUser.setLastName((String) payload.get("family_name"));
+                    // Set a random strong password for google users
+                    newUser.setPassword(encoder.encode(UUID.randomUUID().toString()));
+                    newUser.setWallet(0.0);
+                    newUser.setProfit(0.0);
+                    userService.saveUser(newUser);
+                }
+
+                UserDetails userDetails = userService.loadUserByUsername(email);
+                String token  = jwtUtils.generateToken(userDetails);
+                
+                RootResponseDto<TokenResponse> response = new RootResponseDto<>(200, HttpStatus.OK,
+                        ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, new TokenResponse("Bearer " + token));
+                return new ResponseEntity(response, new HttpHeaders(), 200);
+            } else {
+                Map<String, String> errors = new HashMap<>();
+                errors.put("error", "Invalid Google token");
+                RootResponseDto<TokenResponse> response = new RootResponseDto<>(400, HttpStatus.BAD_REQUEST,
+                        ResponseMessage.FAILED.toString(), LocalDateTime.now(), null, null);
+                return new ResponseEntity(response, new HttpHeaders(), 400);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            RootResponseDto<TokenResponse> response = new RootResponseDto<>(500, HttpStatus.INTERNAL_SERVER_ERROR,
+                    ResponseMessage.FAILED.toString(), LocalDateTime.now(), null, null);
+            return new ResponseEntity(response, new HttpHeaders(), 500);
+        }
     }
 
     @GetMapping("/transactions")
