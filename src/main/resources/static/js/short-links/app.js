@@ -894,6 +894,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td><strong>${escHtml(a.activityName || "—")}</strong></td>
                     <td>${escHtml(a.campaignName)}</td>
                     <td>${escHtml(a.templateName)}</td>
+                    <td>${a.segmentCount != null ? a.segmentCount : "—"}</td>
+                    <td>${a.recipientCount != null ? a.recipientCount : "—"}</td>
                     <td>${escHtml(schedLabel)}</td>
                     <td>${fmtDate(a.nextExecutionAt)}</td>
                     <td><span class="badge ${statusBadge}">${a.status}</span></td>
@@ -1346,6 +1348,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 tr.innerHTML = `
                     <td><strong>${escHtml(s.name)}</strong><br><small class="muted">${escHtml(s.description || "")}</small></td>
                     <td><span class="badge ${typeBadge}">${s.segmentType}</span></td>
+                    <td>${s.userCount != null ? s.userCount : "—"}</td>
                     <td>${fmtDate(s.createdAt)}</td>
                     <td class="table-actions">
                         <button class="danger-btn" data-delete-seg="${s.id}" data-delete-name="${escHtml(s.name)}">Delete</button>

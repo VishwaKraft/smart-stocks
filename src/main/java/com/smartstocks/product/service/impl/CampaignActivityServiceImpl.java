@@ -613,6 +613,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .isDeleted(a.isDeleted())
                 .weekdays(weekdays)
                 .recipientCount(a.getRecipientCount())
+                .segmentCount(a.getSegment() != null ? segmentUserRepository.countBySegmentId(a.getSegment().getId()) : null)
                 .nextExecutionAt(a.getNextExecutionAt())
                 .lastExecutionAt(a.getLastExecutionAt())
                 .createdAt(a.getCreatedAt())
