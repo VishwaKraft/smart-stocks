@@ -242,6 +242,16 @@ public class StockController {
             }
             
             List<NewsDto> ans = newsService.fetchAndStoreNews(type.toLowerCase());
+            
+            // Filter out any items that have null values
+            ans = ans.stream()
+                .filter(news -> news.getTitle() != null && 
+                                news.getUrl() != null && 
+                                news.getDescription() != null && 
+                                news.getAuthor() != null && 
+                                news.getContent() != null && 
+                                news.getUrlToImage() != null)
+                .collect(java.util.stream.Collectors.toList());
             RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
                     ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);
             return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);
