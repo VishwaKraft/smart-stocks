@@ -1,10 +1,18 @@
-<div align="center" class="wow fadeInUp fix" data-wow-duration="3s" style="overflow: hidden;">
-    <div class="txt">
-        <h1>Stock <span class="color">News</span> </h1>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <app-news [newsType]="selectedType"></app-news>
+<section class="news-section">
+    <div class="container py-5">
+        <div class="section-header mb-5 text-center">
+            <div class="section-eyebrow justify-content-center">
+                <span class="eyebrow-dot"></span>
+                Live Market Updates
+            </div>
+            <h2 class="section-title">Latest <span class="text-accent">News</span></h2>
+            <p class="section-subtitle">Stay informed with the latest headlines moving the market.</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <app-news [newsType]="selectedType"></app-news>
+            </div>
         </div>
     </div>
-</div>
+</section>

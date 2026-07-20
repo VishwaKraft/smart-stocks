@@ -1,52 +1,95 @@
-<section class="container-fluid mb-5">
-    <div class="row align-items-center justify-content-center ">
-        <div class="col-md-6 p-5">
-            <h1> CONTACT US <span class="color"> TODAY NOW </span></h1>
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="d-flex">
-                        <mat-icon class="me-2">phone</mat-icon>
-                        +91-9958683725
-                        <br /> +91-9818434636
-                    </p>
-
+<section class="contact-section">
+    <div class="container py-5">
+        <div class="row align-items-center justify-content-center">
+            
+            <!-- Contact Info (Left) -->
+            <div class="col-lg-5 col-md-6 p-4 p-md-5 contact-info-wrapper">
+                <div class="section-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    Get in Touch
                 </div>
-                <div class="col-md-6">
-                    <p class="d-flex">
-                        <mat-icon class="me-2">email</mat-icon>
-                        ailnu@deloitte.com <br /> ripsingh@deloitte.com
-                    </p>
+                <h1 class="contact-title">Contact <span class="text-accent">Us</span></h1>
+                <p class="contact-subtitle mb-5">
+                    Have questions about Herculean? Need enterprise support or API access? Our team is here to help you navigate the markets.
+                </p>
+                
+                <div class="contact-methods">
+                    <div class="contact-method">
+                        <div class="method-icon">
+                            <mat-icon>phone</mat-icon>
+                        </div>
+                        <div class="method-details">
+                            <h5>Call Us</h5>
+                            <p>+91 99586 83725<br/>+91 98184 34636</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="method-icon">
+                            <mat-icon>email</mat-icon>
+                        </div>
+                        <div class="method-details">
+                            <h5>Email Support</h5>
+                            <p>hello@vishwakraft.com<br/>support@vishwakraft.com</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-method">
+                        <div class="method-icon">
+                            <mat-icon>location_on</mat-icon>
+                        </div>
+                        <div class="method-details">
+                            <h5>Headquarters</h5>
+                            <p>VishwaKraft Innovations<br/>Bangalore, India</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 example-card">
-            <h1> WHAT WOULD YOU LIKE TO TALK ABOUT </h1>
-            <h2 class="color">
-                We'd Love to Hear From you !
-            </h2>
-            <form>
-                <div class="row">
-                    <div class="col-md-6">
-                        <mat-form-field class="example-full-width" appearance="outline" color="warn">
-                            <mat-label>Name</mat-label>
-                            <input matInput placeholder="Name">
-                        </mat-form-field>
-                    </div>
-                    <div class="col-md-6">
-                        <mat-form-field class="example-full-width" appearance="outline" color="warn">
-                            <mat-label>Email</mat-label>
-                            <input matInput placeholder="Email">
-                        </mat-form-field>
-                    </div>
+
+            <!-- Contact Form (Right) -->
+            <div class="col-lg-6 col-md-6 mt-5 mt-md-0">
+                <div class="contact-card">
+                    <div class="card-glow"></div>
+                    <h2 class="form-title">Send a Message</h2>
+                    <p class="form-subtitle">We'll get back to you within 24 hours.</p>
+                    
+                    <form class="contact-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <mat-form-field class="full-width" appearance="outline">
+                                    <mat-label>First Name</mat-label>
+                                    <input matInput placeholder="e.g. John">
+                                </mat-form-field>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <mat-form-field class="full-width" appearance="outline">
+                                    <mat-label>Last Name</mat-label>
+                                    <input matInput placeholder="e.g. Doe">
+                                </mat-form-field>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <mat-form-field class="full-width" appearance="outline">
+                                <mat-label>Email Address</mat-label>
+                                <input matInput type="email" placeholder="john@example.com">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="mb-3">
+                            <mat-form-field class="full-width" appearance="outline">
+                                <mat-label>How can we help?</mat-label>
+                                <textarea matInput rows="4" placeholder="Tell us about your project or issue..."></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <button mat-raised-button class="submit-btn w-100 mt-3" type="button" (click)="onSubmit()">
+                            Send Message <mat-icon class="ms-2" style="font-size: 1.1rem; height: 1.1rem; width: 1.1rem;">send</mat-icon>
+                        </button>
+                    </form>
                 </div>
+            </div>
 
-                <mat-form-field class="example-full-width" appearance="outline" color="warn">
-                    <mat-label>Your Message</mat-label>
-                    <textarea matInput placeholder="Your Message"></textarea>
-                </mat-form-field>
-
-                <button mat-raised-button type="submit" (click)="onSubmit()">Submit Now</button>
-            </form>
         </div>
     </div>
 </section>

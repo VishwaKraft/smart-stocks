@@ -1,35 +1,194 @@
-h1 {
-    font-size: 2rem;
+/* ── Contact Section ─────────────────────────────────────────────────── */
+.contact-section {
+    background: var(--bg-color);
+    position: relative;
+    overflow: hidden;
 }
 
-.material-icons {
-    width: 3rem;
-    font-size: 3rem;
-    display: "inline-block";
-    border-color: "#ff7902";
-    border-radius: "50%";
-    text-align: "center";
-    line-height: "36px";
-    margin-right: "10px";
-    margin-bottom: "10px";
-    color: #FF6700;
+/* ── Typography & Left Panel ─────────────────────────────────────────── */
+.contact-info-wrapper {
+    position: relative;
+    z-index: 2;
 }
 
-.example-full-width {
+.section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.eyebrow-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    box-shadow: 0 0 8px var(--primary-glow);
+    animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.contact-title {
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 800;
+    color: var(--heading-color);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
+
+.text-accent {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.contact-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-color);
+    line-height: 1.7;
+    max-width: 450px;
+}
+
+/* ── Contact Methods ─────────────────────────────────────────────────── */
+.contact-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.contact-method {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+}
+
+.method-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: rgba(29, 78, 216, 0.1);
+    border: 1px solid rgba(29, 78, 216, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    transition: transform 0.3s, background 0.3s;
+}
+
+.contact-method:hover .method-icon {
+    transform: translateY(-3px);
+    background: rgba(29, 78, 216, 0.15);
+}
+
+.method-icon mat-icon {
+    font-size: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.method-details h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0 0 0.25rem 0;
+    letter-spacing: -0.01em;
+}
+
+.method-details p {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ── Contact Card Form (Right) ───────────────────────────────────────── */
+.contact-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.card-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(29,78,216,0.25), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.form-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--heading-color);
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.form-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+}
+
+.contact-form {
+    position: relative;
+    z-index: 2;
+}
+
+.full-width {
     width: 100%;
 }
 
-button {
-    color: #FF6700;
+/* Angular Material Form Field Overrides */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+    border-color: var(--border-subtle) !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,0.02);
 }
 
-.color {
-    color: #FF6700;
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+    border-color: var(--primary-color) !important;
 }
 
-.example-card {
-    box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
-    padding: 3rem;
-    font-family: 'Poppins', sans-serif;
+::ng-deep .mat-form-field-label {
+    color: var(--text-color) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+::ng-deep .mat-input-element {
+    color: var(--heading-color) !important;
+    caret-color: var(--primary-color) !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+::ng-deep .mat-input-element::placeholder {
+    color: rgba(148, 163, 184, 0.5) !important;
+}
+
+.submit-btn {
+    padding: 0.85rem !important;
+    font-size: 1rem !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }

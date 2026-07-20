@@ -1,32 +1,30 @@
-<div class="wow slideInLeft fix" data-wow-duration="2s">
-    <mat-card class="example-card">
-        <mat-progress-bar *ngIf="requireLoader" class="my-3" mode="indeterminate" color="warn"></mat-progress-bar>
-        <mat-card-content *ngIf="!requireLoader && latestNews && latestNews.length > 0">
-            <div class="news-layout">
-                <!-- News Image on Left -->
-                <div *ngIf="latestNews[index].urlToImage" class="news-image-section">
-                    <img [src]="latestNews[index].urlToImage" [alt]="latestNews[index].title" 
-                         class="news-image" onerror="this.style.display='none'">
+<div class="news-grid-container" *ngIf="!requireLoader && latestNews && latestNews.length > 0">
+    <div class="news-grid">
+        <a *ngFor="let news of latestNews | slice:0:6" [href]="news.url" target="_blank" class="news-card">
+            <div class="news-image-wrap" *ngIf="news.urlToImage">
+                <img [src]="news.urlToImage" [alt]="news.title" class="news-image" onerror="this.style.display='none'">
+                <div class="news-image-overlay"></div>
+            </div>
+            <div class="news-content">
+                <div class="news-meta">
+                    <span class="news-author" *ngIf="news.author"><mat-icon>edit</mat-icon> {{news.author}}</span>
                 </div>
-                <!-- News Content on Right -->
-                <div class="news-content-section">
-                    <span class="mat-headline">{{latestNews[index].title}}.</span>
-                    <br /> <br />
-                    <p>
-                        {{latestNews[index].description}}.
-                    </p>
-                    <div align="left" *ngIf="latestNews[index].author">
-                        <b>Source: </b> {{latestNews[index].author}}
-                    </div>
-                    <div align="right">
-                        <button mat-raised-button *ngIf="index != 0" (click)="prevNews()">Prev</button>
-                        <button mat-raised-button *ngIf="index != (maxindex-1)" (click)="nextNews()">Next</button>
-                    </div>
+                <h3 class="news-title">{{news.title}}</h3>
+                <p class="news-excerpt">{{news.description | slice:0:120}}{{news.description?.length > 120 ? '...' : ''}}</p>
+                <div class="news-read-more">
+                    Read Full Story <mat-icon>arrow_forward</mat-icon>
                 </div>
             </div>
-        </mat-card-content>
-        <mat-card-content *ngIf="!requireLoader && errorMessage" class="error-message">
-            <p>{{ errorMessage }}</p>
-        </mat-card-content>
-    </mat-card>
+        </a>
+    </div>
+</div>
+
+<div class="loading-state" *ngIf="requireLoader">
+    <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+    <p>Fetching latest market headlines...</p>
+</div>
+
+<div class="error-state" *ngIf="!requireLoader && errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
 </div>

@@ -1,14 +1,82 @@
-.example-card {
-  box-shadow: 0 15px 10px 0px rgba(0, 0, 0, 0.2);
-  margin-bottom: 1rem;
-  transition: transform .6s; /* Animation */
+.feature-card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.material-icons {
-  font-size: 4rem;
-  color: #FF6700;
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    border-color: var(--border-color);
 }
 
-.example-card:hover {
-  transform: scale(1.05);
+.feature-glow {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(29, 78, 216, 0.25), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover .feature-glow {
+    opacity: 1;
+}
+
+.feature-icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(29, 78, 216, 0.1);
+    border: 1px solid rgba(29, 78, 216, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrap {
+    transform: scale(1.05);
+    background: rgba(29, 78, 216, 0.15);
+}
+
+.feature-icon-wrap mat-icon {
+    font-size: 2rem;
+    height: 2rem;
+    width: 2rem;
+}
+
+.feature-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.01em;
+}
+
+.feature-text {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
 }
