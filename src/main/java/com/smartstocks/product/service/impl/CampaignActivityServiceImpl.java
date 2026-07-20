@@ -14,12 +14,19 @@ import com.smartstocks.product.repository.CampaignSegmentUserRepository;
 import com.smartstocks.product.service.CampaignEventLogger;
 import com.smartstocks.product.service.ICampaignActivityService;
 import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.service.IShortLinkService;
+import com.smartstocks.product.service.provider.EmailProviderFactory;
+import com.smartstocks.product.service.provider.IEmailProvider;
 import com.smartstocks.product.service.provider.InfobipPeopleProvider;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
+import com.smartstocks.product.service.renderer.RenderedTemplate;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,12 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
-@lombok.extern.slf4j.Slf4j
+@Slf4j
 public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
     private final CampaignActivityRepository activityRepository;
@@ -49,6 +58,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final CampaignEventLogger eventLogger;
     private final ICampaignService campaignService;
     private final TemplateRendererFactory templateRendererFactory;
+    private final IShortLinkService shortLinkService;
+    private final EmailProviderFactory emailProviderFactory;
+    private final RestTemplate restTemplate;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
@@ -58,8 +70,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
     @org.springframework.beans.factory.annotation.Value("${infobip.people-base-url:}")
     private String infobipPeopleBaseUrl;
-
-    private org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+    
+    @Value("${app.short-link.base-url:http://localhost:8080}")
+    private String shortLinkBaseUrl;
 
     @Override
     @Transactional
@@ -264,6 +277,40 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             return true;
         }).orElse(false);
     }
+    
+    private String shortenLinksInHtml(String html, String campaignCode, String userId) {
+        if (html == null) return null;
+        String baseUrl = shortLinkBaseUrl.endsWith("/") ? shortLinkBaseUrl : shortLinkBaseUrl + "/";
+        
+        StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile("href\\s*=\\s*\"([^\"]+)\"").matcher(html);
+        while (matcher.find()) {
+            String originalUrl = matcher.group(1);
+            if ((originalUrl.startsWith("http://") || originalUrl.startsWith("https://")) 
+                 && !originalUrl.contains("/pixel") 
+                 && !originalUrl.contains(baseUrl)) {
+                
+                String shortId = shortLinkService.shortenLink(originalUrl, null);
+                String shortUrl = baseUrl + "s/" + shortId;
+                
+                StringBuilder fullUrl = new StringBuilder(shortUrl);
+                boolean hasQuery = false;
+                if (campaignCode != null) {
+                    fullUrl.append("?campaign=").append(campaignCode);
+                    hasQuery = true;
+                }
+                if (userId != null) {
+                    fullUrl.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                }
+                
+                matcher.appendReplacement(sb, "href=\"" + fullUrl.toString() + "\"");
+            } else {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
 
     @Override
     @Transactional
@@ -347,8 +394,16 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     htmlWithPixel,
                     testVariables
             );
+            
+            String finalBody = shortenLinksInHtml(rendered.getRenderedBody(), campaign.getCampaignCode(), null);
+            
+            com.smartstocks.product.service.renderer.RenderedTemplate finalRendered = new com.smartstocks.product.service.renderer.RenderedTemplate(
+                    rendered.getRenderedSubject(),
+                    finalBody
+            );
+
             com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
-                    rendered,
+                    finalRendered,
                     emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
             );
 
@@ -357,7 +412,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
                 gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
                 result = gmailProvider.send(
-                        rendered,
+                        finalRendered,
                         emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
                 );
             }
