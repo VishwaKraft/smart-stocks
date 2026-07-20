@@ -19,4 +19,6 @@ public class CreateTemplateRequestDto {
 
     @NotBlank(message = "HTML body cannot be empty")
     private String htmlBody;
+
+    private String dataSourceUrl;
 }

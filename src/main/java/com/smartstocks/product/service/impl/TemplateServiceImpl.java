@@ -38,6 +38,9 @@ public class TemplateServiceImpl implements ITemplateService {
         template.setHtmlBody(request.getHtmlBody());
         template.setRendererType(RendererType.DEFAULT);
         template.setIsActive(true);
+        if (request.getDataSourceUrl() != null) {
+            template.setDataSourceUrl(request.getDataSourceUrl().trim());
+        }
 
         Template saved = templateRepository.save(template);
 
@@ -89,6 +92,12 @@ public class TemplateServiceImpl implements ITemplateService {
         template.setHtmlBody(request.getHtmlBody());
         template.setRendererType(RendererType.DEFAULT);
 
+        if (request.getDataSourceUrl() != null) {
+            template.setDataSourceUrl(request.getDataSourceUrl().trim());
+        } else {
+            template.setDataSourceUrl(null);
+        }
+
         if (request.getIsActive() != null) {
             template.setIsActive(request.getIsActive());
         }
@@ -131,6 +140,7 @@ public class TemplateServiceImpl implements ITemplateService {
                 .createdBy(t.getCreatedBy())
                 .createdAt(t.getCreatedAt())
                 .updatedAt(t.getUpdatedAt())
+                .dataSourceUrl(t.getDataSourceUrl())
                 .build();
     }
 }

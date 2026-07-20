@@ -40,6 +40,9 @@ public class Template {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @Column(length = 1024)
+    private String dataSourceUrl;
+
     private Long createdBy;
 
     @CreationTimestamp

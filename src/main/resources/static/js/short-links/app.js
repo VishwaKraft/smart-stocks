@@ -554,7 +554,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const body = {
             name:     document.getElementById("tplName").value.trim(),
             subject:  document.getElementById("tplSubject").value.trim(),
-            htmlBody: tplHtmlBody.value
+            htmlBody: tplHtmlBody.value,
+            dataSourceUrl: document.getElementById("tplDataSourceUrl").value.trim() || null
         };
         if (!body.name || !body.subject || !body.htmlBody) {
             showToast("Please fill all required fields", "error");
@@ -611,6 +612,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     templateFormTitle.textContent = "Edit Template";
                     document.getElementById("tplName").value    = tpl.name;
                     document.getElementById("tplSubject").value = tpl.subject;
+                    document.getElementById("tplDataSourceUrl").value = tpl.dataSourceUrl || "";
                     tplHtmlBody.value = tpl.htmlBody;
                     document.getElementById("chatHistory").innerHTML = ""; // Clear chat history
                     templateFormWrapper.hidden = false;
