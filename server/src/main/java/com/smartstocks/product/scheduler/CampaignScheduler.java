@@ -329,10 +329,6 @@ public class CampaignScheduler {
                 Map<String, Object> apiResponse = restTemplate.getForObject(template.getDataSourceUrl(), Map.class);
                 if (apiResponse != null) {
                     externalData.putAll(apiResponse);
-                    // For the news api which returns { "data": [...] }, alias it to "articles" for convenience
-                    if (apiResponse.containsKey("data")) {
-                        externalData.put("articles", apiResponse.get("data"));
-                    }
                 }
             } catch (Exception e) {
                 log.error("[Scheduler] Failed to fetch external data from URL: {}", template.getDataSourceUrl(), e);
