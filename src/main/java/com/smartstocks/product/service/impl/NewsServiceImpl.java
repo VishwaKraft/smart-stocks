@@ -57,7 +57,7 @@ public class NewsServiceImpl implements INewsService {
     );
 
     /** Timeout per individual RSS feed fetch (seconds). */
-    private static final int FEED_TIMEOUT_SECONDS = 5;
+    private static final int FEED_TIMEOUT_SECONDS = 14;
 
     // ── Performance: In-memory cache ────────────────────────────────────
     private static final long CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -238,9 +238,13 @@ public class NewsServiceImpl implements INewsService {
         }
 
         // ── Cache the result ────────────────────────────────────────────
-        NEWS_CACHE.put(category, new CacheEntry(Collections.unmodifiableList(allArticles)));
-        log.info("Fetched {} articles for category '{}' from {} feeds in parallel",
-                allArticles.size(), category, feeds.size());
+        if (!allArticles.isEmpty()) {
+            NEWS_CACHE.put(category, new CacheEntry(Collections.unmodifiableList(allArticles)));
+            log.info("Fetched {} articles for category '{}' from {} feeds in parallel",
+                    allArticles.size(), category, feeds.size());
+        } else {
+            log.warn("Fetched 0 articles for category '{}', skipping cache.", category);
+        }
 
         return allArticles;
     }
