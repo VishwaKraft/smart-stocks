@@ -7,9 +7,7 @@ import com.smartstocks.product.service.INewsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -22,11 +20,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * Fetches Indian news from free Google News RSS feeds and major Indian publications.
  * No API keys required. Inspired by https://github.com/balakrishnanbsk/newsapp
+ *
+ * Performance optimizations:
+ *  1. In-memory cache with 5-minute TTL — repeat requests served instantly
+ *  2. Parallel feed fetching — all RSS feeds fetched concurrently via thread pool
+ *  3. Per-feed timeout — slow feeds are abandoned after 5 seconds
+ *  4. Pre-compiled regex patterns — no recompilation per call
  */
 @Service
 public class NewsServiceImpl implements INewsService {
@@ -37,11 +44,60 @@ public class NewsServiceImpl implements INewsService {
     private final HttpEntity<?> headers;
     private final NewsArticleRepository newsArticleRepository;
 
+    // ── Performance: Thread pool for parallel feed fetching ──────────────
+    private static final ExecutorService RSS_EXECUTOR = new ThreadPoolExecutor(
+            4, 10, 60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(50),
+            r -> {
+                Thread t = new Thread(r, "rss-fetch");
+                t.setDaemon(true);
+                return t;
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy()
+    );
+
+    /** Timeout per individual RSS feed fetch (seconds). */
+    private static final int FEED_TIMEOUT_SECONDS = 5;
+
+    // ── Performance: In-memory cache ────────────────────────────────────
+    private static final long CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+    private static final ConcurrentHashMap<String, CacheEntry> NEWS_CACHE = new ConcurrentHashMap<>();
+
+    private static class CacheEntry {
+        final List<NewsDto> articles;
+        final long timestamp;
+
+        CacheEntry(List<NewsDto> articles) {
+            this.articles = articles;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
+        }
+    }
+
+    /** Clears the in-memory news cache. Package-private for test access. */
+    void clearCache() {
+        NEWS_CACHE.clear();
+    }
+
+    // ── Performance: Pre-compiled regex patterns ────────────────────────
+    private static final Pattern CDATA_PATTERN = Pattern.compile("<!\\[CDATA\\[([\\s\\S]*?)]]>");
+    private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]*>");
+    private static final Pattern NUM_ENTITY_PATTERN = Pattern.compile("&#(\\d+);");
+    private static final Pattern HEX_ENTITY_PATTERN = Pattern.compile("&#x([0-9a-fA-F]+);", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAMED_ENTITY_PATTERN = Pattern.compile("&[a-zA-Z]+;");
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+    private static final Pattern ITEM_PATTERN = Pattern.compile("<item>(.*?)</item>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("<img[^>]+src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ENCLOSURE_URL_PATTERN = Pattern.compile("<enclosure[^>]+url=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MEDIA_CONTENT_URL_PATTERN = Pattern.compile("<media:content[^>]+url=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MEDIA_THUMB_URL_PATTERN = Pattern.compile("<media:thumbnail[^>]+url=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+
     // ── RSS Feed configuration ──────────────────────────────────────────
 
-    /**
-     * A simple holder for feed name + URL.
-     */
     private static class RssFeed {
         final String name;
         final String url;
@@ -52,31 +108,20 @@ public class NewsServiceImpl implements INewsService {
         }
     }
 
-    /**
-     * Google News RSS for Indian locale (English).
-     */
     private static RssFeed googleNewsTopHeadlines() {
         return new RssFeed("Google News",
                 "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en");
     }
 
-    /**
-     * Google News RSS for a specific topic section.
-     */
     private static RssFeed googleNewsTopic(String topicId) {
         return new RssFeed("Google News " + topicId,
                 "https://news.google.com/rss/headlines/section/topic/" + topicId
                         + "?hl=en-IN&gl=IN&ceid=IN:en");
     }
 
-    /**
-     * Category → list of RSS feeds.  Publication feeds (which include images) come first,
-     * Google News topic section is appended as a reliable fallback.
-     */
     private static final Map<String, List<RssFeed>> CATEGORY_FEEDS = new LinkedHashMap<>();
 
     static {
-        // ── General / Top Headlines ─────────────────────────────────────
         CATEGORY_FEEDS.put("general", Arrays.asList(
                 googleNewsTopHeadlines(),
                 new RssFeed("NDTV", "https://feeds.feedburner.com/ndtvnews-top-stories"),
@@ -94,7 +139,6 @@ public class NewsServiceImpl implements INewsService {
                 new RssFeed("Business Standard", "https://www.business-standard.com/rss/home_page_top_stories.rss")
         ));
 
-        // ── Business ────────────────────────────────────────────────────
         CATEGORY_FEEDS.put("business", Arrays.asList(
                 new RssFeed("NDTV Profit", "https://feeds.feedburner.com/ndtvprofit-latest"),
                 new RssFeed("Indian Express Business", "https://indianexpress.com/section/business/feed/"),
@@ -103,7 +147,6 @@ public class NewsServiceImpl implements INewsService {
                 googleNewsTopic("BUSINESS")
         ));
 
-        // ── Technology (also covers science) ────────────────────────────
         CATEGORY_FEEDS.put("technology", Arrays.asList(
                 new RssFeed("Gadgets 360", "https://feeds.feedburner.com/gadgets360-latest"),
                 new RssFeed("Indian Express Tech", "https://indianexpress.com/section/technology/feed/"),
@@ -112,7 +155,6 @@ public class NewsServiceImpl implements INewsService {
                 googleNewsTopic("TECHNOLOGY")
         ));
 
-        // ── Sports ──────────────────────────────────────────────────────
         CATEGORY_FEEDS.put("sports", Arrays.asList(
                 new RssFeed("NDTV Sports", "https://feeds.feedburner.com/ndtvsports-latest"),
                 new RssFeed("Indian Express Sports", "https://indianexpress.com/section/sports/feed/"),
@@ -121,7 +163,6 @@ public class NewsServiceImpl implements INewsService {
                 googleNewsTopic("SPORTS")
         ));
 
-        // ── Entertainment ───────────────────────────────────────────────
         CATEGORY_FEEDS.put("entertainment", Arrays.asList(
                 new RssFeed("NDTV Movies", "https://feeds.feedburner.com/ndtvmovies-latest"),
                 new RssFeed("Indian Express Entertainment", "https://indianexpress.com/section/entertainment/feed/"),
@@ -131,7 +172,6 @@ public class NewsServiceImpl implements INewsService {
                 googleNewsTopic("ENTERTAINMENT")
         ));
 
-        // ── Health ──────────────────────────────────────────────────────
         CATEGORY_FEEDS.put("health", Arrays.asList(
                 new RssFeed("Indian Express Health", "https://indianexpress.com/section/lifestyle/health/feed/"),
                 new RssFeed("HT Health", "https://www.hindustantimes.com/feeds/rss/lifestyle/health/rssfeed.xml"),
@@ -139,7 +179,6 @@ public class NewsServiceImpl implements INewsService {
                 googleNewsTopic("HEALTH")
         ));
 
-        // ── Science → alias to technology feeds ─────────────────────────
         CATEGORY_FEEDS.put("science", CATEGORY_FEEDS.get("technology"));
     }
 
@@ -159,20 +198,32 @@ public class NewsServiceImpl implements INewsService {
     @Override
     @Transactional
     public List<NewsDto> fetchAndStoreNews(String category) {
+        // ── Optimization 1: Return cached data if fresh ─────────────────
+        CacheEntry cached = NEWS_CACHE.get(category);
+        if (cached != null && !cached.isExpired()) {
+            log.debug("Cache hit for category '{}' ({} articles)", category, cached.articles.size());
+            return cached.articles;
+        }
+
         List<RssFeed> feeds = CATEGORY_FEEDS.getOrDefault(category,
                 CATEGORY_FEEDS.get("general"));
 
-        List<NewsDto> allArticles = new ArrayList<>();
+        // ── Optimization 2: Fetch all feeds in parallel ─────────────────
+        List<CompletableFuture<List<NewsDto>>> futures = feeds.stream()
+                .map(feed -> CompletableFuture.supplyAsync(() -> fetchRssFeed(feed), RSS_EXECUTOR)
+                        // Optimization 3: Per-feed timeout — abandon slow feeds
+                        .completeOnTimeout(Collections.emptyList(), FEED_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                        .exceptionally(ex -> {
+                            log.warn("Failed to fetch RSS feed '{}': {}", feed.name, ex.getMessage());
+                            return Collections.emptyList();
+                        }))
+                .collect(Collectors.toList());
 
-        for (RssFeed feed : feeds) {
-            try {
-                List<NewsDto> articles = fetchRssFeed(feed);
-                allArticles.addAll(articles);
-            } catch (Exception e) {
-                // Log and continue — one feed failure shouldn't break the entire request
-                log.warn("Failed to fetch RSS feed '{}': {}", feed.name, e.getMessage());
-            }
-        }
+        // Wait for all feeds (bounded by the per-feed timeout)
+        List<NewsDto> allArticles = futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
         // Deduplicate by URL
         Set<String> seenUrls = new LinkedHashSet<>();
@@ -186,14 +237,16 @@ public class NewsServiceImpl implements INewsService {
             persistIfNew(article, category);
         }
 
+        // ── Cache the result ────────────────────────────────────────────
+        NEWS_CACHE.put(category, new CacheEntry(Collections.unmodifiableList(allArticles)));
+        log.info("Fetched {} articles for category '{}' from {} feeds in parallel",
+                allArticles.size(), category, feeds.size());
+
         return allArticles;
     }
 
     // ── RSS Fetching & Parsing ──────────────────────────────────────────
 
-    /**
-     * Fetches a single RSS feed and parses its XML into NewsDto objects.
-     */
     private List<NewsDto> fetchRssFeed(RssFeed feed) {
         try {
             ResponseEntity<String> response = restTemplate.exchange(
@@ -211,16 +264,11 @@ public class NewsServiceImpl implements INewsService {
         }
     }
 
-    /**
-     * Parses RSS XML text into a list of NewsDto objects.
-     * Handles standard RSS 2.0 format with media extensions.
-     */
     private List<NewsDto> parseRssXml(String xml, String sourceName) {
         List<NewsDto> articles = new ArrayList<>();
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Disable external entities for security
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
@@ -239,12 +287,10 @@ public class NewsServiceImpl implements INewsService {
                 String link = getTagContent(item, "link");
                 String description = stripHtml(getTagContent(item, "description"));
                 String pubDate = getTagContent(item, "pubDate");
-
-                // Try to extract image from multiple possible locations
                 String imageUrl = extractImage(item);
 
                 if (title.isBlank() || link.isBlank()) {
-                    continue; // Skip items without title or link
+                    continue;
                 }
 
                 NewsDto dto = new NewsDto();
@@ -260,7 +306,6 @@ public class NewsServiceImpl implements INewsService {
                 articles.add(dto);
             }
         } catch (Exception e) {
-            // If XML parsing fails entirely, try regex-based fallback
             log.warn("XML parser failed for source '{}', trying regex fallback: {}",
                     sourceName, e.getMessage());
             articles.addAll(parseRssWithRegex(xml, sourceName));
@@ -269,17 +314,9 @@ public class NewsServiceImpl implements INewsService {
         return articles;
     }
 
-    /**
-     * Regex-based RSS parser as fallback when XML parsing fails
-     * (some feeds have malformed XML but valid RSS structure).
-     */
     private List<NewsDto> parseRssWithRegex(String xml, String sourceName) {
         List<NewsDto> articles = new ArrayList<>();
-
-        java.util.regex.Pattern itemPattern =
-                java.util.regex.Pattern.compile("<item>(.*?)</item>",
-                        java.util.regex.Pattern.DOTALL | java.util.regex.Pattern.CASE_INSENSITIVE);
-        java.util.regex.Matcher matcher = itemPattern.matcher(xml);
+        Matcher matcher = ITEM_PATTERN.matcher(xml);
 
         while (matcher.find()) {
             String block = matcher.group(1);
@@ -288,8 +325,6 @@ public class NewsServiceImpl implements INewsService {
             String link = extractTagRegex(block, "link");
             String description = stripHtml(extractTagRegex(block, "description"));
             String pubDate = extractTagRegex(block, "pubDate");
-
-            // Image from enclosure or media tags
             String imageUrl = extractImageRegex(block);
 
             if (title.isBlank() || link.isBlank()) {
@@ -314,9 +349,6 @@ public class NewsServiceImpl implements INewsService {
 
     // ── XML Helpers ─────────────────────────────────────────────────────
 
-    /**
-     * Gets text content of the first child element with the given tag name.
-     */
     private String getTagContent(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
         if (nodes.getLength() > 0) {
@@ -325,12 +357,7 @@ public class NewsServiceImpl implements INewsService {
         return "";
     }
 
-    /**
-     * Tries to extract an image URL from enclosure, media:content,
-     * media:thumbnail, or img tags within an RSS item element.
-     */
     private String extractImage(Element item) {
-        // 1. Check <enclosure> with type="image/*"
         NodeList enclosures = item.getElementsByTagName("enclosure");
         for (int i = 0; i < enclosures.getLength(); i++) {
             Element enc = (Element) enclosures.item(i);
@@ -340,7 +367,6 @@ public class NewsServiceImpl implements INewsService {
             }
         }
 
-        // 2. Check <media:content>
         NodeList mediaContent = item.getElementsByTagName("media:content");
         for (int i = 0; i < mediaContent.getLength(); i++) {
             Element mc = (Element) mediaContent.item(i);
@@ -350,7 +376,6 @@ public class NewsServiceImpl implements INewsService {
             }
         }
 
-        // 3. Check <media:thumbnail>
         NodeList mediaThumbnail = item.getElementsByTagName("media:thumbnail");
         for (int i = 0; i < mediaThumbnail.getLength(); i++) {
             Element mt = (Element) mediaThumbnail.item(i);
@@ -360,12 +385,9 @@ public class NewsServiceImpl implements INewsService {
             }
         }
 
-        // 4. Try to find <img src="..."> inside description
         String desc = getTagContent(item, "description");
         if (desc != null) {
-            java.util.regex.Matcher imgMatcher = java.util.regex.Pattern
-                    .compile("<img[^>]+src=[\"']([^\"']+)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE)
-                    .matcher(desc);
+            Matcher imgMatcher = IMG_SRC_PATTERN.matcher(desc);
             if (imgMatcher.find()) {
                 return imgMatcher.group(1);
             }
@@ -374,26 +396,22 @@ public class NewsServiceImpl implements INewsService {
         return null;
     }
 
-    // ── Regex Helpers ───────────────────────────────────────────────────
+    // ── Regex Helpers (using pre-compiled patterns) ─────────────────────
 
-    /**
-     * Extracts content from an XML tag using regex.
-     * Handles both CDATA-wrapped and plain content.
-     */
     private String extractTagRegex(String block, String tag) {
         // Try CDATA first
-        java.util.regex.Pattern cdataPattern = java.util.regex.Pattern.compile(
+        Pattern cdataPattern = Pattern.compile(
                 "<" + tag + "[^>]*><!\\[CDATA\\[([\\s\\S]*?)]]></" + tag + ">",
-                java.util.regex.Pattern.CASE_INSENSITIVE);
-        java.util.regex.Matcher m = cdataPattern.matcher(block);
+                Pattern.CASE_INSENSITIVE);
+        Matcher m = cdataPattern.matcher(block);
         if (m.find()) {
             return m.group(1).trim();
         }
 
         // Plain content
-        java.util.regex.Pattern plainPattern = java.util.regex.Pattern.compile(
+        Pattern plainPattern = Pattern.compile(
                 "<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">",
-                java.util.regex.Pattern.CASE_INSENSITIVE);
+                Pattern.CASE_INSENSITIVE);
         m = plainPattern.matcher(block);
         if (m.find()) {
             return m.group(1).trim();
@@ -402,48 +420,24 @@ public class NewsServiceImpl implements INewsService {
         return "";
     }
 
-    /**
-     * Extracts image URL from enclosure, media:content, media:thumbnail,
-     * or img tags using regex.
-     */
     private String extractImageRegex(String block) {
-        // enclosure url
-        java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("<enclosure[^>]+url=[\"']([^\"']+)[\"']",
-                        java.util.regex.Pattern.CASE_INSENSITIVE)
-                .matcher(block);
+        Matcher m = ENCLOSURE_URL_PATTERN.matcher(block);
         if (m.find()) return m.group(1);
 
-        // media:content url
-        m = java.util.regex.Pattern
-                .compile("<media:content[^>]+url=[\"']([^\"']+)[\"']",
-                        java.util.regex.Pattern.CASE_INSENSITIVE)
-                .matcher(block);
+        m = MEDIA_CONTENT_URL_PATTERN.matcher(block);
         if (m.find()) return m.group(1);
 
-        // media:thumbnail url
-        m = java.util.regex.Pattern
-                .compile("<media:thumbnail[^>]+url=[\"']([^\"']+)[\"']",
-                        java.util.regex.Pattern.CASE_INSENSITIVE)
-                .matcher(block);
+        m = MEDIA_THUMB_URL_PATTERN.matcher(block);
         if (m.find()) return m.group(1);
 
-        // img src
-        m = java.util.regex.Pattern
-                .compile("<img[^>]+src=[\"']([^\"']+)[\"']",
-                        java.util.regex.Pattern.CASE_INSENSITIVE)
-                .matcher(block);
+        m = IMG_SRC_PATTERN.matcher(block);
         if (m.find()) return m.group(1);
 
         return null;
     }
 
-    // ── HTML Stripping ──────────────────────────────────────────────────
+    // ── HTML Stripping (pre-compiled patterns) ──────────────────────────
 
-    /**
-     * Strips HTML tags, CDATA wrappers, and decodes common HTML entities.
-     * Ported from the reference app's stripHtml function.
-     */
     private String stripHtml(String html) {
         if (html == null || html.isBlank()) {
             return "";
@@ -452,10 +446,10 @@ public class NewsServiceImpl implements INewsService {
         String text = html;
 
         // Remove CDATA wrappers
-        text = text.replaceAll("<!\\[CDATA\\[([\\s\\S]*?)]]>", "$1");
+        text = CDATA_PATTERN.matcher(text).replaceAll("$1");
 
         // Strip HTML tags (first pass)
-        text = text.replaceAll("<[^>]*>", "");
+        text = HTML_TAG_PATTERN.matcher(text).replaceAll("");
 
         // Decode common HTML entities
         text = text.replace("&nbsp;", " ")
@@ -474,15 +468,14 @@ public class NewsServiceImpl implements INewsService {
                 .replace("&#8211;", "\u2013")
                 .replace("&#8212;", "\u2014");
 
-        // Decode remaining numeric character references &#NNN; via loop
-        java.util.regex.Pattern numEntity = java.util.regex.Pattern.compile("&#(\\d+);");
-        java.util.regex.Matcher numMatcher = numEntity.matcher(text);
+        // Decode remaining numeric character references &#NNN;
+        Matcher numMatcher = NUM_ENTITY_PATTERN.matcher(text);
         StringBuilder sb = new StringBuilder();
         while (numMatcher.find()) {
             try {
                 int code = Integer.parseInt(numMatcher.group(1));
                 numMatcher.appendReplacement(sb,
-                        java.util.regex.Matcher.quoteReplacement(String.valueOf((char) code)));
+                        Matcher.quoteReplacement(String.valueOf((char) code)));
             } catch (NumberFormatException e) {
                 numMatcher.appendReplacement(sb, " ");
             }
@@ -491,15 +484,13 @@ public class NewsServiceImpl implements INewsService {
         text = sb.toString();
 
         // Decode hex character references &#xHHH;
-        java.util.regex.Pattern hexEntity = java.util.regex.Pattern.compile(
-                "&#x([0-9a-fA-F]+);");
-        java.util.regex.Matcher hexMatcher = hexEntity.matcher(text);
+        Matcher hexMatcher = HEX_ENTITY_PATTERN.matcher(text);
         sb = new StringBuilder();
         while (hexMatcher.find()) {
             try {
                 int code = Integer.parseInt(hexMatcher.group(1), 16);
                 hexMatcher.appendReplacement(sb,
-                        java.util.regex.Matcher.quoteReplacement(String.valueOf((char) code)));
+                        Matcher.quoteReplacement(String.valueOf((char) code)));
             } catch (NumberFormatException e) {
                 hexMatcher.appendReplacement(sb, " ");
             }
@@ -508,13 +499,13 @@ public class NewsServiceImpl implements INewsService {
         text = sb.toString();
 
         // Remove any remaining named entities
-        text = text.replaceAll("&[a-zA-Z]+;", " ");
+        text = NAMED_ENTITY_PATTERN.matcher(text).replaceAll(" ");
 
         // Strip tags again (catches encoded tags that were decoded above)
-        text = text.replaceAll("<[^>]*>", "");
+        text = HTML_TAG_PATTERN.matcher(text).replaceAll("");
 
         // Collapse whitespace and trim
-        text = text.replaceAll("\\s+", " ").trim();
+        text = WHITESPACE_PATTERN.matcher(text).replaceAll(" ").trim();
 
         // Limit to 300 characters
         if (text.length() > 300) {
