@@ -609,40 +609,66 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         ZoneId zone = resolveZone(activity.getTimezone());
 
         if (activity.getScheduleType() == ScheduleType.ONE_TIME) {
-            return activity.getExecutionDatetime();
+            if (activity.getExecutionDatetime() == null) return null;
+            return activity.getExecutionDatetime().atZone(zone).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
         }
 
         // RECURRING
-        LocalDate today = ZonedDateTime.of(now, ZoneId.systemDefault()).withZoneSameInstant(zone).toLocalDate();
+        ZonedDateTime nowZoned = now.atZone(ZoneId.systemDefault()).withZoneSameInstant(zone);
+        LocalDate today = nowZoned.toLocalDate();
         RecurrenceType rType = activity.getRecurrenceType();
+        ZonedDateTime candidate = null;
 
         if (rType == RecurrenceType.DAILY) {
-            LocalDateTime candidate = today.atTime(activity.getExecutionTime());
-            if (!candidate.isAfter(now)) {
+            candidate = today.atTime(activity.getExecutionTime()).atZone(zone);
+            if (!candidate.isAfter(nowZoned)) {
                 candidate = candidate.plusDays(1);
             }
-            return candidate;
-        }
-
-        if (rType == RecurrenceType.MONTHLY) {
+        } else if (rType == RecurrenceType.MONTHLY) {
             int day = activity.getDayOfMonth() != null ? activity.getDayOfMonth() : 1;
-            LocalDateTime candidate = today.withDayOfMonth(Math.min(day, today.lengthOfMonth()))
-                    .atTime(activity.getExecutionTime());
-            if (!candidate.isAfter(now)) {
+            candidate = today.withDayOfMonth(Math.min(day, today.lengthOfMonth()))
+                    .atTime(activity.getExecutionTime()).atZone(zone);
+            if (!candidate.isAfter(nowZoned)) {
                 LocalDate nextMonth = today.plusMonths(1);
                 candidate = nextMonth.withDayOfMonth(Math.min(day, nextMonth.lengthOfMonth()))
-                        .atTime(activity.getExecutionTime());
+                        .atTime(activity.getExecutionTime()).atZone(zone);
             }
-            return candidate;
+        } else if (rType == RecurrenceType.WEEKLY) {
+            List<CampaignActivityWeekday> configuredWeekdays = weekdayRepository.findAllByActivityId(activity.getId());
+            if (configuredWeekdays == null || configuredWeekdays.isEmpty()) {
+                candidate = nowZoned.plusDays(7);
+            } else {
+                List<java.time.DayOfWeek> targetDays = configuredWeekdays.stream()
+                        .map(cw -> java.time.DayOfWeek.valueOf(cw.getWeekday().name()))
+                        .sorted(java.util.Comparator.comparingInt(java.time.DayOfWeek::getValue))
+                        .collect(Collectors.toList());
+                
+                java.time.DayOfWeek currentDay = today.getDayOfWeek();
+                if (targetDays.contains(currentDay)) {
+                    ZonedDateTime todayCandidate = today.atTime(activity.getExecutionTime()).atZone(zone);
+                    if (todayCandidate.isAfter(nowZoned)) {
+                        candidate = todayCandidate;
+                    }
+                }
+                if (candidate == null) {
+                    int daysToAdd = -1;
+                    for (java.time.DayOfWeek day : targetDays) {
+                        if (day.getValue() > currentDay.getValue()) {
+                            daysToAdd = day.getValue() - currentDay.getValue();
+                            break;
+                        }
+                    }
+                    if (daysToAdd == -1) {
+                        daysToAdd = 7 - currentDay.getValue() + targetDays.get(0).getValue();
+                    }
+                    candidate = today.plusDays(daysToAdd).atTime(activity.getExecutionTime()).atZone(zone);
+                }
+            }
+        } else {
+            candidate = nowZoned.plusDays(1);
         }
 
-        // WEEKLY — find the nearest configured weekday
-        if (rType == RecurrenceType.WEEKLY) {
-            // fallback: +7 days if no weekdays configured
-            return now.plusDays(7);
-        }
-
-        return now.plusDays(1);
+        return candidate.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     private ZoneId resolveZone(String timezone) {
