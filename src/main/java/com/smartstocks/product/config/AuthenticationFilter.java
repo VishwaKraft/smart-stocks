@@ -62,8 +62,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         }
         catch (Exception e) {
+            e.printStackTrace();
+            if (response.isCommitted()) {
+                return;
+            }
             Map<String, String> errors = new HashMap<>();
-            errors.put("error", "Unexpected error occured");
+            errors.put("error", "Unexpected error occured: " + e.getMessage());
             RootResponseDto<String> myResponse = new RootResponseDto<>(500, HttpStatus.INTERNAL_SERVER_ERROR,
                     ResponseMessage.FAILED.toString(), LocalDateTime.now(), errors, null);
             ObjectMapper mapper = new ObjectMapper();
@@ -71,7 +75,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             response.setContentType("application/json");
             response.setStatus(500);
-            response.getWriter().write(mapper.writeValueAsString(myResponse));
+            try {
+                response.getWriter().write(mapper.writeValueAsString(myResponse));
+            } catch (IllegalStateException ise) {
+                response.getOutputStream().write(mapper.writeValueAsBytes(myResponse));
+            }
             return;
         }
     }
