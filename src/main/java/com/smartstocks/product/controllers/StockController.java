@@ -228,7 +228,9 @@ public class StockController {
     }
 
     @GetMapping("/news")
-    public ResponseEntity getNews(@RequestParam(value = "type", required = false, defaultValue = "business") String type) throws IOException {
+    public ResponseEntity getNews(
+            @RequestParam(value = "type", required = false, defaultValue = "business") String type,
+            @RequestParam(value = "limit", required = false) Integer limit) throws IOException {
         try {
             // Validate news type (science is an alias for technology)
             String normalizedType = type.toLowerCase();
@@ -251,6 +253,12 @@ public class StockController {
                 .filter(news -> news.getTitle() != null && !news.getTitle().isBlank() &&
                                 news.getUrl() != null && !news.getUrl().isBlank())
                 .collect(java.util.stream.Collectors.toList());
+                
+            // Apply limit if specified
+            if (limit != null && limit > 0 && limit < ans.size()) {
+                ans = ans.subList(0, limit);
+            }
+            
             RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
                     ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);
             return new ResponseEntity<>(myResponse, new HttpHeaders(), 200);
