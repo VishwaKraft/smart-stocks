@@ -216,10 +216,9 @@ public class StockController {
     public ResponseEntity getNewsTypes() {
         List<NewsTypeDto> newsTypes = new LinkedList<>();
         newsTypes.add(new NewsTypeDto("business", "Business", "Business and financial news"));
-        newsTypes.add(new NewsTypeDto("technology", "Technology", "Technology and innovation news"));
+        newsTypes.add(new NewsTypeDto("technology", "Technology", "Technology, science and innovation news"));
         newsTypes.add(new NewsTypeDto("general", "General", "General news"));
         newsTypes.add(new NewsTypeDto("health", "Health", "Health and medical news"));
-        newsTypes.add(new NewsTypeDto("science", "Science", "Science and research news"));
         newsTypes.add(new NewsTypeDto("sports", "Sports", "Sports news"));
         newsTypes.add(new NewsTypeDto("entertainment", "Entertainment", "Entertainment news"));
         
@@ -231,9 +230,13 @@ public class StockController {
     @GetMapping("/news")
     public ResponseEntity getNews(@RequestParam(value = "type", required = false, defaultValue = "business") String type) throws IOException {
         try {
-            // Validate news type
-            List<String> validTypes = Arrays.asList("business", "technology", "general", "health", "science", "sports", "entertainment");
-            if (!validTypes.contains(type.toLowerCase())) {
+            // Validate news type (science is an alias for technology)
+            String normalizedType = type.toLowerCase();
+            if ("science".equals(normalizedType)) {
+                normalizedType = "technology";
+            }
+            List<String> validTypes = Arrays.asList("business", "technology", "general", "health", "sports", "entertainment");
+            if (!validTypes.contains(normalizedType)) {
                 Map<String, String> errors = new HashMap<>();
                 errors.put("error", "Invalid news type: " + type + ". Valid types are: " + String.join(", ", validTypes));
                 RootResponseDto<String> errorResponse = new RootResponseDto<>(400, HttpStatus.BAD_REQUEST,
@@ -241,16 +244,12 @@ public class StockController {
                 return new ResponseEntity<>(errorResponse, new HttpHeaders(), 400);
             }
             
-            List<NewsDto> ans = newsService.fetchAndStoreNews(type.toLowerCase());
+            List<NewsDto> ans = newsService.fetchAndStoreNews(normalizedType);
             
-            // Filter out any items that have null values
+            // Filter out items that lack essential fields (title and url are required)
             ans = ans.stream()
-                .filter(news -> news.getTitle() != null && 
-                                news.getUrl() != null && 
-                                news.getDescription() != null && 
-                                news.getAuthor() != null && 
-                                news.getContent() != null && 
-                                news.getUrlToImage() != null)
+                .filter(news -> news.getTitle() != null && !news.getTitle().isBlank() &&
+                                news.getUrl() != null && !news.getUrl().isBlank())
                 .collect(java.util.stream.Collectors.toList());
             RootResponseDto<List<NewsDto>> myResponse = new RootResponseDto<>(200, HttpStatus.OK,
                     ResponseMessage.SUCCESS.toString(), LocalDateTime.now(), null, ans);

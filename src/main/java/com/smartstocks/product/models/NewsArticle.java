@@ -44,6 +44,10 @@ public class NewsArticle {
     @Column(nullable = false, length = 50)
     private String category;
 
+    private String publishedAt;
+
+    private String source;
+
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime storedAt;
