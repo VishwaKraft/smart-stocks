@@ -18,5 +18,7 @@ public class NewsDto {
     private String author;
     private String content;
     private String urlToImage;
+    private String publishedAt;
+    private String source;
 
 }
