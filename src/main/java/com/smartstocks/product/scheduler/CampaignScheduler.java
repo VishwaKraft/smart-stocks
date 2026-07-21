@@ -240,6 +240,19 @@ public class CampaignScheduler {
             return;
         }
 
+        // Fetch external data if dataSourceUrl is present
+        Map<String, Object> externalData = new HashMap<>();
+        if (voiceTemplate.getDataSourceUrl() != null && !voiceTemplate.getDataSourceUrl().isBlank()) {
+            try {
+                Map<String, Object> apiResponse = restTemplate.getForObject(voiceTemplate.getDataSourceUrl(), Map.class);
+                if (apiResponse != null) {
+                    externalData.putAll(apiResponse);
+                }
+            } catch (Exception e) {
+                log.error("[Scheduler] Failed to fetch external data from URL: {}", voiceTemplate.getDataSourceUrl(), e);
+            }
+        }
+
         int sentCount = 0;
         int bounceCount = 0;
 
@@ -260,9 +273,10 @@ public class CampaignScheduler {
                 if (recipient.getData() != null) {
                     variables.putAll(recipient.getData());
                 }
+                variables.putAll(externalData); // Merge external data
 
                 // Render the TTS message
-                ITemplateRenderer renderer = rendererFactory.get(RendererType.MUSTACHE);
+                ITemplateRenderer renderer = rendererFactory.get(RendererType.HANDLEBARS);
                 RenderedTemplate rendered = renderer.render(
                         "", // no subject
                         voiceTemplate.getMessageText(),

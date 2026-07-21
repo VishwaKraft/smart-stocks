@@ -1847,8 +1847,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (voiceTemplateFormTitle) voiceTemplateFormTitle.textContent = "New Voice Template";
             const vName = document.getElementById("voiceTplVoiceName");
             const vGender = document.getElementById("voiceTplVoiceGender");
+            const vData = document.getElementById("voiceTplDataSourceUrl");
             if (vName) vName.value = "Joanna";
             if (vGender) vGender.value = "female";
+            if (vData) vData.value = "";
             if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = false;
             if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.scrollIntoView({ behavior: "smooth" });
             updateVoicePayloadPreview();
@@ -1872,6 +1874,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 voiceName: document.getElementById("voiceTplVoiceName").value,
                 voiceGender: document.getElementById("voiceTplVoiceGender").value,
                 messageText: document.getElementById("voiceTplMessageText").value.trim(),
+                dataSourceUrl: document.getElementById("voiceTplDataSourceUrl").value.trim() || null,
                 isActive: true,
                 campaignId: document.getElementById("voiceTplCampaign")?.value ? Number(document.getElementById("voiceTplCampaign").value) : null
             };
@@ -1984,6 +1987,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("voiceTplVoiceName").value = t.voiceName || "Joanna";
                         document.getElementById("voiceTplVoiceGender").value = t.voiceGender || "female";
                         document.getElementById("voiceTplMessageText").value = t.messageText || "";
+                        document.getElementById("voiceTplDataSourceUrl").value = t.dataSourceUrl || "";
                         if (voiceTemplateFormTitle) voiceTemplateFormTitle.textContent = "Edit Voice Template";
                         if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.hidden = false;
                         if (voiceTemplateFormWrapper) voiceTemplateFormWrapper.scrollIntoView({ behavior: "smooth" });

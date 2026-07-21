@@ -32,6 +32,8 @@ public class VoiceTemplateDto {
     /** Optional: tie to a specific campaign. */
     private Long campaignId;
     private String campaignName;
+    
+    private String dataSourceUrl;
 
     private Boolean isActive;
     private LocalDateTime createdAt;
