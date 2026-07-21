@@ -96,6 +96,7 @@ public class VoiceTemplateController {
         template.setLanguage(request.getLanguage() != null ? request.getLanguage() : "en");
         template.setVoiceName(request.getVoiceName() != null ? request.getVoiceName() : "Joanna");
         template.setVoiceGender(request.getVoiceGender() != null ? request.getVoiceGender() : "female");
+        template.setDataSourceUrl(request.getDataSourceUrl());
         template.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
 
         if (request.getCampaignId() != null) {
@@ -115,6 +116,7 @@ public class VoiceTemplateController {
                 .language(t.getLanguage())
                 .voiceName(t.getVoiceName())
                 .voiceGender(t.getVoiceGender())
+                .dataSourceUrl(t.getDataSourceUrl())
                 .campaignId(t.getCampaign() != null ? t.getCampaign().getId() : null)
                 .campaignName(t.getCampaign() != null ? t.getCampaign().getName() : null)
                 .isActive(t.getIsActive())

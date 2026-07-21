@@ -59,6 +59,10 @@ public class VoiceTemplate {
     @JoinColumn(name = "campaign_id")
     private Campaign campaign;
 
+    /** External API URL to fetch dynamic data for variables before rendering. */
+    @Column(name = "data_source_url", length = 500)
+    private String dataSourceUrl;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 
