@@ -54,14 +54,16 @@ export class HeaderComponent implements OnInit {
   onLogin() {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "35%";
+    dialogConfig.width = "90%";
+    dialogConfig.maxWidth = "450px";
     this.dialog.open(LoginModalComponent, dialogConfig);
   }
 
   onSignUp() {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
-    dialogConfig.width = "60%";
+    dialogConfig.width = "90%";
+    dialogConfig.maxWidth = "750px";
     this.dialog.open(SignupModalComponent, dialogConfig);
   }
 
