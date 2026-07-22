@@ -36,6 +36,12 @@ public class BeansConfig {
     @Value("${radiapi.apikey}")
     private String rapidApiKey;
 
+    @Value("${indian.api.key}")
+    private String indianApiKey;
+
+    @Value("${indian.api.base-url}")
+    private String indianApiBaseUrl;
+
     @Bean
     public RestTemplate getRestTemplateBean()
             throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
@@ -67,6 +73,21 @@ public class BeansConfig {
         headers.set("x-rapidapi-host", rapidApiHost);
         headers.set("x-rapidapi-key", rapidApiKey);
         return new HttpEntity(headers);
+    }
+
+    @Bean("indianApiHeaders")
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public HttpEntity getIndianApiHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("User-Agent", userAgent);
+        headers.set("x-api-key", indianApiKey);
+        return new HttpEntity(headers);
+    }
+
+    @Bean("indianApiBaseUrl")
+    public String getIndianApiBaseUrl() {
+        return indianApiBaseUrl;
     }
 
 
