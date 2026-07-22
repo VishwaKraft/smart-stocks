@@ -748,7 +748,7 @@ public class StockController {
         if (companyProfile != null && companyProfile.has("peerCompanyList") && companyProfile.get("peerCompanyList").isArray()) {
             for (JsonNode peer : companyProfile.get("peerCompanyList")) {
                 RecommendedStocks rec = new RecommendedStocks();
-                rec.setSymbol(txt(peer, "tickerId", ""));
+                rec.setSymbol(txt(peer, "companyName", txt(peer, "tickerId", "")));
                 rec.setLongName(txt(peer, "companyName", ""));
                 rec.setShortName(txt(peer, "companyName", ""));
 
@@ -775,7 +775,7 @@ public class StockController {
             if (reusable != null && reusable.has("peerCompanyList") && reusable.get("peerCompanyList").isArray()) {
                 for (JsonNode peer : reusable.get("peerCompanyList")) {
                     RecommendedStocks rec = new RecommendedStocks();
-                    rec.setSymbol(txt(peer, "tickerId", ""));
+                    rec.setSymbol(txt(peer, "companyName", txt(peer, "tickerId", "")));
                     rec.setLongName(txt(peer, "companyName", ""));
                     rec.setShortName(txt(peer, "companyName", ""));
 
