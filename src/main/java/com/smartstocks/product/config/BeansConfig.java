@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,8 +54,8 @@ public class BeansConfig {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
-        requestFactory.setConnectTimeout(5000);  // 5 seconds connect timeout
-        requestFactory.setReadTimeout(15000);    // 15 seconds read timeout
+        requestFactory.setConnectTimeout(5000); // 5 seconds connect timeout
+        requestFactory.setReadTimeout(15000); // 15 seconds read timeout
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         return restTemplate;
     }
@@ -75,6 +76,7 @@ public class BeansConfig {
         return new HttpEntity(headers);
     }
 
+    @Primary
     @Bean("indianApiHeaders")
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public HttpEntity getIndianApiHeaders() {
@@ -89,6 +91,5 @@ public class BeansConfig {
     public String getIndianApiBaseUrl() {
         return indianApiBaseUrl;
     }
-
 
 }
