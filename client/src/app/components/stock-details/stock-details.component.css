@@ -1,12 +1,38 @@
 .cont {
-    padding: 1rem;
-    background-color: #f4f7f9;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    color: #f8fafc;
 }
 
-app-stock-details-sidebar {
-    position: sticky;
+.details-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-app-about-company {
-    padding: 1rem;
+::ng-deep .premium-card {
+    background: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    color: #f8fafc !important;
+    overflow: hidden;
+}
+
+::ng-deep .premium-card .mat-card-header {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1.2rem;
+    margin: -16px -16px 16px -16px;
+}
+
+::ng-deep .premium-card .mat-card-title {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    color: #f8fafc !important;
+    font-family: 'Inter', sans-serif !important;
 }

@@ -1,33 +1,39 @@
-#container {
-    padding: 1rem;
-    border-radius: 1rem;
-    background-color: white;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
-}
-
 #chartContainer {
     height: 400px;
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    border-radius: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.graphButton {
-    padding: 0.1rem .25rem;
-    border: white;
+.premium-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 0.25rem 1rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
 }
 
-button {
-    /* border: #ff6700 solid 1px; */
-    padding: .5rem 1rem;
-    border-radius: 1rem;
+.premium-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
-#zoom {
-    float: right;
+.zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+}
+
+.zoom-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
 }
 
 a {
-    color: black;
+    text-decoration: none;
 }

@@ -1,69 +1,52 @@
-<!-- {{this.urlStockDetails.symbol}} -->
-<mat-card class="example-card mb-4 mb-lg-0 mb-0 ms-lg-2">
+<mat-card class="premium-card mb-4 mb-lg-0 mb-0">
     <mat-card-header>
-        <div class="d-flex align-items-center w-100">
-            <div style="flex-grow: 1;">
-                <mat-card-title class="stockName">{{ urlStockDetails.shortName }}
-                </mat-card-title>
-                <mat-card-title class="stockPrice" [style.color]="changeLow ? 'red' : 'green'">₹ {{ urlStockDetails.currentPrice.fmt }}</mat-card-title>
-                <mat-card-title class="stockPriceChange" [style.color]="changeLow ? 'red' : 'green'">{{ urlStockDetails.change.fmt }} ({{ urlStockDetails.changePercentage.fmt }})
-                </mat-card-title>
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <div>
+                <mat-card-title class="stockName">{{ urlStockDetails.shortName }}</mat-card-title>
+                <div class="d-flex align-items-baseline gap-2 mt-2">
+                    <span class="stockPrice">₹ {{ urlStockDetails.currentPrice.fmt }}</span>
+                    <span class="stockPriceChange px-2 py-1 rounded" [ngClass]="changeLow ? 'bg-danger text-white' : 'bg-success text-white'">
+                        {{ urlStockDetails.change.fmt }} ({{ urlStockDetails.changePercentage.fmt }})
+                    </span>
+                </div>
             </div>
-            <div class="px-5">
-                <button id="cartButton" (click)="openDialog()">
-                    <mat-icon style="font-size: xx-large;">
-                        calculate
-                    </mat-icon>
+            <div>
+                <button mat-icon-button id="cartButton" (click)="openDialog()" class="text-white">
+                    <mat-icon style="font-size: 28px; height: 28px; width: 28px;">calculate</mat-icon>
                 </button>
             </div>
-
-
         </div>
     </mat-card-header>
 
-    <mat-card-content>
-        <div class="prices">
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>TODAY'S HIGH</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.dayHigh.fmt }}</label>
+    <mat-card-content class="pt-4">
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <span class="labelName">TODAY'S HIGH</span>
+                <span class="labelValue">₹ {{ urlStockDetails.dayHigh.fmt }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>TODAY'S LOW</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.dayLow.fmt
-                    }}</label>
+            <div class="metric-item">
+                <span class="labelName">TODAY'S LOW</span>
+                <span class="labelValue">₹ {{ urlStockDetails.dayLow.fmt }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>52 WEEK HIGH</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.fiftyTwoWeekHigh.fmt }}</label>
+            <div class="metric-item">
+                <span class="labelName">52 WK HIGH</span>
+                <span class="labelValue">₹ {{ urlStockDetails.fiftyTwoWeekHigh.fmt }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>52 WEEK LOW</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>₹ {{
-                    urlStockDetails.fiftyTwoWeekLow.fmt }}</label>
+            <div class="metric-item">
+                <span class="labelName">52 WK LOW</span>
+                <span class="labelValue">₹ {{ urlStockDetails.fiftyTwoWeekLow.fmt }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>P/E RATIO</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.forwardPE.fmt==null?"N/A": urlStockDetails.forwardPE.fmt }}</label>
+            <div class="metric-item">
+                <span class="labelName">P/E RATIO</span>
+                <span class="labelValue">{{ urlStockDetails.forwardPE.fmt==null ? "N/A" : urlStockDetails.forwardPE.fmt }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>P/B RATIO</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.priceToBook.fmt }}</label>
+            <div class="metric-item">
+                <span class="labelName">P/B RATIO</span>
+                <span class="labelValue">{{ urlStockDetails.priceToBook.fmt || 'N/A' }}</span>
             </div>
-            <br />
-            <div fxLayout="row">
-                <label class="labelName" fxFlex>NO OF SHARES (in Cr)</label>
-                <label class="labelValue" fxLayout="column" fxLayoutAlign="center center" fxFlex>
-                    {{ urlStockDetails.volume.fmt }}</label>
+            <div class="metric-item w-100">
+                <span class="labelName">NO OF SHARES (in Cr)</span>
+                <span class="labelValue">{{ urlStockDetails.volume.fmt || 'N/A' }}</span>
             </div>
         </div>
     </mat-card-content>

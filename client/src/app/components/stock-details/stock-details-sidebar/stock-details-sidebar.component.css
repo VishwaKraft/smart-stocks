@@ -1,78 +1,75 @@
-mat-card {
-    height: auto;
-    min-width: 4rem;
-    width: auto;
-    /* border: 0.01rem solid #1F34D4; */
-    padding: 0rem;
-    margin: 0rem;
-    border-radius: 0rem;
+:host {
+    display: block;
     position: sticky;
-    top: 15%;
-    font-family: 'Poppins', sans-serif;
-    border-radius: 1rem;
-}
-
-mat-card-header {
-    height: auto;
-    /* background-color: #ffd1b2; */
-    border-radius: 1rem 1rem 0rem 0rem;
+    top: 80px;
+    z-index: 10;
 }
 
 .stockName {
-    padding-top: 1rem;
-    /* font-size: 1rem; */
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
 }
 
 .stockPrice {
-    padding-top: .25rem;
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f8fafc;
 }
 
 .stockPriceChange {
-    font-size: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
-mat-card-content {
-    padding: 1rem;
+.metrics-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
+.metric-item {
+    display: flex;
+    flex-direction: column;
+    width: calc(50% - 0.5rem);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-/* .prices{
-  padding-left: 1rem;
-} */
+.metric-item.w-100 {
+    width: 100%;
+}
 
 .labelName {
-    font-size: .75rem;
-    font-style: italic;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
 }
 
 .labelValue {
-    font-size: 1rem;
-    font-weight: bolder;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f8fafc;
 }
 
-.itemAction {
-    text-align: center;
+#cartButton {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-button {
-    background-color: white;
-    border: none;
-}
-
-img {
-    fill: #94d31b;
-    --color_fill: #ffa600;
-}
-
-.material-icons {
-    color: #FF6700;
-}
-
-#image {
-    height: 3rem;
-}
-
-#profileIcon {
-    font-size: 2rem;
+#cartButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
 }

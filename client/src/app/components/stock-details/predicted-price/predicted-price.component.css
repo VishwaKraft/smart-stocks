@@ -1,60 +1,44 @@
-mat-card {
-    height: auto;
-    width: auto;
-    /* border: 2px solid #ff6700; */
-    padding: 0rem;
-    margin: 0rem;
-    border-radius: 1rem;
-    font-family: 'Poppins', sans-serif;
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
-mat-card-header {
-    background-color: #ffd1b2;
-    border-radius: 1rem 1rem 0rem 0rem;
-    color: white;
-}
-
-mat-card-title {
-    padding: 1rem;
-}
-
-.heading {
-    font-size: 1.5rem;
-}
-
-mat-card-content {
-    padding: 1rem;
-}
-
-.details {
-    font-size: 1.25rem;
-}
-
-.grad {
-    /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-    background-image: linear-gradient(to right, #ff6702, #ffd1b2);
-}
-
-.prices {
-    border: solid 2px #ff6700;
-    border-radius: 1rem;
-    padding: 0.5rem 0.5rem;
+.prediction-pill {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 1rem;
-
-    color: #575A89;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s ease;
 }
 
-.prices:hover{
-  background-color: #f2f2f2;
+.prediction-pill:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
-
-label {
-    text-align: center;
-    padding: 0.5rem;
+.pred-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
-.poppins{
-  font-family: 'Poppins', sans-serif;
+.pred-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.poppins {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
 }

@@ -1,23 +1,26 @@
-<mat-card class="example-card">
-    <mat-card-header class="grad">
-        <mat-card-title class="heading">Risk Analysis</mat-card-title>
+<mat-card class="premium-card">
+    <mat-card-header>
+        <mat-card-title>Risk Analysis</mat-card-title>
     </mat-card-header>
-    <mat-card-content>
-
-        <div class="details">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6 align-self-center" fxFlex>
-                        <label>Short Term:&emsp;</label>
-                        <label id="shortTerm"><strong>{{ "RISKY" }}</strong>&emsp;</label><br><br>
-                        <label>Medium Term :&emsp;</label>
-                        <label id="mediumTerm"><strong>{{ "STABLE" }}</strong>&emsp;</label><br><br>
-                        <label>Long Term :&emsp;</label>
-                        <label id="longTerm"><strong>{{ "EFFICIENT" }}</strong>&emsp;</label><br><br>
+    <mat-card-content class="pt-3">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6 d-flex flex-column justify-content-center gap-3">
+                    <div class="risk-item">
+                        <span class="risk-label">Short Term</span>
+                        <span id="shortTerm" class="risk-value risk-high">{{ "RISKY" }}</span>
                     </div>
-                    <div class="col-md-6" [hidden]='hide' fxFlex>
-                        <canvas id="canvas"></canvas>
+                    <div class="risk-item">
+                        <span class="risk-label">Medium Term</span>
+                        <span id="mediumTerm" class="risk-value risk-medium">{{ "STABLE" }}</span>
                     </div>
+                    <div class="risk-item">
+                        <span class="risk-label">Long Term</span>
+                        <span id="longTerm" class="risk-value risk-low">{{ "EFFICIENT" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-center align-items-center" [hidden]="hide">
+                    <canvas id="canvas" class="donut"></canvas>
                 </div>
             </div>
         </div>

@@ -1,63 +1,46 @@
-mat-card{
+.risk-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.risk-label {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.risk-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.risk-high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.risk-medium {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.risk-low {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.donut {
+  max-width: 100%;
   height: auto;
-  width: auto;
-  /* border: 2px solid #ff6700; */
-  padding: 0rem;
-  margin: 0rem;
-  border-radius: 1rem;
-  font-family: 'Poppins', sans-serif;
-
-}
-
-mat-card-header{
-  background-color: #ffd1b2;
-  border-radius: 1rem 1rem 0rem 0rem;
-  color: white;
-}
-mat-card-title{
-  padding: 1rem;
-}
-
-.heading{
-  font-size: 1.5rem;
-}
-
-mat-card-content{
-  padding: 1rem;
-}
-
-.details{
-  font-size: 1.25rem;
-}
-
-#shortTerm{
-  color: red;
-}
-
-#mediumTerm{
-  color: rgb(255, 225, 56);
-}
-
-#longTerm{
-  color: green;
-}
-
-.terms{
-  padding-top: 2rem;
-  padding-left: 1.5rem;
-}
-
-/* .donut{
-  height: 20rem;
-  width: auto;
-} */
-
-.grad {
-  /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-  background-image: linear-gradient(to right, #ff6702  , #ffd1b2);
-}
-
-.donut{
-  height: auto;
-  width: 150px;
 }

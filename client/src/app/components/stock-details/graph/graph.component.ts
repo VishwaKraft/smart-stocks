@@ -75,7 +75,7 @@ export class GraphComponent implements OnInit {
       this.priceTrendUp=this.stockDetailsService.getPriceTrend();
       this.stockChart = new CanvasJS.StockChart('chartContainer', {
         exportEnabled: false,
-        theme: 'light2',
+        theme: 'dark2',
         title:{
           horizontalAlign:"left",
           text:this.stockName,
@@ -262,7 +262,7 @@ export class GraphComponent implements OnInit {
           this.lineConfig[0].color =  this.priceTrendUp?"green":"red";
           this.stockChart = new CanvasJS.StockChart('chartContainer', {
             exportEnabled: false,
-            theme: 'light2',
+            theme: 'dark2',
             title:{
               horizontalAlign:"left",
               text:this.stockName,

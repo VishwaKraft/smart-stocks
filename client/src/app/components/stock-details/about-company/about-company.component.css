@@ -1,43 +1,36 @@
-mat-card{
-  height: auto;
-  width: auto;
-  /* border: 2px solid #ff6700; */
-  padding: 0rem;
-  margin: 0rem;
-  border-radius: 0rem;
-  font-family: 'Poppins', sans-serif;
-  border-radius: 1rem;
-}
-
-mat-card-header{
-  /* background-color: #ffd1b2; */
-  border-radius: 1rem 1rem 0rem 0rem;
-  color: white;
-}
-mat-card-title{
-  padding: 1rem;
-}
-
-.heading{
-  font-size: 1.5rem;
-}
-
-mat-card-content{
-  padding: 1rem;
-}
-.info{
-  font-size: 1rem;
-  padding:0rem 1.5rem;
+.info-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #cbd5e1;
   text-align: justify;
 }
 
-.details{
-  font-size: 1.25rem;
-  padding:0rem 2rem;
-
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
 }
 
-.grad {
-  /* background-image: linear-gradient(to right, #1F34D4  , #1AA7EC); */
-  background-image: linear-gradient(to right, #ff6702  , #ffd1b2);
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.detail-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
 }
