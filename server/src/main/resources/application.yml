@@ -64,6 +64,11 @@ gemini:
   api:
     key: ${GEMINI_API_KEY:}
 
+indian:
+  api:
+    base-url: ${INDIAN_API_BASE_URL:https://stock.indianapi.in}
+    key: ${INDIAN_API_KEY:sk-live-IGYGbOU2Bas8RYY4zSkc8XfRlki5KGV9xaHPG3i8}
+
 whatsapp:
   webhook:
     verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:smartstocks-whatsapp-webhook-token}
