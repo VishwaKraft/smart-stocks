@@ -25,15 +25,6 @@ export class AppComponent implements OnInit {
       window.console.error = function () { };
     }
     this.eventTracking.init();
-    if (localStorage.getItem('token')) {
-      if (this.router.url === '/login' || this.router.url === '/register' || this.router.url === '/') {
-        this.router.navigate(['/dashboard/home']);
-      }
-    } else {
-      if (this.router.url !== '/login' && this.router.url !== '/register' && this.router.url !== '/home') {
-        this.router.navigate(['/home']);
-      }
-    }
   }
 
 
