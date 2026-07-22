@@ -63,28 +63,63 @@ button:hover {
 }
 
 .sidenav {
-    width: 16rem;
+    width: 17rem;
     background: var(--card-bg) !important;
     border-right: 1px solid var(--border-subtle) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
 }
 
-.sidenav button {
-    display: block;
-    padding: 10px 24px;
+.sidenav-header {
+    border-bottom: 1px solid var(--border-subtle) !important;
+    background: transparent !important;
+    height: 64px;
+    padding: 0 24px;
+}
+
+.sidenav-btn {
+    display: flex !important;
+    align-items: center;
+    padding: 12px 20px !important;
     text-align: left;
     width: 100%;
     font-size: 0.95rem;
     font-weight: 500;
-    color: var(--text-color);
-    border-radius: 8px;
-    margin: 2px 8px;
-    width: calc(100% - 16px);
-    transition: background 0.2s, color 0.2s;
+    color: var(--text-color) !important;
+    border-radius: 10px !important;
+    margin: 4px 12px !important;
+    width: calc(100% - 24px) !important;
+    transition: all 0.2s ease !important;
+    background: transparent;
 }
 
-.sidenav button:hover {
-    background: var(--glass-bg);
-    color: var(--heading-color);
+.sidenav-icon {
+    margin-right: 12px;
+    font-size: 1.25rem;
+    height: 1.25rem;
+    width: 1.25rem;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.sidenav-btn:hover {
+    background: var(--glass-bg) !important;
+    color: var(--heading-color) !important;
+    transform: translateX(4px);
+}
+
+.sidenav-btn:hover .sidenav-icon {
+    color: var(--primary-color);
+}
+
+.sidenav-btn.active {
+    background: rgba(29, 78, 216, 0.1) !important;
+    color: #60a5fa !important;
+    font-weight: 600;
+    border-left: 3px solid var(--primary-color);
+}
+
+.sidenav-btn.active .sidenav-icon {
+    color: #60a5fa;
 }
 
 .sidenav .mat-toolbar {

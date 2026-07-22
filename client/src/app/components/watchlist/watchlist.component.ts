@@ -30,24 +30,34 @@ export class WatchlistComponent implements OnInit {
     this.sideNavService.sideNavSubject.next(this.sideNavService.sideNav);
     this.sideNavService.sideNavItems = [
       {
+        text: "Discover",
+        link: "/discover",
+        icon: "explore"
+      },
+      {
         text: "Top Gainer",
-        link: "/discover/top-gainer"
+        link: "/discover/top-gainer",
+        icon: "trending_up"
       },
       {
         text: "Top Loser",
-        link: "/discover/top-loser"
+        link: "/discover/top-loser",
+        icon: "trending_down"
       },
       {
         text: "Top Recommendation",
-        link: "/discover/recommendation"
+        link: "/discover/recommendation",
+        icon: "star"
       },
       {
         text: "Best of this Month",
-        link: "/discover/best-month"
+        link: "/discover/best-month",
+        icon: "date_range"
       },
       {
         text: "All Stocks",
-        link: "/discover/all-stocks"
+        link: "/discover/all-stocks",
+        icon: "list"
       }
     ];
     this.sideNavService.sideNavItemsSubject.next(this.sideNavService.sideNavItems);

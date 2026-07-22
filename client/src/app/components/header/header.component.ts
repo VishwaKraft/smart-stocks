@@ -20,7 +20,7 @@ export class HeaderComponent implements OnInit {
   isSideNav: BooleanInput;
 
   isLogin: Boolean;
-  sideNavItem: Array<{ text: string, link: string }>
+  sideNavItem: Array<{ text: string, link: string, icon?: string }>
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(

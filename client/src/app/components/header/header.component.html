@@ -1,10 +1,18 @@
 <mat-sidenav-container class="sidenav-container">
     <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'" mode="side" [opened]="(isHandset$ | async) === false && isSideNav">
-        <mat-toolbar></mat-toolbar>
-        <div class="left">
-            <mat-nav-list>
-                <button *ngFor="let item of sideNavItem;" mat-button routerLink="{{item.link}}" routerLinkActive="active">
-                    {{item.text}}
+        <mat-toolbar class="sidenav-header">
+            <span id="appNameSidenav" style="display: flex; flex-direction: column; justify-content: center; line-height: 1.1;">
+                <span style="font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #1d4ed8, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.03em;">
+                    <mat-icon style="font-size: 1.3rem; height: 1.3rem; width: 1.3rem; -webkit-text-fill-color: #1d4ed8;">bolt</mat-icon>Herculean
+                </span>
+                <span style="font-size: 0.55rem; font-weight: 600; color: #9ca3af; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; padding-left: 28px;">by VishwaKraft</span>
+            </span>
+        </mat-toolbar>
+        <div class="left mt-2">
+            <mat-nav-list class="pt-0">
+                <button *ngFor="let item of sideNavItem;" mat-button routerLink="{{item.link}}" routerLinkActive="active" class="sidenav-btn">
+                    <mat-icon *ngIf="item.icon" class="sidenav-icon">{{item.icon}}</mat-icon>
+                    <span>{{item.text}}</span>
                 </button>
             </mat-nav-list>
         </div>

@@ -1,7 +1,7 @@
 .page-container {
     height: 100%;
-    background: #fafafa;
-    color: #575A89;
+    background: transparent;
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     a {
@@ -9,9 +9,9 @@
         text-decoration: none;
     }
     header {
-        background: #fff;
-        color: #FF6700;
-        border-bottom: .1rem solid #F2F2F2;
+        background: var(--card-bg);
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--border-subtle);
         padding: 18px 24px;
         font-weight: bold;
         display: flex;
@@ -30,8 +30,11 @@
 
 .sidenav-container {
     flex: 1;
+    background: transparent;
     .sidenav {
         min-width: 240px;
+        background: var(--card-bg);
+        border-right: 1px solid var(--border-subtle);
         a {
             display: block;
             padding: 6px 24px;
@@ -41,6 +44,7 @@
     }
     main {
         padding: 18px 24px;
+        background: transparent;
     }
 }
 

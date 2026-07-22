@@ -7,7 +7,7 @@ import { Observable, Subject } from 'rxjs';
 export class SideNavService {
 
   public sideNav: boolean = false;
-  public sideNavItems: Array<{ text: string, link: string }>
+  public sideNavItems: Array<{ text: string, link: string, icon?: string }>
   sideNavSubject = new Subject<any>();
   sideNavItemsSubject = new Subject<any>();
 
