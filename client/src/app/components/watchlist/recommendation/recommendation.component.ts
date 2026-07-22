@@ -26,9 +26,9 @@ export class RecommendationComponent implements OnInit {
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
-    this.gainerLooserService.getTopLooser().subscribe(v => {
-      // Find the first top loser to pass as symbol, appending '.NS' as the legacy code did
-      const symbol = v.data.stock.exploreCompanyList.TOP_LOSERS[0].stats.symbol + '.NS';
+    this.gainerLooserService.getTopInXdays(1, 'TOP_LOSER').subscribe(v => {
+      // Find the first top loser to pass as symbol
+      const symbol = v.data && v.data.length > 0 ? v.data[0].symbol : 'TATASTEEL.NS';
       
       this.gainerLooserService.getTopRecommendation(symbol).subscribe({
         next: (value) => {

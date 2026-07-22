@@ -27,21 +27,7 @@ export class TopGainerComponent implements OnInit {
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
-    this.gainerLooserService.getTopGainer().subscribe(value => {
-      value.data.stock.exploreCompanyList.TOP_GAINERS.forEach(x => {
-        this.gainerData.push({
-          companyName: x.company.companyName,
-          dayChange: x.stats.dayChange,
-          dayChangePerc: x.stats.dayChangePerc,
-          ltp: x.stats.ltp,
-          symbol: x.stats.symbol
-        })
-      })
-      this.gainerTable = new MatTableDataSource(this.gainerData);
-      this.gainerTable.paginator = this.paginator;
-      this.gainerTable.sort = this.sort
-      this.requireLoader = false;
-    })
+    this.getTopGainerLossers();
   }
 
   clicked(row: any) {
