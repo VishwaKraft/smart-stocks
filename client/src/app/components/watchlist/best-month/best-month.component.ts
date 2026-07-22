@@ -39,8 +39,11 @@ export class BestMonthComponent implements OnInit {
   }
 
   clickedRecommendation(row: any) {
-    console.log(row.symbol)
-    this.router.navigate(['/stockDetails/' + row.symbol]);
+    let cleanSymbol = row.symbol;
+    if (cleanSymbol.endsWith('.NS')) {
+      cleanSymbol = cleanSymbol.substring(0, cleanSymbol.length - 3);
+    }
+    this.router.navigate(['/stockDetails/' + cleanSymbol]);
   }
 
 }

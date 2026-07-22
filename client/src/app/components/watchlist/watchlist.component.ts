@@ -30,11 +30,6 @@ export class WatchlistComponent implements OnInit {
     this.sideNavService.sideNavSubject.next(this.sideNavService.sideNav);
     this.sideNavService.sideNavItems = [
       {
-        text: "Discover",
-        link: "/discover",
-        icon: "explore"
-      },
-      {
         text: "Top Gainer",
         link: "/discover/top-gainer",
         icon: "trending_up"

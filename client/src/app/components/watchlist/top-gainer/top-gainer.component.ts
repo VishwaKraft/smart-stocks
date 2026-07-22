@@ -31,12 +31,11 @@ export class TopGainerComponent implements OnInit {
   }
 
   clicked(row: any) {
-    console.log(row.symbol.substring(row.symbol.length - 3))
-    if (row.symbol.substring(row.symbol.length - 3) != '.NS') {
-      this.router.navigate(['/stockDetails/' + row.symbol + '.NS']);
-    } else {
-      this.router.navigate(['/stockDetails/' + row.symbol]);
+    let cleanSymbol = row.symbol;
+    if (cleanSymbol.endsWith('.NS')) {
+      cleanSymbol = cleanSymbol.substring(0, cleanSymbol.length - 3);
     }
+    this.router.navigate(['/stockDetails/' + cleanSymbol]);
   }
 
   getTopGainerLossers() {
