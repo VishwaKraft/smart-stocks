@@ -73,7 +73,7 @@ public class ShortLinkServiceImpl implements IShortLinkService {
 
     @Override
     public List<ShortLinkDto> getAllLinks() {
-        return shortLinkRepository.findAll().stream()
+        return shortLinkRepository.findAllByOrderByClickCountDesc().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

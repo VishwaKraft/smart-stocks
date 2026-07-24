@@ -737,7 +737,11 @@ public class StockController {
 
     /** Shared logic for recommended-stocks and peers-stocks endpoints */
     private ResponseEntity fetchPeerStocks(String stockName) {
-        String url = indianUrl("/stock?name=" + encodeParam(stockName));
+        String queryName = stockName;
+        if (queryName != null && (queryName.endsWith(".NS") || queryName.endsWith(".BO"))) {
+            queryName = queryName.substring(0, queryName.length() - 3);
+        }
+        String url = indianUrl("/stock?name=" + encodeParam(queryName));
         ResponseEntity<JsonNode> response = restTemplate.exchange(url, HttpMethod.GET, indianApiHeaders, JsonNode.class);
         JsonNode body = response.getBody();
 
