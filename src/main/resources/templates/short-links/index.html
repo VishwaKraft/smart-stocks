@@ -199,73 +199,92 @@
             </div>
 
             <!-- Template form -->
-            <div id="templateFormWrapper" class="form-card" hidden>
-                <h3 id="templateFormTitle">New Template</h3>
+            <div id="templateFormWrapper" class="form-card premium-email-form" hidden>
+                <div class="premium-header">
+                    <div class="premium-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <div>
+                        <h3 id="templateFormTitle">Create Stunning Template</h3>
+                        <p class="premium-subtitle">Design your email with AI-powered assistance</p>
+                    </div>
+                </div>
 
-                <form id="templateForm" class="form stacked-full">
+                <form id="templateForm" class="stacked-full">
                     <input type="hidden" id="templateEditId">
 
-                    <div class="form-group full-width">
-                        <label for="tplName">Template Name *</label>
-                        <input type="text" id="tplName" placeholder="e.g. Welcome Email" required>
+                    <div class="premium-form-row">
+                        <div class="form-group premium-group">
+                            <label for="tplName">Template Name <span class="required">*</span></label>
+                            <input type="text" id="tplName" placeholder="e.g. Welcome Series" required>
+                        </div>
+                        <div class="form-group premium-group">
+                            <label for="tplSubject">Email Subject <span class="required">*</span></label>
+                            <input type="text" id="tplSubject" placeholder="e.g. Hello {{firstName}}, big news!" required>
+                        </div>
                     </div>
 
-                    <div class="form-group full-width">
-                        <label for="tplSubject">Email Subject *</label>
-                        <input type="text" id="tplSubject" placeholder="e.g. Hello {{firstName}}, here's your update"
-                            required>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="tplDataSourceUrl">External Data Source URL <span style="font-weight:400;color:#aaa">(optional)</span></label>
-                        <input type="url" id="tplDataSourceUrl" placeholder="e.g. https://api.example.com/data">
+                    <div class="form-group premium-group full-width">
+                        <label for="tplDataSourceUrl">External Data Source URL <span class="optional">(optional)</span></label>
+                        <div class="input-with-icon">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            <input type="url" id="tplDataSourceUrl" placeholder="e.g. https://api.example.com/data">
+                        </div>
                     </div>
 
                     <!-- Full embedded HTML editor -->
-                    <div class="form-group full-width">
-                        <div class="editor-section-header">
-                            <label class="field-label">HTML Body *</label>
+                    <div class="form-group premium-group full-width">
+                        <div class="premium-editor-header">
+                            <label class="field-label">Email Content & AI Editor <span class="required">*</span></label>
                             <div class="editor-toolbar-inline">
-                                <button type="button" class="secondary-btn btn-xs" id="tplFormatBtn">⚡ Format</button>
-                                <button type="button" class="secondary-btn btn-xs" id="tplPreviewToggle">👁 Show
-                                    Code</button>
+                                <button type="button" class="premium-btn-outline btn-xs" id="tplFormatBtn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                    Format
+                                </button>
+                                <button type="button" class="premium-btn-outline btn-xs" id="tplPreviewToggle">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    Show Code
+                                </button>
                             </div>
                         </div>
-                        <div class="embedded-editor split-view" id="tplEditorWorkspace">
+                        <div class="embedded-editor premium-split-view" id="tplEditorWorkspace">
                             <!-- Preview Panel -->
-                            <div class="editor-col" id="tplPreviewCol">
-                                <span class="editor-col-label">Preview</span>
-                                <iframe id="tplHtmlPreview" class="full-html-preview"
-                                    sandbox="allow-same-origin allow-scripts"></iframe>
+                            <div class="editor-col premium-preview-col" id="tplPreviewCol">
+                                <iframe id="tplHtmlPreview" class="full-html-preview" sandbox="allow-same-origin allow-scripts"></iframe>
                             </div>
 
                             <!-- Chat Panel -->
-                            <div class="editor-col chat-panel" id="tplChatCol">
-                                <div class="chat-header" style="margin-bottom: 8px;">
-                                    <span class="editor-col-label">✨ AI Chatbot</span>
+                            <div class="editor-col premium-chat-col" id="tplChatCol">
+                                <div class="premium-chat-header">
+                                    <div class="ai-badge">
+                                        <span class="ai-sparkles">✨</span>
+                                        <span>AI Assistant</span>
+                                    </div>
+                                    <div class="pulse-dot"></div>
                                 </div>
                                 <div class="chat-history" id="chatHistory">
+                                    <div class="chat-welcome">
+                                        <p>How can I help you design this email?</p>
+                                    </div>
                                     <!-- Messages will be appended here -->
                                 </div>
-                                <div class="chat-input-area" style="margin-top: auto; padding-top: 12px;">
-                                    <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="aiPromptInput"
-                                            placeholder="e.g. Change the background color..."
-                                            style="flex: 1; padding: 10px; border: 1px solid #dde3ea; border-radius: 6px;">
-                                        <button type="button" id="aiSubmitBtn" class="primary-btn"
-                                            style="display: flex; align-items: center; gap: 6px;">
-                                            <span>Send</span>
-                                            <span id="aiLoadingSpinner" class="spinner" hidden></span>
-                                        </button>
-                                    </div>
+                                <div class="premium-chat-input">
+                                    <input type="text" id="aiPromptInput" placeholder="Ask AI to improve design...">
+                                    <button type="button" id="aiSubmitBtn" class="premium-ai-btn" aria-label="Send">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                        <span id="aiLoadingSpinner" class="spinner" hidden></span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="primary-btn" id="tplSaveBtn">💾 Save Template</button>
-                        <button type="button" class="secondary-btn" id="tplCancelBtn">Cancel</button>
+                    <div class="premium-form-actions">
+                        <button type="button" class="premium-btn-ghost" id="tplCancelBtn">Cancel</button>
+                        <button type="submit" class="premium-btn-primary" id="tplSaveBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Save Template</span>
+                        </button>
                     </div>
                 </form>
             </div>

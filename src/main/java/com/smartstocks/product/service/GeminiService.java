@@ -29,7 +29,7 @@ public class GeminiService {
     @Value("${gemini.api.url:https://generativelanguage.googleapis.com}")
     private String apiUrl;
 
-    @Value("${gemini.api.model:gemini-2.0-flash}")
+    @Value("${gemini.api.model:gemini-3.1-pro-preview}")
     private String defaultModel;
 
     private final RestTemplate restTemplate;
