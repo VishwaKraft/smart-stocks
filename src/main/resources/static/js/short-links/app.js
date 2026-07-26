@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
         aiLoadingSpinner.hidden = false;
 
         try {
-            const res = await fetch(`${apiTemplatesUrl}/chat`, {
+            const res = await fetch(`${apiTemplatesUrl}/chat/stream`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt, currentHtml: tplHtmlBody.value })
@@ -491,9 +491,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(msg || "Failed to get AI response");
             }
 
-            const newHtml = await res.text();
-            tplHtmlBody.value = newHtml;
-            scheduleTplPreview();
+            tplHtmlBody.value = "";
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            
+            let buffer = "";
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                
+                // Keep the last partial line in the buffer
+                buffer = lines.pop() || "";
+                
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const dataStr = line.substring(5).trim();
+                        if (dataStr) {
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                if (parsed.text) {
+                                    tplHtmlBody.value += parsed.text;
+                                    scheduleTplPreview();
+                                }
+                            } catch (e) {
+                                console.error("Error parsing stream chunk:", e, dataStr);
+                            }
+                        }
+                    }
+                }
+            }
             appendChatMessage("I've updated the template based on your request!", "ai");
             showToast("Template updated by AI!", "success");
         } catch (err) {
