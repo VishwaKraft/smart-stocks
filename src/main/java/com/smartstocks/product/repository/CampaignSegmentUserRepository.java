@@ -17,4 +17,8 @@ public interface CampaignSegmentUserRepository extends JpaRepository<CampaignSeg
 
     /** Delete all recipient records for an activity (used when re-generating). */
     void deleteAllByActivityId(Long activityId);
+
+    /** Count the total generated recipients for EMAIL campaigns across the whole system. */
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(c) FROM CampaignSegmentUser c WHERE c.activity.campaign.campaignType = 'EMAIL'")
+    long countTotalEmailSends();
 }
