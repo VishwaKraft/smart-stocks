@@ -110,7 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
             "whatsapp-templates": whatsappTemplatesPanel,
             "voice-templates": voiceTemplatesPanel,
             activities: activityPanel,
-            segments: segmentPanel
+            segments: segmentPanel,
+            analytics: document.getElementById("analyticsPanel")
         };
 
         sectionNavButtons.forEach(btn =>
@@ -138,6 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
             loadSegmentDropdownForActivity();
         } else if (section === "segments") {
             loadSegmentTable();
+        } else if (section === "analytics") {
+            loadAnalyticsDashboard();
         }
 
         if (window.innerWidth <= 960) {
@@ -2085,6 +2088,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadShortLinksTable();
     if (!urlParams.has('code')) {
-        switchSection("shortener");
+        switchSection("analytics");
+    }
+
+    /* ======================================================
+       ANALYTICS DASHBOARD
+    ====================================================== */
+    async function loadAnalyticsDashboard() {
+        try {
+            const data = await apiFetch("/api/analytics/email-metrics");
+            
+            // Animate numbers
+            animateValue("statSends", 0, data.totalSends, 1000);
+            animateValue("statOpens", 0, data.totalOpens, 1000);
+            animateValue("statClicks", 0, data.totalClicks, 1000);
+        } catch (error) {
+            console.error("Failed to load analytics data", error);
+            showToast("Failed to load analytics data", "error");
+        }
+    }
+
+    function animateValue(id, start, end, duration) {
+        if (start === end) {
+            document.getElementById(id).innerText = end;
+            return;
+        }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeOutProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+            const obj = document.getElementById(id);
+            obj.innerText = Math.floor(easeOutProgress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.innerText = end;
+            }
+        };
+        window.requestAnimationFrame(step);
     }
 });

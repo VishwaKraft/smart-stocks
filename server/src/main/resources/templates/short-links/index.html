@@ -27,7 +27,10 @@
         </div>
 
         <nav class="section-nav">
-            <button type="button" class="section-nav-btn active" data-section="shortener">
+            <button type="button" class="section-nav-btn active" data-section="analytics">
+                <span class="nav-icon">📊</span> Analytics
+            </button>
+            <button type="button" class="section-nav-btn" data-section="shortener">
                 <span class="nav-icon">🔗</span> Short URLs
             </button>
             <button type="button" class="section-nav-btn" data-section="campaigns">
@@ -53,6 +56,37 @@
 
     <!-- ===================== MAIN ===================== -->
     <div class="main">
+
+        <!-- ── Analytics Dashboard ── -->
+        <section id="analyticsPanel" class="panel hidden">
+            <div class="premium-header">
+                <h2>Email Analytics Overview</h2>
+                <p>Track your email campaign performance with real-time metrics.</p>
+            </div>
+            <div class="analytics-dashboard">
+                <div class="stat-card sends">
+                    <div class="stat-icon">📨</div>
+                    <div class="stat-info">
+                        <h3>Total Sends</h3>
+                        <div class="stat-value" id="statSends">0</div>
+                    </div>
+                </div>
+                <div class="stat-card opens">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-info">
+                        <h3>Total Opens</h3>
+                        <div class="stat-value" id="statOpens">0</div>
+                    </div>
+                </div>
+                <div class="stat-card clicks">
+                    <div class="stat-icon">🖱️</div>
+                    <div class="stat-info">
+                        <h3>Total Clicks</h3>
+                        <div class="stat-value" id="statClicks">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- ── Short URL shortener ── -->
         <section id="shortenerPanel" class="panel">

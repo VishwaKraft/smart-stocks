@@ -59,7 +59,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/activities/**")
                 .antMatchers("/api/segments/**")
                 .antMatchers("/api/whatsapp/**")
-                .antMatchers("/api/webhooks/**");
+                .antMatchers("/api/webhooks/**")
+                .antMatchers("/api/analytics/**");
     }
 
     @Override
@@ -79,6 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/segments/**").permitAll()
                 .antMatchers("/api/whatsapp/**").permitAll()
                 .antMatchers("/api/webhooks/**").permitAll()
+                .antMatchers("/api/analytics/**").permitAll()
                 .antMatchers(
                         "/stock/**",
                         "/user/token",
