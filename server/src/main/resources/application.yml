@@ -63,6 +63,7 @@ aws:
 gemini:
   api:
     key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_API_MODEL:gemini-3.1-pro-preview}
 
 indian:
   api:
