@@ -20,6 +20,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class GeminiService {
@@ -34,6 +43,7 @@ public class GeminiService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -72,6 +82,93 @@ public class GeminiService {
      */
     public GeminiResponse generateBasicChatResponse(String systemPrompt, String userMessage) {
         return generateChatResponseWithModel(systemPrompt, userMessage, null);
+    }
+
+    /**
+     * Streams basic chat responses without function calling or JSON schema validation.
+     * Uses the default model and pushes text chunks directly to the SseEmitter.
+     * 
+     * @param systemPrompt The system instructions for the AI
+     * @param userMessage  The user's input message
+     * @param emitter      The SseEmitter to push events to
+     */
+    public void streamBasicChatResponse(String systemPrompt, String userMessage, SseEmitter emitter) {
+        executor.execute(() -> {
+            try {
+                String endpoint = apiUrl + "/v1beta/models/" + defaultModel + ":streamGenerateContent?alt=sse&key=" + apiKey;
+                
+                JsonObject requestBody = new JsonObject();
+                if (systemPrompt != null && !systemPrompt.isEmpty()) {
+                    JsonObject systemInstruction = new JsonObject();
+                    JsonArray systemParts = new JsonArray();
+                    systemParts.add(createTextPart(systemPrompt));
+                    systemInstruction.add("parts", systemParts);
+                    requestBody.add("systemInstruction", systemInstruction);
+                }
+                
+                JsonArray contents = new JsonArray();
+                contents.add(createContentObject("user", userMessage));
+                requestBody.add("contents", contents);
+
+                JsonObject generationConfig = new JsonObject();
+                generationConfig.addProperty("temperature", 1);
+                generationConfig.addProperty("topK", 40);
+                generationConfig.addProperty("topP", 0.95);
+                generationConfig.addProperty("maxOutputTokens", 8192);
+                requestBody.add("generationConfig", generationConfig);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                RequestCallback requestCallback = request -> {
+                    request.getHeaders().addAll(headers);
+                    request.getBody().write(requestBody.toString().getBytes(StandardCharsets.UTF_8));
+                };
+
+                ResponseExtractor<Void> responseExtractor = response -> {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (line.startsWith("data: ")) {
+                                String jsonData = line.substring(6).trim();
+                                if (jsonData.isEmpty()) continue;
+                                try {
+                                    JsonObject jsonResponse = new JsonParser().parse(jsonData).getAsJsonObject();
+                                    if (jsonResponse.has("candidates")) {
+                                        JsonObject candidate = jsonResponse.getAsJsonArray("candidates").get(0).getAsJsonObject();
+                                        if (candidate.has("content")) {
+                                            JsonObject content = candidate.get("content").getAsJsonObject();
+                                            if (content.has("parts")) {
+                                                JsonArray parts = content.getAsJsonArray("parts");
+                                                if (parts.size() > 0 && parts.get(0).getAsJsonObject().has("text")) {
+                                                    String textChunk = parts.get(0).getAsJsonObject().get("text").getAsString();
+                                                    // Wrap chunk in JSON for easier parsing on frontend
+                                                    JsonObject payload = new JsonObject();
+                                                    payload.addProperty("text", textChunk);
+                                                    emitter.send(SseEmitter.event().data(payload.toString()));
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception ex) {
+                                    logger.error("Error parsing streaming chunk", ex);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        emitter.completeWithError(ex);
+                        return null;
+                    }
+                    emitter.complete();
+                    return null;
+                };
+
+                restTemplate.execute(endpoint, HttpMethod.POST, requestCallback, responseExtractor);
+            } catch (Exception ex) {
+                logger.error("Error streaming from Gemini", ex);
+                emitter.completeWithError(ex);
+            }
+        });
     }
 
     /**

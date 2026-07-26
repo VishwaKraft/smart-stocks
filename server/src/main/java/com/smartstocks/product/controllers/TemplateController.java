@@ -108,4 +108,20 @@ public class TemplateController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
         }
     }
+    /**
+     * POST /api/templates/chat/stream
+     * Request Gemini AI to edit a template based on the prompt, streaming the response.
+     */
+    @PostMapping("/chat/stream")
+    public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamChatWithGemini(@RequestBody ChatRequestDto request) {
+        org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter = new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(300000L); // 5 minutes timeout
+        try {
+            String systemPrompt = "You are an expert HTML email template designer. You are provided with a prompt and the current HTML code of the template. Modify the HTML as requested and return ONLY the new HTML code, without any markdown formatting or extra text. Do not wrap the response in ```html or ``` tags, just output the raw HTML.";
+            String userMessage = "Prompt: " + request.getPrompt() + "\n\nCurrent HTML:\n" + request.getCurrentHtml();
+            geminiService.streamBasicChatResponse(systemPrompt, userMessage, emitter);
+        } catch (Exception ex) {
+            emitter.completeWithError(ex);
+        }
+        return emitter;
+    }
 }

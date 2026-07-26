@@ -896,33 +896,50 @@ body.editor-active .main {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding-bottom: 12px;
-    max-height: 300px;
+    gap: 16px;
+    padding-bottom: 24px;
+    max-height: calc(100% - 130px);
+    scroll-behavior: smooth;
+}
+
+.chat-history::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
 }
 
 .chat-message {
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: 12px 16px;
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.5;
     max-width: 85%;
     word-wrap: break-word;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .chat-message.user {
     align-self: flex-end;
-    background-color: #8e24aa;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
     color: white;
-    border-bottom-right-radius: 4px;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
+    font-weight: 500;
 }
 
 .chat-message.ai {
     align-self: flex-start;
-    background-color: #f1f3f5;
-    color: #333;
-    border: 1px solid #dde3ea;
-    border-bottom-left-radius: 4px;
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px 18px 18px 4px;
 }
 
 /* ── Campaign Type Cards ──────────────────────────────────── */
@@ -1227,109 +1244,134 @@ body.editor-active .main {
 
 /* Chat Bot Stylings */
 .premium-chat-col {
-    background: #ffffff;
+    background: #f8fafc;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .premium-chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 18px;
-    border-bottom: 1px solid #f1f5f9;
-    background: linear-gradient(to right, #faf5ff, #ffffff);
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
 }
 
 .ai-badge {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 14px;
     font-weight: 700;
-    color: #7e22ce;
-    background: #f3e8ff;
-    padding: 4px 10px;
+    color: #6366f1;
+    background: #e0e7ff;
+    padding: 6px 12px;
     border-radius: 20px;
+    letter-spacing: 0.3px;
 }
 
 .pulse-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #22c55e;
+    width: 10px;
+    height: 10px;
+    background-color: #10b981;
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
     animation: pulse-green 2s infinite;
 }
 
 @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .chat-history {
     flex: 1;
-    padding: 16px;
+    padding: 20px;
     overflow-y: auto;
-    background: #ffffff;
+    background: transparent;
 }
 
 .chat-welcome {
-    background: #f8fafc;
+    background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px 12px 12px 2px;
-    padding: 12px 16px;
+    border-radius: 18px 18px 18px 4px;
+    padding: 14px 18px;
     color: #475569;
-    font-size: 13px;
-    margin-bottom: 16px;
+    font-size: 14px;
+    margin-bottom: 20px;
     max-width: 85%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 .premium-chat-input {
-    padding: 16px;
-    border-top: 1px solid #f1f5f9;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
     display: flex;
-    gap: 10px;
-    background: #ffffff;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10;
 }
 
 .premium-chat-input input {
     flex: 1;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 10px 16px;
-    font-size: 13px;
-    transition: all 0.2s;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .premium-chat-input input:focus {
     outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
     background: #ffffff;
-    border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
 }
 
 .premium-ai-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #a855f7, #7e22ce);
+    background: linear-gradient(135deg, #6366f1, #a855f7);
     color: #ffffff;
     border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(126, 34, 206, 0.25);
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-.premium-ai-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 14px rgba(126, 34, 206, 0.35);
+.premium-ai-btn:hover:not(:disabled) {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }
+
+.premium-ai-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.premium-ai-btn:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
 
 /* Actions Row */
 .premium-form-actions {

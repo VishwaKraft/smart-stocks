@@ -55,7 +55,7 @@ public class BeansConfig {
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
         requestFactory.setConnectTimeout(5000); // 5 seconds connect timeout
-        requestFactory.setReadTimeout(15000); // 15 seconds read timeout
+        requestFactory.setReadTimeout(120000); // 120 seconds read timeout
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         return restTemplate;
     }
