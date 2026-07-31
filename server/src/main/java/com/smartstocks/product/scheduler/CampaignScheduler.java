@@ -74,25 +74,157 @@ public class CampaignScheduler {
     private String infobipBaseUrl;
 
     /**
-     * Trigger every minute (cron: second=0 of every minute).
+     * TICK A — Runs every minute.
+     * Finds RECURRING parent activities that are due and spawns a fresh ONE_TIME child
+     * activity for each occurrence. The parent is never executed directly; it acts as
+     * a permanent schedule placeholder.
+     * Stops spawning for a parent when:
+     *   - parent status is PAUSED  (user has paused the recurring activity)
+     *   - parent endDate has been passed
      */
     @Scheduled(cron = "0 * * * * *")
     @Transactional
-    public void processDueActivities() {
+    public void spawnRecurringChildren() {
         LocalDateTime now = LocalDateTime.now();
-        List<CampaignActivity> dueActivities = activityRepository.findDueActivities(now);
+        List<CampaignActivity> dueParents = activityRepository.findDueRecurringParents(now);
+
+        if (dueParents.isEmpty()) {
+            return;
+        }
+
+        log.info("[Scheduler][TickA] Spawning children for {} recurring parent(s) at {}", dueParents.size(), now);
+
+        for (CampaignActivity parent : dueParents) {
+            try {
+                spawnChild(parent, now);
+            } catch (Exception ex) {
+                log.error("[Scheduler][TickA] Failed to spawn child for parent [{}]: {}",
+                        parent.getId(), ex.getMessage(), ex);
+            }
+        }
+    }
+
+    /**
+     * TICK B — Runs every minute.
+     * Finds child activities in GENERATING status whose scheduled send time is
+     * within the next 5 minutes and auto-generates their recipient data.
+     * This ensures the segment snapshot is fresh just before the send.
+     */
+    @Scheduled(cron = "0 * * * * *")
+    @Transactional
+    public void generateDueChildren() {
+        LocalDateTime threshold = LocalDateTime.now().plusMinutes(5);
+        List<CampaignActivity> children = activityRepository.findChildrenDueForGeneration(threshold);
+
+        if (children.isEmpty()) {
+            return;
+        }
+
+        log.info("[Scheduler][TickB] Auto-generating data for {} child activit(y/ies)", children.size());
+
+        for (CampaignActivity child : children) {
+            try {
+                activityService.generateActivityData(child.getId());
+                // After GENERATING → NEW, auto-activate so the child is picked up by Tick-C
+                child.setStatus(ActivityStatus.ACTIVE);
+                // nextExecutionAt for the child is its executionDatetime (ONE_TIME)
+                child.setNextExecutionAt(child.getExecutionDatetime());
+                activityRepository.save(child);
+                log.info("[Scheduler][TickB] Child [{}] generated and activated (scheduled for {})",
+                        child.getId(), child.getExecutionDatetime());
+            } catch (Exception ex) {
+                log.error("[Scheduler][TickB] Failed to generate child [{}]: {}",
+                        child.getId(), ex.getMessage(), ex);
+            }
+        }
+    }
+
+    /**
+     * TICK C — Runs every minute.
+     * Executes due ONE_TIME activities (including auto-spawned children).
+     * Recurring parents are never included here — they are handled by Tick-A only.
+     */
+    @Scheduled(cron = "0 * * * * *")
+    @Transactional
+    public void processExecutableActivities() {
+        LocalDateTime now = LocalDateTime.now();
+        List<CampaignActivity> dueActivities = activityRepository.findDueExecutableActivities(now);
 
         if (dueActivities.isEmpty()) {
             return;
         }
 
-        log.info("[Scheduler] Processing {} due activity(-ies) at {}", dueActivities.size(), now);
+        log.info("[Scheduler][TickC] Executing {} activit(y/ies) at {}", dueActivities.size(), now);
 
         for (CampaignActivity activity : dueActivities) {
             executeActivity(activity, now);
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Child spawn helper (Tick-A)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Spawns a ONE_TIME child activity for one occurrence of the given recurring parent.
+     * The child:
+     *   - copies all campaign/template/segment config from the parent
+     *   - uses the parent's current nextExecutionAt as its executionDatetime
+     *   - is named "<parentName>_<epochMillis>" for uniqueness
+     *   - starts in GENERATING status (Tick-B will auto-generate data before send)
+     * After spawning, the parent's nextExecutionAt is advanced to the next occurrence.
+     */
+    private void spawnChild(CampaignActivity parent, LocalDateTime now) {
+        // Guard: skip if parent is past its end date
+        if (parent.getEndDate() != null && now.toLocalDate().isAfter(parent.getEndDate())) {
+            log.info("[Scheduler][TickA] Parent [{}] past end date ({}), marking COMPLETED",
+                    parent.getId(), parent.getEndDate());
+            parent.setStatus(ActivityStatus.COMPLETED);
+            parent.setNextExecutionAt(null);
+            activityRepository.save(parent);
+            return;
+        }
+
+        // Occurrence time = the parent's current nextExecutionAt
+        LocalDateTime occurrenceAt = parent.getNextExecutionAt();
+        long epochMillis = occurrenceAt
+                .atZone(java.time.ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+        String childName = parent.getActivityName() + "_" + epochMillis;
+
+        CampaignActivity child = new CampaignActivity();
+        child.setCampaign(parent.getCampaign());
+        child.setTemplate(parent.getTemplate());
+        child.setVoiceTemplate(parent.getVoiceTemplate());
+        child.setWhatsappTemplateName(parent.getWhatsappTemplateName());
+        child.setWhatsappLanguage(parent.getWhatsappLanguage());
+        child.setSegment(parent.getSegment());
+        child.setActivityName(childName);
+        child.setScheduleType(ScheduleType.ONE_TIME);
+        child.setRecurrenceType(null);
+        child.setExecutionDatetime(occurrenceAt);
+        child.setTimezone(parent.getTimezone());
+        child.setStatus(ActivityStatus.GENERATING);
+        child.setDeleted(false);
+        child.setParentActivity(parent);
+        // nextExecutionAt = occurrenceAt so Tick-C can pick it up when it becomes ACTIVE
+        child.setNextExecutionAt(occurrenceAt);
+
+        activityRepository.save(child);
+        log.info("[Scheduler][TickA] Spawned child [{}] ('{}') for parent [{}] scheduled at {}",
+                child.getId(), childName, parent.getId(), occurrenceAt);
+
+        // Advance the parent to the next occurrence
+        LocalDateTime next = activityService.computeNextExecution(parent, occurrenceAt);
+        parent.setNextExecutionAt(next);
+        parent.setLastExecutionAt(now);
+        activityRepository.save(parent);
+        log.info("[Scheduler][TickA] Parent [{}] next occurrence at {}", parent.getId(), next);
+    }
+
+    // -----------------------------------------------------------------------
+    // Execute helper (Tick-C)
     // -----------------------------------------------------------------------
     private void executeActivity(CampaignActivity activity, LocalDateTime now) {
         LocalDateTime startedAt = LocalDateTime.now();

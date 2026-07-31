@@ -615,163 +615,332 @@
                 <button type="button" id="newActivityBtn" class="primary-btn">+ New Activity</button>
             </div>
 
-            <!-- Activity form -->
-            <div id="activityFormWrapper" class="form-card" hidden>
-                <h3 id="activityFormTitle">New Activity</h3>
-                <form id="activityForm" class="form stacked-full">
-                    <input type="hidden" id="activityEditId">
+            <!-- Activity form — Premium Multi-Step Wizard -->
+            <div id="activityFormWrapper" class="act-wizard-card" hidden>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="actCampaign">Campaign *</label>
-                            <select id="actCampaign" required>
-                                <option value="">— select —</option>
-                            </select>
+                <!-- Wizard Header -->
+                <div class="act-wizard-header">
+                    <div class="act-wizard-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="act-wizard-header-text">
+                        <h3 id="activityFormTitle">New Activity</h3>
+                        <p class="act-wizard-subtitle">Configure your campaign send in two simple steps</p>
+                    </div>
+                    <button type="button" class="act-wizard-close" id="actCancelBtn" aria-label="Close">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- Step Indicator -->
+                <div class="act-step-bar">
+                    <div class="act-step-item active" id="actStepDot1">
+                        <div class="act-step-circle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
-                        <div class="form-group" id="actEmailTemplateGroup" hidden>
-                            <label for="actTemplate">Template *</label>
-                            <select id="actTemplate">
-                                <option value="">— select —</option>
-                            </select>
+                        <span>Campaign &amp; Audience</span>
+                    </div>
+                    <div class="act-step-connector" id="actStepConnector"></div>
+                    <div class="act-step-item" id="actStepDot2">
+                        <div class="act-step-circle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                        <div class="form-group" id="actWaTemplateGroup" hidden>
-                            <label for="actWaTemplate">WhatsApp Template *</label>
-                            <select id="actWaTemplate">
-                                <option value="">— select a WhatsApp template —</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="actWaLanguageGroup" hidden>
-                            <label for="actWaLanguage">WhatsApp Language *</label>
-                            <select id="actWaLanguage">
-                                <option value="en" selected>English (en)</option>
-                                <option value="en_US">English US (en_US)</option>
-                                <option value="es">Spanish (es)</option>
-                                <option value="pt_BR">Portuguese (pt_BR)</option>
-                                <option value="fr">French (fr)</option>
-                                <option value="de">German (de)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="actVoiceTemplateGroup" hidden>
-                            <label for="actVoiceTemplate">Voice Template *</label>
-                            <select id="actVoiceTemplate">
-                                <option value="">— select a Voice template —</option>
-                            </select>
-                        </div>
+                        <span>Schedule</span>
+                    </div>
+                </div>
+
+                <input type="hidden" id="activityEditId">
+
+                <!-- ── STEP 1: Campaign & Audience ── -->
+                <div id="actStep1" class="act-step-panel">
+                    <div class="act-section-label">
+                        <span class="act-section-dot"></span>Select Campaign &amp; Template
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="actSegment">Segment *</label>
-                            <select id="actSegment" required>
-                                <option value="">— select a segment —</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="actName">Activity Name</label>
-                            <input type="text" id="actName" placeholder="e.g. Launch Day Email">
-                        </div>
-                        <div class="form-group">
-                            <label for="actStatus">Status</label>
-                            <select id="actStatus">
-                                <option value="ACTIVE">Active</option>
-                                <option value="PAUSED">Paused</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="actScheduleType">Schedule Type *</label>
-                            <select id="actScheduleType" required>
-                                <option value="">— select —</option>
-                                <option value="ONE_TIME">One Time</option>
-                                <option value="RECURRING">Recurring</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="actTimezone">Timezone</label>
-                            <select id="actTimezone">
-                                <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
-                                <option value="UTC">UTC</option>
-                                <option value="America/New_York">America/New_York (ET)</option>
-                                <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
-                                <option value="Europe/London">Europe/London (GMT)</option>
-                                <option value="Europe/Paris">Europe/Paris (CET)</option>
-                                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
-                                <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- ONE_TIME -->
-                    <div id="oneTimeFields" class="schedule-section" hidden>
-                        <div class="form-group">
-                            <label for="actExecDatetime">Execution Date &amp; Time *</label>
-                            <input type="datetime-local" id="actExecDatetime">
-                        </div>
-                    </div>
-
-                    <!-- RECURRING -->
-                    <div id="recurringFields" class="schedule-section" hidden>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="actRecurrence">Recurrence *</label>
-                                <select id="actRecurrence">
-                                    <option value="">— select —</option>
-                                    <option value="DAILY">Daily</option>
-                                    <option value="WEEKLY">Weekly</option>
-                                    <option value="MONTHLY">Monthly</option>
+                    <div class="act-field-row">
+                        <div class="act-field-group" id="actCampaignGroup">
+                            <label for="actCampaign" class="act-label">Campaign <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actCampaign" class="act-select" required>
+                                    <option value="">— select campaign —</option>
                                 </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
-                            <div class="form-group">
-                                <label for="actExecTime">Time of Day *</label>
-                                <input type="time" id="actExecTime">
-                            </div>
+                            <span class="act-field-hint">Choose the campaign this activity belongs to</span>
                         </div>
+                    </div>
 
-                        <!-- Weekly: day checkboxes -->
-                        <div id="weeklyFields" class="schedule-section" hidden>
-                            <label class="field-label">Days of the Week *</label>
-                            <div class="weekday-grid">
-                                <label class="weekday-chip"><input type="checkbox" value="MONDAY">Mon</label>
-                                <label class="weekday-chip"><input type="checkbox" value="TUESDAY">Tue</label>
-                                <label class="weekday-chip"><input type="checkbox" value="WEDNESDAY">Wed</label>
-                                <label class="weekday-chip"><input type="checkbox" value="THURSDAY">Thu</label>
-                                <label class="weekday-chip"><input type="checkbox" value="FRIDAY">Fri</label>
-                                <label class="weekday-chip"><input type="checkbox" value="SATURDAY">Sat</label>
-                                <label class="weekday-chip"><input type="checkbox" value="SUNDAY">Sun</label>
-                            </div>
-                        </div>
-
-                        <!-- Monthly: day of month -->
-                        <div id="monthlyFields" class="schedule-section" hidden>
-                            <div class="form-group">
-                                <label for="actDayOfMonth">Day of Month (1–28) *</label>
-                                <input type="number" id="actDayOfMonth" min="1" max="28" placeholder="5">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="actStartDate">Start Date</label>
-                                <input type="date" id="actStartDate">
-                            </div>
-                            <div class="form-group">
-                                <label for="actEndDate">End Date</label>
-                                <input type="date" id="actEndDate">
+                    <!-- Template fields — revealed by campaign type -->
+                    <div class="act-field-row" id="actEmailTemplateGroup" hidden>
+                        <div class="act-field-group">
+                            <label for="actTemplate" class="act-label">Email Template <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actTemplate" class="act-select">
+                                    <option value="">— select template —</option>
+                                </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="primary-btn">💾 Save Activity</button>
-                        <button type="button" class="secondary-btn" id="actCancelBtn">Cancel</button>
+                    <div class="act-field-row" id="actWaTemplateGroup" hidden>
+                        <div class="act-field-group">
+                            <label for="actWaTemplate" class="act-label">WhatsApp Template <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actWaTemplate" class="act-select">
+                                    <option value="">— select WhatsApp template —</option>
+                                </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+                        <div class="act-field-group" id="actWaLanguageGroup" hidden>
+                            <label for="actWaLanguage" class="act-label">Language <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actWaLanguage" class="act-select">
+                                    <option value="en" selected>English (en)</option>
+                                    <option value="en_US">English US (en_US)</option>
+                                    <option value="es">Spanish (es)</option>
+                                    <option value="pt_BR">Portuguese (pt_BR)</option>
+                                    <option value="fr">French (fr)</option>
+                                    <option value="de">German (de)</option>
+                                </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
                     </div>
-                </form>
+
+                    <div class="act-field-row" id="actVoiceTemplateGroup" hidden>
+                        <div class="act-field-group">
+                            <label for="actVoiceTemplate" class="act-label">Voice Template <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actVoiceTemplate" class="act-select">
+                                    <option value="">— select Voice template —</option>
+                                </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="act-section-label" style="margin-top:24px;">
+                        <span class="act-section-dot"></span>Audience &amp; Identity
+                    </div>
+
+                    <div class="act-field-row">
+                        <div class="act-field-group">
+                            <label for="actSegment" class="act-label">Segment <span class="act-req">*</span></label>
+                            <div class="act-select-wrap">
+                                <select id="actSegment" class="act-select" required>
+                                    <option value="">— select segment —</option>
+                                </select>
+                                <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <span class="act-field-hint">The audience that will receive this send</span>
+                        </div>
+                        <div class="act-field-group">
+                            <label for="actName" class="act-label">Activity Name <span class="act-optional">(optional)</span></label>
+                            <input type="text" id="actName" class="act-input" placeholder="e.g. Launch Day Email">
+                            <span class="act-field-hint">Helps you identify this activity in the list</span>
+                        </div>
+                    </div>
+
+                    <div class="act-wizard-footer">
+                        <button type="button" class="act-btn-ghost" id="actCancelBtnStep1">Cancel</button>
+                        <button type="button" class="act-btn-primary" id="actNextBtn">
+                            Next: Schedule
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── STEP 2: Schedule ── -->
+                <div id="actStep2" class="act-step-panel" hidden>
+
+                    <!-- Schedule type cards -->
+                    <div class="act-section-label">
+                        <span class="act-section-dot"></span>When to Send
+                    </div>
+                    <div class="act-schedule-cards" id="actScheduleCards">
+                        <label class="act-schedule-card" id="actCardOneTime" data-value="ONE_TIME">
+                            <input type="radio" name="actScheduleTypeRadio" value="ONE_TIME">
+                            <div class="act-card-icon act-card-icon--onetime">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div class="act-card-body">
+                                <span class="act-card-title">One Time</span>
+                                <span class="act-card-desc">Send once at a specific date &amp; time</span>
+                            </div>
+                            <div class="act-card-check">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                        </label>
+                        <label class="act-schedule-card" id="actCardRecurring" data-value="RECURRING">
+                            <input type="radio" name="actScheduleTypeRadio" value="RECURRING">
+                            <div class="act-card-icon act-card-icon--recurring">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                            </div>
+                            <div class="act-card-body">
+                                <span class="act-card-title">Recurring</span>
+                                <span class="act-card-desc">Repeat daily, weekly, or monthly</span>
+                            </div>
+                            <div class="act-card-check">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                        </label>
+                    </div>
+                    <input type="hidden" id="actScheduleType">
+
+                    <!-- ONE_TIME fields -->
+                    <div id="oneTimeFields" class="act-schedule-fields" hidden>
+                        <div class="act-fields-inner">
+                            <div class="act-field-row">
+                                <div class="act-field-group">
+                                    <label for="actExecDatetime" class="act-label">Execution Date &amp; Time <span class="act-req">*</span></label>
+                                    <input type="datetime-local" id="actExecDatetime" class="act-input">
+                                </div>
+                                <div class="act-field-group">
+                                    <label for="actTimezone" class="act-label">Timezone</label>
+                                    <div class="act-select-wrap">
+                                        <select id="actTimezone" class="act-select">
+                                            <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                                            <option value="UTC">UTC</option>
+                                            <option value="America/New_York">America/New_York (ET)</option>
+                                            <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+                                            <option value="Europe/London">Europe/London (GMT)</option>
+                                            <option value="Europe/Paris">Europe/Paris (CET)</option>
+                                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                            <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                                            <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
+                                        </select>
+                                        <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECURRING fields -->
+                    <div id="recurringFields" class="act-schedule-fields" hidden>
+                        <div class="act-fields-inner">
+                            <div class="act-field-row">
+                                <div class="act-field-group">
+                                    <label for="actRecurrence" class="act-label">Recurrence Pattern <span class="act-req">*</span></label>
+                                    <div class="act-select-wrap">
+                                        <select id="actRecurrence" class="act-select">
+                                            <option value="">— select pattern —</option>
+                                            <option value="DAILY">Daily</option>
+                                            <option value="WEEKLY">Weekly</option>
+                                            <option value="MONTHLY">Monthly</option>
+                                        </select>
+                                        <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                </div>
+                                <div class="act-field-group">
+                                    <label for="actExecTime" class="act-label">Time of Day <span class="act-req">*</span></label>
+                                    <input type="time" id="actExecTime" class="act-input">
+                                </div>
+                                <div class="act-field-group">
+                                    <label for="actTimezoneRecurring" class="act-label">Timezone</label>
+                                    <div class="act-select-wrap">
+                                        <select id="actTimezoneRecurring" class="act-select">
+                                            <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                                            <option value="UTC">UTC</option>
+                                            <option value="America/New_York">America/New_York (ET)</option>
+                                            <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+                                            <option value="Europe/London">Europe/London (GMT)</option>
+                                            <option value="Europe/Paris">Europe/Paris (CET)</option>
+                                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                            <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                                            <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
+                                        </select>
+                                        <svg class="act-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Weekly: premium weekday chips -->
+                            <div id="weeklyFields" class="act-weekday-block" hidden>
+                                <label class="act-label">Days of the Week <span class="act-req">*</span></label>
+                                <div class="act-weekday-grid">
+                                    <label class="act-day-chip"><input type="checkbox" value="MONDAY"><span>Mon</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="TUESDAY"><span>Tue</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="WEDNESDAY"><span>Wed</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="THURSDAY"><span>Thu</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="FRIDAY"><span>Fri</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="SATURDAY"><span>Sat</span></label>
+                                    <label class="act-day-chip"><input type="checkbox" value="SUNDAY"><span>Sun</span></label>
+                                </div>
+                            </div>
+
+                            <!-- Monthly: day of month -->
+                            <div id="monthlyFields" class="act-schedule-fields" hidden>
+                                <div class="act-field-group" style="max-width:200px;">
+                                    <label for="actDayOfMonth" class="act-label">Day of Month (1–28) <span class="act-req">*</span></label>
+                                    <input type="number" id="actDayOfMonth" class="act-input" min="1" max="28" placeholder="5">
+                                </div>
+                            </div>
+
+                            <!-- Date range -->
+                            <div class="act-field-row" style="margin-top:16px;">
+                                <div class="act-field-group">
+                                    <label for="actStartDate" class="act-label">Start Date</label>
+                                    <input type="date" id="actStartDate" class="act-input">
+                                </div>
+                                <div class="act-field-group">
+                                    <label for="actEndDate" class="act-label">End Date <span class="act-optional">(optional)</span></label>
+                                    <input type="date" id="actEndDate" class="act-input">
+                                    <span class="act-field-hint">Leave blank to run indefinitely</span>
+                                </div>
+                            </div>
+
+                            <!-- Recurring info banner -->
+                            <div class="act-info-banner">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                <span>A fresh child activity is automatically spawned for each occurrence. Data is generated 5 minutes before send. Pause this activity to stop future sends.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity status -->
+                    <div class="act-status-row">
+                        <label class="act-label">Initial Status</label>
+                        <div class="act-status-toggle">
+                            <label class="act-toggle-opt">
+                                <input type="radio" name="actStatusRadio" value="ACTIVE" checked>
+                                <span class="act-toggle-pill act-toggle-active">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Active
+                                </span>
+                            </label>
+                            <label class="act-toggle-opt">
+                                <input type="radio" name="actStatusRadio" value="PAUSED">
+                                <span class="act-toggle-pill act-toggle-paused">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                    Paused
+                                </span>
+                            </label>
+                        </div>
+                        <input type="hidden" id="actStatus">
+                    </div>
+
+                    <div class="act-wizard-footer">
+                        <button type="button" class="act-btn-ghost" id="actBackBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                            Back
+                        </button>
+                        <button type="button" class="act-btn-primary" id="actSaveBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Save Activity
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden fields needed by existing JS -->
+                <input type="hidden" id="activityFormHidden">
             </div>
 
             <!-- Activities table -->
