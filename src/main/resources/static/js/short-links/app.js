@@ -667,56 +667,192 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
-       ACTIVITIES
+       ACTIVITIES — Premium Wizard
     ====================================================== */
     const activityFormWrapper = document.getElementById("activityFormWrapper");
-    const activityForm        = document.getElementById("activityForm");
     const activityEditId      = document.getElementById("activityEditId");
     const activityFormTitle   = document.getElementById("activityFormTitle");
     const activityTable       = document.getElementById("activityTable");
     const activityTableBody   = document.getElementById("activityTableBody");
     const activityEmpty       = document.getElementById("activityEmpty");
-    const actScheduleType     = document.getElementById("actScheduleType");
+    const actScheduleType     = document.getElementById("actScheduleType");   // hidden
     const actRecurrence       = document.getElementById("actRecurrence");
     const oneTimeFields       = document.getElementById("oneTimeFields");
     const recurringFields     = document.getElementById("recurringFields");
     const weeklyFields        = document.getElementById("weeklyFields");
     const monthlyFields       = document.getElementById("monthlyFields");
 
-    // Schedule type visibility
-    actScheduleType.addEventListener("change", () => {
-        oneTimeFields.hidden   = actScheduleType.value !== "ONE_TIME";
-        recurringFields.hidden = actScheduleType.value !== "RECURRING";
+    // ── Wizard helpers ──────────────────────────────────────
+    function wizardGoStep(n) {
+        const step1 = document.getElementById("actStep1");
+        const step2 = document.getElementById("actStep2");
+        const dot1  = document.getElementById("actStepDot1");
+        const dot2  = document.getElementById("actStepDot2");
+        const conn  = document.getElementById("actStepConnector");
+        if (n === 1) {
+            step1.hidden = false;
+            step2.hidden = true;
+            dot1.className = "act-step-item active";
+            dot2.className = "act-step-item";
+            conn.classList.remove("done");
+        } else {
+            step1.hidden = true;
+            step2.hidden = false;
+            dot1.className = "act-step-item done";
+            dot2.className = "act-step-item active";
+            conn.classList.add("done");
+        }
+    }
+
+    function wizardReset() {
+        activityEditId.value = "";
+        activityFormTitle.textContent = "New Activity";
+        // Reset all inputs
+        document.getElementById("actCampaign").value = "";
+        document.getElementById("actName").value = "";
+        document.getElementById("actSegment").value = "";
+        document.getElementById("actExecDatetime").value = "";
+        document.getElementById("actExecTime").value = "";
+        document.getElementById("actStartDate").value = "";
+        document.getElementById("actEndDate").value = "";
+        document.getElementById("actDayOfMonth").value = "";
+        actRecurrence.value = "";
+        actScheduleType.value = "";
+        oneTimeFields.hidden = true;
+        recurringFields.hidden = true;
+        weeklyFields.hidden = true;
+        monthlyFields.hidden = true;
+        // Reset schedule card radios
+        document.querySelectorAll("[name=actScheduleTypeRadio]").forEach(r => r.checked = false);
+        // Reset status radio to Active
+        const activeRadio = document.querySelector("[name=actStatusRadio][value=ACTIVE]");
+        if (activeRadio) activeRadio.checked = true;
+        document.getElementById("actStatus").value = "ACTIVE";
+        // Reset template groups
+        ["actEmailTemplateGroup","actWaTemplateGroup","actWaLanguageGroup","actVoiceTemplateGroup"].forEach(id => {
+            const el = document.getElementById(id); if (el) el.hidden = true;
+        });
+        // Reset weekday checkboxes
+        document.querySelectorAll("#weeklyFields input[type=checkbox]").forEach(cb => cb.checked = false);
+        wizardGoStep(1);
+    }
+
+    // ── Schedule card click ──────────────────────────────────
+    document.querySelectorAll(".act-schedule-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const val = card.dataset.value;
+            actScheduleType.value = val;
+            oneTimeFields.hidden   = val !== "ONE_TIME";
+            recurringFields.hidden = val !== "RECURRING";
+        });
     });
 
+    // ── Recurrence pattern change ────────────────────────────
     actRecurrence.addEventListener("change", () => {
         weeklyFields.hidden  = actRecurrence.value !== "WEEKLY";
         monthlyFields.hidden = actRecurrence.value !== "MONTHLY";
     });
 
-    document.getElementById("newActivityBtn").addEventListener("click", () => {
-        activityEditId.value = "";
-        activityFormTitle.textContent = "New Activity";
-        activityForm.reset();
-        oneTimeFields.hidden = true;
-        recurringFields.hidden = true;
-        weeklyFields.hidden = true;
-        monthlyFields.hidden = true;
+    // ── Status radio → hidden field sync ────────────────────
+    document.querySelectorAll("[name=actStatusRadio]").forEach(r => {
+        r.addEventListener("change", () => {
+            document.getElementById("actStatus").value = r.value;
+        });
+    });
+
+    // ── Next button (Step 1 → Step 2) ───────────────────────
+    document.getElementById("actNextBtn").addEventListener("click", async () => {
+        const campId = document.getElementById("actCampaign").value;
+        if (!campId) { showToast("Please select a campaign first", "error"); return; }
+        const segId = document.getElementById("actSegment").value;
+        if (!segId) { showToast("Please select an audience segment", "error"); return; }
+        await loadCampaignDropdowns();
+        wizardGoStep(2);
+    });
+
+    // ── Back button ──────────────────────────────────────────
+    document.getElementById("actBackBtn").addEventListener("click", () => wizardGoStep(1));
+
+    // ── Cancel (both steps) ──────────────────────────────────
+    ["actCancelBtn","actCancelBtnStep1"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", () => {
+            activityFormWrapper.hidden = true;
+            wizardReset();
+        });
+    });
+
+    // ── Open wizard (new activity) ───────────────────────────
+    document.getElementById("newActivityBtn").addEventListener("click", async () => {
+        wizardReset();
         activityFormWrapper.hidden = false;
-        loadSegmentDropdownForActivity();
+        await loadCampaignDropdowns();
+        await loadSegmentDropdownForActivity();
         activityFormWrapper.scrollIntoView({ behavior: "smooth" });
     });
 
-    document.getElementById("actCancelBtn").addEventListener("click", () => {
-        activityFormWrapper.hidden = true;
-        activityForm.reset();
-        const emailGrp = document.getElementById("actEmailTemplateGroup");
-        const waGrp = document.getElementById("actWaTemplateGroup");
-        const waLangGrp = document.getElementById("actWaLanguageGroup");
-        if (emailGrp) emailGrp.hidden = true;
-        if (waGrp) waGrp.hidden = true;
-        if (waLangGrp) waLangGrp.hidden = true;
+    // ── Save button ──────────────────────────────────────────
+    document.getElementById("actSaveBtn").addEventListener("click", async () => {
+        const schedType = actScheduleType.value;
+        if (!schedType) { showToast("Please choose a schedule type (One Time or Recurring)", "error"); return; }
+        if (schedType === "ONE_TIME" && !document.getElementById("actExecDatetime").value) {
+            showToast("Please set an execution date & time", "error"); return;
+        }
+
+        const id = activityEditId.value;
+        const actCampaignId = Number(document.getElementById("actCampaign").value) || null;
+        const c = campaignsById[actCampaignId];
+        const isWa = c && c.campaignType === "WHATSAPP";
+
+        const checkedDays = [...document.querySelectorAll("#weeklyFields input[type=checkbox]:checked")]
+            .map(cb => cb.value);
+
+        // Timezone: use the visible one depending on schedule type
+        const tz = schedType === "ONE_TIME"
+            ? (document.getElementById("actTimezone").value || "Asia/Kolkata")
+            : (document.getElementById("actTimezoneRecurring").value || "Asia/Kolkata");
+
+        const payload = {
+            campaignId:    actCampaignId,
+            templateId:    c && c.campaignType === "EMAIL" ? (Number(document.getElementById("actTemplate").value) || null) : null,
+            voiceTemplateId: c && c.campaignType === "VOICE" ? (Number(document.getElementById("actVoiceTemplate").value) || null) : null,
+            whatsappTemplateName: isWa ? document.getElementById("actWaTemplate").value : null,
+            whatsappLanguage: isWa ? document.getElementById("actWaLanguage").value : null,
+            segmentId:     Number(document.getElementById("actSegment").value) || null,
+            activityName:  document.getElementById("actName").value.trim() || null,
+            scheduleType:  schedType,
+            recurrenceType: actRecurrence.value || null,
+            executionDatetime: document.getElementById("actExecDatetime").value || null,
+            executionTime:     document.getElementById("actExecTime").value || null,
+            weekdays:          checkedDays.length ? checkedDays : null,
+            dayOfMonth:        document.getElementById("actDayOfMonth").value ? Number(document.getElementById("actDayOfMonth").value) : null,
+            startDate:         document.getElementById("actStartDate").value || null,
+            endDate:           document.getElementById("actEndDate").value || null,
+            timezone:          tz,
+            status:            document.getElementById("actStatus").value || "ACTIVE"
+        };
+
+        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName && !payload.voiceTemplateId) || !payload.scheduleType) {
+            showToast("Campaign, Template, and Schedule Type are required", "error");
+            return;
+        }
+
+        try {
+            if (id) {
+                await apiFetch(`${apiActivitiesUrl}/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+                showToast("Activity updated!", "success");
+            } else {
+                await apiFetch(apiActivitiesUrl, { method: "POST", body: JSON.stringify(payload) });
+                showToast("Activity scheduled!", "success");
+            }
+            activityFormWrapper.hidden = true;
+            wizardReset();
+            loadActivityTable();
+        } catch (err) {
+            showToast("Error: " + err.message, "error");
+        }
     });
+
 
     async function loadSegmentDropdownForActivity() {
         try {
@@ -846,59 +982,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     activityForm.addEventListener("submit", async e => {
-        e.preventDefault();
-        const id = activityEditId.value;
-        const schedType = actScheduleType.value;
-
-        const checkedDays = [...document.querySelectorAll("#weeklyFields input[type=checkbox]:checked")]
-            .map(cb => cb.value);
-
-        const actCampaignId = Number(document.getElementById("actCampaign").value) || null;
-        const c = campaignsById[actCampaignId];
-        const isWa = c && c.campaignType === "WHATSAPP";
-
-        const payload = {
-            campaignId:    actCampaignId,
-            templateId:    c && c.campaignType === "EMAIL" ? (Number(document.getElementById("actTemplate").value) || null) : null,
-            voiceTemplateId: c && c.campaignType === "VOICE" ? (Number(document.getElementById("actVoiceTemplate").value) || null) : null,
-            whatsappTemplateName: isWa ? document.getElementById("actWaTemplate").value : null,
-            whatsappLanguage: isWa ? document.getElementById("actWaLanguage").value : null,
-            segmentId:     Number(document.getElementById("actSegment").value) || null,
-            activityName:  document.getElementById("actName").value.trim() || null,
-            scheduleType:  schedType,
-            recurrenceType: actRecurrence.value || null,
-            executionDatetime: document.getElementById("actExecDatetime").value || null,
-            executionTime:     document.getElementById("actExecTime").value || null,
-            weekdays:          checkedDays.length ? checkedDays : null,
-            dayOfMonth:        document.getElementById("actDayOfMonth").value ? Number(document.getElementById("actDayOfMonth").value) : null,
-            startDate:         document.getElementById("actStartDate").value || null,
-            endDate:           document.getElementById("actEndDate").value || null,
-            timezone:          document.getElementById("actTimezone").value || "UTC",
-            status:            document.getElementById("actStatus").value || "ACTIVE"
-        };
-
-        if (!payload.campaignId || (!payload.templateId && !payload.whatsappTemplateName && !payload.voiceTemplateId) || !payload.scheduleType) {
-            showToast("Campaign, Template, and Schedule Type are required", "error");
-            return;
-        }
-
-        try {
-            if (id) {
-                await apiFetch(`${apiActivitiesUrl}/${id}`, { method: "PUT", body: JSON.stringify(payload) });
-                showToast("Activity updated!", "success");
-            } else {
-                await apiFetch(apiActivitiesUrl, { method: "POST", body: JSON.stringify(payload) });
-                showToast("Activity scheduled!", "success");
-            }
-            activityFormWrapper.hidden = true;
-            activityForm.reset();
-            oneTimeFields.hidden = true;
-            recurringFields.hidden = true;
-            loadActivityTable();
-        } catch (err) {
-            showToast("Error: " + err.message, "error");
-        }
+        e.preventDefault(); // handled by actSaveBtn — do nothing
     });
+
 
     async function loadActivityTable() {
         try {
@@ -993,9 +1079,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         await loadSegmentDropdownForActivity();
                         if (a.segmentId) document.getElementById("actSegment").value = a.segmentId;
                         document.getElementById("actName").value       = a.activityName || "";
+
+                        // Schedule type — set hidden field + card radio
                         actScheduleType.value = a.scheduleType;
                         oneTimeFields.hidden   = a.scheduleType !== "ONE_TIME";
                         recurringFields.hidden = a.scheduleType !== "RECURRING";
+                        document.querySelectorAll("[name=actScheduleTypeRadio]").forEach(r => {
+                            r.checked = r.value === a.scheduleType;
+                        });
+
                         if (a.executionDatetime) {
                             document.getElementById("actExecDatetime").value = a.executionDatetime.slice(0,16);
                         }
@@ -1006,12 +1098,25 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (a.dayOfMonth)    document.getElementById("actDayOfMonth").value = a.dayOfMonth;
                         if (a.startDate)     document.getElementById("actStartDate").value = a.startDate;
                         if (a.endDate)       document.getElementById("actEndDate").value   = a.endDate;
-                        document.getElementById("actTimezone").value = a.timezone || "Asia/Kolkata";
-                        document.getElementById("actStatus").value   = a.status   || "ACTIVE";
+                        // Timezone
+                        const tzEl = document.getElementById("actTimezone");
+                        const tzElRec = document.getElementById("actTimezoneRecurring");
+                        if (tzEl) tzEl.value = a.timezone || "Asia/Kolkata";
+                        if (tzElRec) tzElRec.value = a.timezone || "Asia/Kolkata";
+
+                        // Status radio
+                        document.querySelectorAll("[name=actStatusRadio]").forEach(r => {
+                            r.checked = r.value === (a.status || "ACTIVE");
+                        });
+                        document.getElementById("actStatus").value = a.status || "ACTIVE";
+
                         // Weekdays
                         document.querySelectorAll("#weeklyFields input[type=checkbox]").forEach(cb => {
                             cb.checked = (a.weekdays || []).includes(cb.value);
                         });
+
+                        // Navigate directly to schedule step for edit
+                        wizardGoStep(2);
                         activityFormWrapper.hidden = false;
                         activityFormWrapper.scrollIntoView({ behavior: "smooth" });
                     } catch (err) { showToast("Error loading activity: " + err.message, "error"); }

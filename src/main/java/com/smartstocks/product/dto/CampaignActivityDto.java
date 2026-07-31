@@ -42,6 +42,11 @@ public class CampaignActivityDto {
     private String timezone;
     private ActivityStatus status;
     private boolean isDeleted;
+    /**
+     * Non-null when this activity is a child spawned by a recurring parent.
+     * Null for top-level (parent) activities.
+     */
+    private Long parentActivityId;
     private List<Weekday> weekdays;
     private Integer recipientCount;
     private Long segmentCount;

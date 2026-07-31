@@ -94,6 +94,17 @@ public class CampaignActivity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    /**
+     * Non-null only for child activities auto-spawned by a recurring parent.
+     * When set, this activity is a ONE_TIME execution unit for one occurrence of
+     * the parent's recurrence schedule (DAILY / WEEKLY / MONTHLY).
+     * The parent itself is never executed directly — it acts as a configuration
+     * placeholder and keeps spawning children until it is PAUSED or its endDate passes.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_activity_id")
+    private CampaignActivity parentActivity;
+
     private LocalDateTime nextExecutionAt;
 
     private LocalDateTime lastExecutionAt;

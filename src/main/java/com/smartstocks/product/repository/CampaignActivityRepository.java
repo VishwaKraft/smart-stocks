@@ -34,4 +34,50 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
     boolean existsByActivityName(String activityName);
 
     boolean existsByActivityNameAndIdNot(String activityName, Long id);
+
+    /**
+     * Find RECURRING parent activities (parentActivity IS NULL) that are ACTIVE
+     * and whose nextExecutionAt is due now. Used by Tick-A to spawn child occurrences.
+     */
+    @Query("SELECT a FROM CampaignActivity a " +
+           "WHERE a.scheduleType = 'RECURRING' " +
+           "AND a.parentActivity IS NULL " +
+           "AND a.status = 'ACTIVE' " +
+           "AND a.isDeleted = false " +
+           "AND a.nextExecutionAt <= :now")
+    List<CampaignActivity> findDueRecurringParents(@Param("now") LocalDateTime now);
+
+    /**
+     * Find child activities (parentActivity IS NOT NULL) in GENERATING status
+     * whose executionDatetime is at or before (now + 5 min).
+     * Used by Tick-B to auto-generate data ~5 min before send.
+     */
+    @Query("SELECT a FROM CampaignActivity a " +
+           "WHERE a.parentActivity IS NOT NULL " +
+           "AND a.status = 'GENERATING' " +
+           "AND a.isDeleted = false " +
+           "AND a.executionDatetime <= :threshold")
+    List<CampaignActivity> findChildrenDueForGeneration(@Param("threshold") LocalDateTime threshold);
+
+    /**
+     * Fetch READY/ACTIVE ONE_TIME activities (children + plain one-time)
+     * that are due and NOT a recurring parent.
+     * Used by Tick-C to execute actual sends.
+     */
+    @Query("SELECT a FROM CampaignActivity a " +
+           "WHERE a.status IN ('ACTIVE', 'READY') " +
+           "AND a.isDeleted = false " +
+           "AND a.nextExecutionAt <= :now " +
+           "AND (a.scheduleType = 'ONE_TIME' OR a.parentActivity IS NOT NULL)")
+    List<CampaignActivity> findDueExecutableActivities(@Param("now") LocalDateTime now);
+
+    /**
+     * Returns all child activities spawned by the given parent activity.
+     * Used by the list API (?parentId=X).
+     */
+    @Query("SELECT a FROM CampaignActivity a " +
+           "WHERE a.parentActivity.id = :parentId " +
+           "AND a.isDeleted = false " +
+           "ORDER BY a.createdAt DESC")
+    List<CampaignActivity> findChildrenByParentId(@Param("parentId") Long parentId);
 }

@@ -164,7 +164,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Override
     @Transactional(readOnly = true)
     public List<CampaignActivityDto> getAllActivities() {
+        // Return only top-level (parent) activities — children are accessed via getChildActivities(parentId)
         return activityRepository.findAllByIsDeletedFalse().stream()
+                .filter(a -> a.getParentActivity() == null)
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -172,7 +174,17 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     @Override
     @Transactional(readOnly = true)
     public List<CampaignActivityDto> getActivitiesByCampaign(Long campaignId) {
+        // Return only top-level (parent) activities for the campaign
         return activityRepository.findAllByCampaignIdAndIsDeletedFalse(campaignId).stream()
+                .filter(a -> a.getParentActivity() == null)
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CampaignActivityDto> getChildActivities(Long parentId) {
+        return activityRepository.findChildrenByParentId(parentId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -533,7 +545,14 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
 
         if (activity.getStatus() != ActivityStatus.GENERATING) {
-            throw new IllegalStateException("Activity is not in GENERATING state.");
+            // Allow auto-generation triggered by the scheduler for child activities
+            // that were already moved to NEW (idempotent re-generation guard).
+            // Strict guard only applies to manual triggers on non-child activities.
+            if (activity.getParentActivity() == null) {
+                throw new IllegalStateException("Activity is not in GENERATING state.");
+            }
+            log.info("[ActivityService] Re-generating data for child activity [{}] (status={})",
+                    activity.getId(), activity.getStatus());
         }
 
         Segment segment = activity.getSegment();
@@ -707,6 +726,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 .timezone(a.getTimezone())
                 .status(a.getStatus())
                 .isDeleted(a.isDeleted())
+                // Populated for child activities only; null for top-level parents
+                .parentActivityId(a.getParentActivity() != null ? a.getParentActivity().getId() : null)
                 .weekdays(weekdays)
                 .recipientCount(a.getRecipientCount())
                 .segmentCount(a.getSegment() != null ? segmentUserRepository.countBySegmentId(a.getSegment().getId()) : null)

@@ -44,14 +44,24 @@ public class CampaignActivityController {
 
     /**
      * GET /api/activities
-     * Optional ?campaignId=X to filter by campaign. Soft-deleted activities are hidden.
+     * Optional query params:
+     *   - ?campaignId=X  → filter top-level activities by campaign
+     *   - ?parentId=X    → list child activities spawned by the given recurring parent
+     * Soft-deleted activities are always hidden.
      */
     @GetMapping
     public ResponseEntity<List<CampaignActivityDto>> getAllActivities(
-            @RequestParam(required = false) Long campaignId) {
-        List<CampaignActivityDto> activities = campaignId != null
-                ? activityService.getActivitiesByCampaign(campaignId)
-                : activityService.getAllActivities();
+            @RequestParam(required = false) Long campaignId,
+            @RequestParam(required = false) Long parentId) {
+        List<CampaignActivityDto> activities;
+        if (parentId != null) {
+            // Return children of the specified recurring parent
+            activities = activityService.getChildActivities(parentId);
+        } else if (campaignId != null) {
+            activities = activityService.getActivitiesByCampaign(campaignId);
+        } else {
+            activities = activityService.getAllActivities();
+        }
         return ResponseEntity.ok(activities);
     }
 

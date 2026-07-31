@@ -40,5 +40,11 @@ public interface ICampaignActivityService {
      * Changes status from GENERATING to NEW.
      */
     CampaignActivityDto generateActivityData(Long id);
+
+    /**
+     * Returns all child activities spawned by the given recurring parent activity.
+     * Exposed via GET /api/activities?parentId={id}.
+     */
+    List<CampaignActivityDto> getChildActivities(Long parentId);
 }
 
