@@ -51,6 +51,9 @@
             <button type="button" class="section-nav-btn" data-section="activities">
                 <span class="nav-icon">🗓️</span> Activities
             </button>
+            <button type="button" class="section-nav-btn" data-section="email-events">
+                <span class="nav-icon">⚡</span> Email Events
+            </button>
         </nav>
     </div>
 
@@ -1161,6 +1164,113 @@
         </div>
     </div>
 
+    <!-- ===================== EMAIL EVENTS PANEL ===================== -->
+    <section id="emailEventsPanel" class="panel" hidden>
+
+        <div class="premium-header">
+            <h2>Email Events</h2>
+            <p>Associate templates with campaigns to create event-driven email triggers. Call the API endpoint from any system to send transactional emails.</p>
+        </div>
+
+        <!-- Create Event Form -->
+        <div class="ee-card" id="eeCreateCard">
+            <div class="ee-card-header" id="eeCreateToggle" style="cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:18px;">⚡</span>
+                    <strong>Create New Email Event</strong>
+                </span>
+                <span id="eeCreateArrow" style="font-size:12px;color:#718096;">▼ Expand</span>
+            </div>
+            <div id="eeCreateForm" style="display:none;margin-top:18px;">
+                <div class="ee-form-grid">
+                    <div class="form-group">
+                        <label class="ee-label">Display Name *</label>
+                        <input type="text" id="eeDisplayName" class="ee-input" placeholder="e.g. Welcome Email">
+                    </div>
+                    <div class="form-group">
+                        <label class="ee-label">Event Slug (API key) *</label>
+                        <div class="ee-slug-wrap">
+                            <span class="ee-slug-prefix">trigger/</span>
+                            <input type="text" id="eeEventName" class="ee-input ee-input-slug" placeholder="welcome-email">
+                        </div>
+                        <span class="ee-hint">Auto-generated · lowercase alphanumeric with hyphens</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="ee-label">Campaign *</label>
+                        <select id="eeCampaignSelect" class="ee-select">
+                            <option value="">— Loading campaigns… —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="ee-label">Email Template *</label>
+                        <select id="eeTemplateSelect" class="ee-select">
+                            <option value="">— Loading templates… —</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label class="ee-label">Description</label>
+                        <textarea id="eeDescription" class="ee-textarea" rows="2" placeholder="When is this event triggered? (e.g. Sent when user registers)"></textarea>
+                    </div>
+                </div>
+                <!-- API Preview -->
+                <div class="ee-api-preview" id="eeApiPreview" style="display:none;">
+                    <span class="ee-api-preview-title">Trigger Endpoint Preview</span>
+                    <div class="ee-api-preview-url">
+                        <span class="ee-method-badge">POST</span>
+                        <code id="eePreviewUrl"></code>
+                    </div>
+                    <pre class="ee-api-preview-body" id="eePreviewBody"></pre>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:18px;">
+                    <button class="primary-btn" id="eeCreateBtn" onclick="eeCreateEvent()">⚡ Create Event</button>
+                    <button class="secondary-btn" onclick="eeToggleForm(false)">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events List -->
+        <div style="margin-top:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <h3 style="margin:0;font-size:15px;font-weight:700;color:#1a1a2e;">Registered Events
+                    <span id="eeCount" class="ee-count-badge">0</span>
+                </h3>
+                <label style="font-size:13px;color:#718096;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                    <input type="checkbox" id="eeShowInactive" onchange="eeLoadEvents()"> Show Inactive
+                </label>
+            </div>
+
+            <div id="eeEmpty" class="empty-state" style="display:none;">No email events yet. Create one above.</div>
+            <div id="eeLoading" style="text-align:center;padding:30px;color:#718096;display:none;">Loading…</div>
+
+            <div id="eeGrid" class="ee-grid"></div>
+        </div>
+
+    </section>
+
+    <!-- EMAIL EVENTS — Trigger Modal -->
+    <div id="eeTriggerModal" class="modal">
+        <div class="modal-content" style="max-width:520px;width:90%;">
+            <h3 style="margin:0 0 4px;color:#1a1a2e;">⚡ Trigger Email Event</h3>
+            <p id="eeTriggerModalSubtitle" class="panel-hint" style="margin:0 0 14px;"></p>
+
+            <div class="ee-api-info-modal" id="eeTriggerApiUrl"></div>
+
+            <div class="form-group full-width" style="margin-bottom:12px;">
+                <label class="ee-label">Recipients * <span class="ee-hint">(comma or newline separated)</span></label>
+                <textarea id="eeTriggerRecipients" class="ee-textarea" rows="3" placeholder="alice@example.com, bob@example.com"></textarea>
+            </div>
+            <div class="form-group full-width" style="margin-bottom:12px;">
+                <label class="ee-label">Template Variables (JSON) <span class="ee-hint">(optional)</span></label>
+                <textarea id="eeTriggerVariables" class="ee-textarea ee-mono" rows="4" placeholder='{"name": "Alice", "plan": "Pro"}'>{}</textarea>
+            </div>
+
+            <div class="modal-buttons" style="margin-top:16px;">
+                <button class="primary-btn" id="eeTriggerSendBtn" onclick="eeDoTrigger()">📤 Send Email</button>
+                <button class="secondary-btn" onclick="eeCloseTriggerModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================== TOAST ===================== -->
     <div id="toast" class="toast" aria-live="polite"></div>
 
@@ -1174,8 +1284,10 @@
         window.API_SEGMENTS_URL = '/api/segments';
         window.API_WHATSAPP_TEMPLATES_URL = '/api/whatsapp/templates';
         window.API_VOICE_TEMPLATES_URL = '/api/voice/templates';
+        window.API_EMAIL_EVENTS_URL = '/api/email-events';
     </script>
     <script th:src="@{/js/short-links/app.js}"></script>
+    <script th:src="@{/js/email-events/email-events.js}"></script>
 </body>
 
 </html>
