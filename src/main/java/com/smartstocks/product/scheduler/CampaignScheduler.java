@@ -522,15 +522,7 @@ public class CampaignScheduler {
                         rendered.getRenderedSubject(), finalBody);
 
                 // 4d. Send via provider (single recipient per call)
-                lastResult = emailProvider.send(emailContent, Collections.singletonList(emailId));
-
-                // Handle Gmail-specific auth token refresh
-                if (lastResult.isAuthError() && campaign.getEmailProviderType() == EmailProviderType.GMAIL) {
-                    log.warn("[Scheduler] Gmail auth error for activity [{}], refreshing token.", activity.getId());
-                    String newToken = campaignService.refreshGoogleAccessToken(campaign.getId());
-                    emailProvider = new GmailProvider(newToken);
-                    lastResult = emailProvider.send(emailContent, Collections.singletonList(emailId));
-                }
+                lastResult = emailProvider.send(emailContent, Collections.singletonList(emailId), campaign);
 
                 if (lastResult.isSuccess()) {
                     sentCount++;
@@ -582,22 +574,13 @@ public class CampaignScheduler {
 
     /**
      * Resolves the IEmailProvider for the given campaign.
-     * Gmail requires a live access token so it is constructed directly;
-     * all other providers are retrieved from the factory (extensible — add new
+     * All providers are retrieved from the factory (extensible — add new
      * providers by implementing IEmailProvider and registering in EmailProviderFactory).
      */
     private IEmailProvider resolveProvider(Campaign campaign) {
         EmailProviderType providerType = campaign.getEmailProviderType() != null
                 ? campaign.getEmailProviderType()
                 : EmailProviderType.SMTP;
-
-        if (providerType == EmailProviderType.GMAIL) {
-            String accessToken = campaign.getGoogleAccessToken();
-            if (accessToken == null || accessToken.isEmpty()) {
-                throw new IllegalStateException("Gmail is not authorized for this campaign.");
-            }
-            return new GmailProvider(accessToken);
-        }
 
         return emailProviderFactory.get(providerType);
     }
