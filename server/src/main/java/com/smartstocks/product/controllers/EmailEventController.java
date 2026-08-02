@@ -25,6 +25,9 @@ import java.util.List;
  *   POST   /api/email-events/trigger/{eventName}     — Trigger event-driven email (public API)
  * </pre>
  */
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/email-events")
 @CrossOrigin(origins = "*")
@@ -120,6 +123,7 @@ public class EmailEventController {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
             }
         } catch (IllegalArgumentException ex) {
+            log.error("[EmailEventController] IllegalArgumentException during trigger: {}", ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
