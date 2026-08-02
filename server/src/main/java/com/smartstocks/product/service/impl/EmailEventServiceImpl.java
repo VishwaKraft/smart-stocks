@@ -118,7 +118,8 @@ public class EmailEventServiceImpl implements IEmailEventService {
     @Transactional
     public TriggerEventEmailResponseDto triggerEvent(String eventName, TriggerEventEmailRequestDto request) {
         // 1. Resolve event
-        EmailEvent event = emailEventRepository.findByEventName(eventName)
+        String normalizedEventName = eventName != null ? eventName.trim().toLowerCase() : "";
+        EmailEvent event = emailEventRepository.findByEventName(normalizedEventName)
                 .orElseThrow(() -> new IllegalArgumentException("Email event not found: " + eventName));
 
         if (!event.getIsActive()) {
