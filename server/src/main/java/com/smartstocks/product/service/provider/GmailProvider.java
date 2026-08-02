@@ -22,6 +22,10 @@ import java.util.Properties;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+
+@Component
 public class GmailProvider implements IEmailProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GmailProvider.class);
@@ -29,7 +33,7 @@ public class GmailProvider implements IEmailProvider {
     private final String accessToken;
     private final RestTemplate restTemplate;
 
-    public GmailProvider(String accessToken) {
+    public GmailProvider(@Value("${gmail.access.token:}") String accessToken) {
         this.accessToken = accessToken;
         this.restTemplate = new RestTemplate();
     }
