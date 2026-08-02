@@ -19,10 +19,23 @@ import com.smartstocks.product.service.provider.SendResult;
 import com.smartstocks.product.service.renderer.ITemplateRenderer;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import com.smartstocks.product.service.renderer.TemplateRendererFactory;
+import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.service.IShortLinkService;
+import com.smartstocks.product.models.EmailProviderType;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -41,6 +54,11 @@ public class EmailEventServiceImpl implements IEmailEventService {
     private final TemplateRepository templateRepository;
     private final EmailProviderFactory emailProviderFactory;
     private final TemplateRendererFactory templateRendererFactory;
+    private final ICampaignService campaignService;
+    private final IShortLinkService shortLinkService;
+
+    @Value("${app.short-link.base-url:http://localhost:8080}")
+    private String shortLinkBaseUrl;
 
     // -----------------------------------------------------------------------
     // CRUD
@@ -133,10 +151,25 @@ public class EmailEventServiceImpl implements IEmailEventService {
 
         // 2. Render the template with provided variables
         ITemplateRenderer renderer = templateRendererFactory.get(template.getRendererType());
+
+        // Inject tracking pixel for open tracking
+        String emailId = (recipients != null && !recipients.isEmpty()) ? recipients.get(0) : "unknown@example.com";
+        String nonce = UUID.randomUUID().toString();
+        String htmlWithPixel = campaignService.injectTrackingPixel(
+                template.getHtmlBody(),
+                campaign.getCampaignCode(),
+                emailId,
+                null,
+                nonce);
+
         RenderedTemplate rendered = renderer.render(
                 template.getSubject(),
-                template.getHtmlBody(),
+                htmlWithPixel,
                 request.getVariables() != null ? request.getVariables() : Collections.emptyMap());
+
+        // Shorten links
+        String finalBody = shortenLinksInHtml(rendered.getRenderedBody(), campaign.getCampaignCode(), null);
+        RenderedTemplate finalRendered = new RenderedTemplate(rendered.getRenderedSubject(), finalBody);
 
         // 3. Resolve email provider from campaign configuration
         if (campaign.getEmailProviderType() == null) {
@@ -156,12 +189,28 @@ public class EmailEventServiceImpl implements IEmailEventService {
                     .build();
         }
 
-        IEmailProvider provider = emailProviderFactory.get(campaign.getEmailProviderType());
-
         // 4. Send emails
         SendResult result;
         try {
-            result = provider.send(rendered, recipients);
+            if (campaign.getEmailProviderType() == EmailProviderType.GMAIL) {
+                String accessToken = campaign.getGoogleAccessToken();
+                if (accessToken == null || accessToken.isEmpty()) {
+                    throw new IllegalStateException("Gmail is not authorized for this campaign.");
+                }
+
+                com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+                result = gmailProvider.send(finalRendered, recipients);
+
+                if (result.isAuthError()) {
+                    // Refresh token and retry
+                    accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
+                    gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+                    result = gmailProvider.send(finalRendered, recipients);
+                }
+            } else {
+                IEmailProvider provider = emailProviderFactory.get(campaign.getEmailProviderType());
+                result = provider.send(finalRendered, recipients);
+            }
         } catch (Exception ex) {
             log.error("[EmailEventService] Provider send failed for event '{}': {}", eventName, ex.getMessage(), ex);
             result = SendResult.failure(ex.getMessage());
@@ -191,6 +240,40 @@ public class EmailEventServiceImpl implements IEmailEventService {
     // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
+
+    private String shortenLinksInHtml(String html, String campaignCode, String userId) {
+        if (html == null) return null;
+        String baseUrl = shortLinkBaseUrl.endsWith("/") ? shortLinkBaseUrl : shortLinkBaseUrl + "/";
+        
+        StringBuffer sb = new StringBuffer();
+        Matcher matcher = Pattern.compile("href\\s*=\\s*\"([^\"]+)\"").matcher(html);
+        while (matcher.find()) {
+            String originalUrl = matcher.group(1);
+            if ((originalUrl.startsWith("http://") || originalUrl.startsWith("https://")) 
+                 && !originalUrl.contains("/pixel") 
+                 && !originalUrl.contains(baseUrl)) {
+                
+                String shortId = shortLinkService.shortenLink(originalUrl, null);
+                String shortUrl = baseUrl + "s/" + shortId;
+                
+                StringBuilder fullUrl = new StringBuilder(shortUrl);
+                boolean hasQuery = false;
+                if (campaignCode != null) {
+                    fullUrl.append("?campaign=").append(campaignCode);
+                    hasQuery = true;
+                }
+                if (userId != null) {
+                    fullUrl.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                }
+                
+                matcher.appendReplacement(sb, "href=\"" + fullUrl.toString() + "\"");
+            } else {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
 
     private EventEmailTriggerLog buildTriggerLog(EmailEvent event, List<String> recipients,
                                                   TriggerEventEmailRequestDto request,
