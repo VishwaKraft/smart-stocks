@@ -153,21 +153,23 @@
   /* ── Create Form Toggle ────────────────────────────────────── */
   window.eeToggleForm = function (open) {
     eeFormOpen = (typeof open === 'boolean') ? open : !eeFormOpen;
-    const form  = document.getElementById('eeCreateForm');
-    const arrow = document.getElementById('eeCreateArrow');
-    if (!form) return;
-    form.style.display  = eeFormOpen ? 'block' : 'none';
-    arrow.textContent   = eeFormOpen ? '▲ Collapse' : '▼ Expand';
+    const formWrapper = document.getElementById('eeCreateFormWrapper');
+    if (!formWrapper) return;
+    formWrapper.hidden = !eeFormOpen;
 
     if (eeFormOpen) {
       eeLoadDropdowns();
+      formWrapper.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('eeCreateToggle');
-    if (toggle) {
-      toggle.addEventListener('click', () => eeToggleForm());
+    const btn = document.getElementById('newEmailEventBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        if (typeof eeResetCreateForm === 'function') eeResetCreateForm();
+        eeToggleForm(true);
+      });
     }
 
     // Auto-slug from display name

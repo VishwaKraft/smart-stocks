@@ -1048,6 +1048,99 @@
                 <tbody id="segmentTableBody"></tbody>
             </table>
         </section>
+
+    <!-- ===================== EMAIL EVENTS PANEL ===================== -->
+    <section id="emailEventsPanel" class="panel" hidden>
+
+        <div class="panel-header">
+            <div>
+                <h2>Email Events</h2>
+                <p class="panel-hint">Associate templates with campaigns to create event-driven email triggers. Call the API endpoint from any system to send transactional emails.</p>
+            </div>
+            <button type="button" id="newEmailEventBtn" class="primary-btn">+ New Email Event</button>
+        </div>
+
+        <!-- Create Event Form -->
+        <div id="eeCreateFormWrapper" class="form-card premium-email-form" hidden>
+            <div class="premium-header">
+                <div class="premium-header-icon">
+                    <span style="font-size:24px;">⚡</span>
+                </div>
+                <div>
+                    <h3>Create New Email Event</h3>
+                    <p class="premium-subtitle">Configure your email trigger</p>
+                </div>
+            </div>
+            <form id="eeCreateForm" class="stacked-full">
+                <div class="premium-form-row">
+                    <div class="form-group premium-group">
+                        <label class="field-label" for="eeDisplayName">Display Name <span class="required">*</span></label>
+                        <input type="text" id="eeDisplayName" placeholder="e.g. Welcome Email" required>
+                    </div>
+                    <div class="form-group premium-group">
+                        <label class="field-label" for="eeEventName">Event Slug (API key) <span class="required">*</span></label>
+                        <div class="ee-slug-wrap" style="height: 42px; background: #fff;">
+                            <span class="ee-slug-prefix" style="height: 100%; display: flex; align-items: center;">trigger/</span>
+                            <input type="text" id="eeEventName" class="ee-input-slug" placeholder="welcome-email" required style="width: 100%; height: 100%; padding: 0 12px; font-family: 'Courier New', monospace; font-size: 13px;">
+                        </div>
+                        <span class="ee-hint">Auto-generated · lowercase alphanumeric with hyphens</span>
+                    </div>
+                </div>
+                <div class="premium-form-row">
+                    <div class="form-group premium-group">
+                        <label class="field-label" for="eeCampaignSelect">Campaign <span class="required">*</span></label>
+                        <select id="eeCampaignSelect" required>
+                            <option value="">— Loading campaigns… —</option>
+                        </select>
+                    </div>
+                    <div class="form-group premium-group">
+                        <label class="field-label" for="eeTemplateSelect">Email Template <span class="required">*</span></label>
+                        <select id="eeTemplateSelect" required>
+                            <option value="">— Loading templates… —</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group premium-group full-width">
+                    <label class="field-label" for="eeDescription">Description</label>
+                    <textarea id="eeDescription" rows="2" placeholder="When is this event triggered? (e.g. Sent when user registers)"></textarea>
+                </div>
+                <!-- API Preview -->
+                <div class="ee-api-preview" id="eeApiPreview" style="display:none; margin-bottom: 24px;">
+                    <span class="ee-api-preview-title">Trigger Endpoint Preview</span>
+                    <div class="ee-api-preview-url">
+                        <span class="ee-method-badge">POST</span>
+                        <code id="eePreviewUrl"></code>
+                    </div>
+                    <pre class="ee-api-preview-body" id="eePreviewBody"></pre>
+                </div>
+                <div class="premium-form-actions">
+                    <button type="button" class="premium-btn-ghost" onclick="eeToggleForm(false)">Cancel</button>
+                    <button type="button" class="premium-btn-primary" id="eeCreateBtn" onclick="eeCreateEvent()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span>Create Event</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Events List -->
+        <div style="margin-top:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <h3 style="margin:0;font-size:15px;font-weight:700;color:#1a1a2e;">Registered Events
+                    <span id="eeCount" class="ee-count-badge">0</span>
+                </h3>
+                <label style="font-size:13px;color:#718096;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                    <input type="checkbox" id="eeShowInactive" onchange="eeLoadEvents()"> Show Inactive
+                </label>
+            </div>
+
+            <div id="eeEmpty" class="empty-state" style="display:none;">No email events yet. Create one above.</div>
+            <div id="eeLoading" style="text-align:center;padding:30px;color:#718096;display:none;">Loading…</div>
+
+            <div id="eeGrid" class="ee-grid"></div>
+        </div>
+
+    </section>
     </div>
 
     <!-- ===================== PREVIEW MODAL ===================== -->
@@ -1164,88 +1257,6 @@
         </div>
     </div>
 
-    <!-- ===================== EMAIL EVENTS PANEL ===================== -->
-    <section id="emailEventsPanel" class="panel" hidden>
-
-        <div class="premium-header">
-            <h2>Email Events</h2>
-            <p>Associate templates with campaigns to create event-driven email triggers. Call the API endpoint from any system to send transactional emails.</p>
-        </div>
-
-        <!-- Create Event Form -->
-        <div class="ee-card" id="eeCreateCard">
-            <div class="ee-card-header" id="eeCreateToggle" style="cursor:pointer;">
-                <span style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:18px;">⚡</span>
-                    <strong>Create New Email Event</strong>
-                </span>
-                <span id="eeCreateArrow" style="font-size:12px;color:#718096;">▼ Expand</span>
-            </div>
-            <div id="eeCreateForm" style="display:none;margin-top:18px;">
-                <div class="ee-form-grid">
-                    <div class="form-group">
-                        <label class="ee-label">Display Name *</label>
-                        <input type="text" id="eeDisplayName" class="ee-input" placeholder="e.g. Welcome Email">
-                    </div>
-                    <div class="form-group">
-                        <label class="ee-label">Event Slug (API key) *</label>
-                        <div class="ee-slug-wrap">
-                            <span class="ee-slug-prefix">trigger/</span>
-                            <input type="text" id="eeEventName" class="ee-input ee-input-slug" placeholder="welcome-email">
-                        </div>
-                        <span class="ee-hint">Auto-generated · lowercase alphanumeric with hyphens</span>
-                    </div>
-                    <div class="form-group">
-                        <label class="ee-label">Campaign *</label>
-                        <select id="eeCampaignSelect" class="ee-select">
-                            <option value="">— Loading campaigns… —</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="ee-label">Email Template *</label>
-                        <select id="eeTemplateSelect" class="ee-select">
-                            <option value="">— Loading templates… —</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="grid-column:1/-1;">
-                        <label class="ee-label">Description</label>
-                        <textarea id="eeDescription" class="ee-textarea" rows="2" placeholder="When is this event triggered? (e.g. Sent when user registers)"></textarea>
-                    </div>
-                </div>
-                <!-- API Preview -->
-                <div class="ee-api-preview" id="eeApiPreview" style="display:none;">
-                    <span class="ee-api-preview-title">Trigger Endpoint Preview</span>
-                    <div class="ee-api-preview-url">
-                        <span class="ee-method-badge">POST</span>
-                        <code id="eePreviewUrl"></code>
-                    </div>
-                    <pre class="ee-api-preview-body" id="eePreviewBody"></pre>
-                </div>
-                <div style="display:flex;gap:10px;margin-top:18px;">
-                    <button class="primary-btn" id="eeCreateBtn" onclick="eeCreateEvent()">⚡ Create Event</button>
-                    <button class="secondary-btn" onclick="eeToggleForm(false)">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Events List -->
-        <div style="margin-top:24px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                <h3 style="margin:0;font-size:15px;font-weight:700;color:#1a1a2e;">Registered Events
-                    <span id="eeCount" class="ee-count-badge">0</span>
-                </h3>
-                <label style="font-size:13px;color:#718096;display:flex;align-items:center;gap:6px;cursor:pointer;">
-                    <input type="checkbox" id="eeShowInactive" onchange="eeLoadEvents()"> Show Inactive
-                </label>
-            </div>
-
-            <div id="eeEmpty" class="empty-state" style="display:none;">No email events yet. Create one above.</div>
-            <div id="eeLoading" style="text-align:center;padding:30px;color:#718096;display:none;">Loading…</div>
-
-            <div id="eeGrid" class="ee-grid"></div>
-        </div>
-
-    </section>
 
     <!-- EMAIL EVENTS — Trigger Modal -->
     <div id="eeTriggerModal" class="modal">
