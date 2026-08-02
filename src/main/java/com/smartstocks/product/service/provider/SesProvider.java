@@ -1,5 +1,6 @@
 package com.smartstocks.product.service.provider;
 
+import com.smartstocks.product.models.Campaign;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import java.util.List;
 public class SesProvider implements IEmailProvider {
 
     @Override
-    public SendResult send(RenderedTemplate rendered, List<String> recipients) {
+    public SendResult send(RenderedTemplate rendered, List<String> recipients, Campaign campaign) {
         log.info("[SES] Sending to {} recipient(s). Subject: {}", recipients.size(), rendered.getRenderedSubject());
         // TODO: inject SesClient and call sendEmail() with recipients, subject, body
         return SendResult.ok(recipients.size(), "SES:SIMULATED_MESSAGE_ID_" + System.currentTimeMillis());

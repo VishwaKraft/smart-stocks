@@ -366,12 +366,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
 
         Campaign campaign = activity.getCampaign();
         if (campaign.getEmailProviderType() == EmailProviderType.GMAIL) {
-            String accessToken = campaign.getGoogleAccessToken();
-            if (accessToken == null || accessToken.isEmpty()) {
-                throw new IllegalStateException("Gmail is not authorized for this campaign.");
-            }
-
-            com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
+            com.smartstocks.product.service.provider.IEmailProvider emailProvider = emailProviderFactory.get(campaign.getEmailProviderType());
             
             Template templateObj = activity.getTemplate();
             ITemplateRenderer renderer = templateRendererFactory.get(templateObj.getRendererType());
@@ -414,20 +409,12 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     finalBody
             );
 
-            com.smartstocks.product.service.provider.SendResult result = gmailProvider.send(
+            List<String> recipients = emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com");
+            com.smartstocks.product.service.provider.SendResult result = emailProvider.send(
                     finalRendered,
-                    emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
+                    recipients,
+                    campaign
             );
-
-            if (result.isAuthError()) {
-                // Refresh token and retry
-                accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
-                gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
-                result = gmailProvider.send(
-                        finalRendered,
-                        emailIds != null && !emailIds.isEmpty() ? emailIds : java.util.Collections.singletonList("test@example.com")
-                );
-            }
 
             if (result.isSuccess()) {
                 activity.setStatus(ActivityStatus.READY);
