@@ -19,27 +19,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.smartstocks.product.service.ICampaignService;
+import com.smartstocks.product.models.Campaign;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Value;
 
 @Component
 public class GmailProvider implements IEmailProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GmailProvider.class);
 
-    private final String accessToken;
     private final RestTemplate restTemplate;
+    private final ICampaignService campaignService;
 
-    public GmailProvider(@Value("${gmail.access.token:}") String accessToken) {
-        this.accessToken = accessToken;
+    public GmailProvider(ICampaignService campaignService) {
         this.restTemplate = new RestTemplate();
+        this.campaignService = campaignService;
     }
 
     @Override
-    public SendResult send(RenderedTemplate rendered, List<String> recipients) {
+    public SendResult send(RenderedTemplate rendered, List<String> recipients, Campaign campaign) {
+        String accessToken = campaign.getGoogleAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new IllegalStateException("Gmail is not authorized for this campaign.");
+        }
+
+        SendResult result = executeSend(rendered, recipients, accessToken);
+
+        if (result.isAuthError()) {
+            log.info("[GmailProvider] Auth error detected. Refreshing token for campaign {}...", campaign.getId());
+            accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
+            result = executeSend(rendered, recipients, accessToken);
+        }
+
+        return result;
+    }
+
+    private SendResult executeSend(RenderedTemplate rendered, List<String> recipients, String accessToken) {
         try {
             // 1. Build raw RFC-2822 message
             Properties props = new Properties();
@@ -67,7 +85,7 @@ public class GmailProvider implements IEmailProvider {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(this.accessToken);
+            headers.setBearerAuth(accessToken);
 
             Map<String, String> body = new HashMap<>();
             body.put("raw", encodedEmail);

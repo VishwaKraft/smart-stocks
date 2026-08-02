@@ -192,25 +192,8 @@ public class EmailEventServiceImpl implements IEmailEventService {
         // 4. Send emails
         SendResult result;
         try {
-            if (campaign.getEmailProviderType() == EmailProviderType.GMAIL) {
-                String accessToken = campaign.getGoogleAccessToken();
-                if (accessToken == null || accessToken.isEmpty()) {
-                    throw new IllegalStateException("Gmail is not authorized for this campaign.");
-                }
-
-                com.smartstocks.product.service.provider.GmailProvider gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
-                result = gmailProvider.send(finalRendered, recipients);
-
-                if (result.isAuthError()) {
-                    // Refresh token and retry
-                    accessToken = campaignService.refreshGoogleAccessToken(campaign.getId());
-                    gmailProvider = new com.smartstocks.product.service.provider.GmailProvider(accessToken);
-                    result = gmailProvider.send(finalRendered, recipients);
-                }
-            } else {
-                IEmailProvider provider = emailProviderFactory.get(campaign.getEmailProviderType());
-                result = provider.send(finalRendered, recipients);
-            }
+            IEmailProvider provider = emailProviderFactory.get(campaign.getEmailProviderType());
+            result = provider.send(finalRendered, recipients, campaign);
         } catch (Exception ex) {
             log.error("[EmailEventService] Provider send failed for event '{}': {}", eventName, ex.getMessage(), ex);
             result = SendResult.failure(ex.getMessage());

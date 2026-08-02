@@ -1,5 +1,6 @@
 package com.smartstocks.product.service.provider;
 
+import com.smartstocks.product.models.Campaign;
 import com.smartstocks.product.service.renderer.RenderedTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ import java.util.List;
 public class SmtpProvider implements IEmailProvider {
 
     @Override
-    public SendResult send(RenderedTemplate rendered, List<String> recipients) {
+    public SendResult send(RenderedTemplate rendered, List<String> recipients, Campaign campaign) {
         log.info("[SMTP] Sending to {} recipient(s). Subject: {}", recipients.size(), rendered.getRenderedSubject());
         // TODO: inject @Value smtp properties and create Session + MimeMessage
         // Example skeleton below (not activated without actual config):
