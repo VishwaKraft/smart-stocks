@@ -111,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
             "voice-templates": voiceTemplatesPanel,
             activities: activityPanel,
             segments: segmentPanel,
-            analytics: document.getElementById("analyticsPanel")
+            analytics: document.getElementById("analyticsPanel"),
+            "email-events": document.getElementById("emailEventsPanel")
         };
 
         sectionNavButtons.forEach(btn =>
