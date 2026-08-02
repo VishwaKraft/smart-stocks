@@ -19,12 +19,14 @@ public class EmailProviderFactory {
             SesProvider sesProvider,
             SendGridProvider sendGridProvider,
             MailgunProvider mailgunProvider,
-            SmtpProvider smtpProvider) {
+            SmtpProvider smtpProvider,
+            GmailProvider gmailProvider) {
 
         providers.put(EmailProviderType.SES, sesProvider);
         providers.put(EmailProviderType.SENDGRID, sendGridProvider);
         providers.put(EmailProviderType.MAILGUN, mailgunProvider);
         providers.put(EmailProviderType.SMTP, smtpProvider);
+        providers.put(EmailProviderType.GMAIL, gmailProvider);
     }
 
     /**
