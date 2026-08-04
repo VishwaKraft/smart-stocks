@@ -620,13 +620,13 @@ public class CampaignScheduler {
                 // Build the URL with campaign and user tracking BEFORE shortening
                 StringBuilder urlWithTracking = new StringBuilder(originalUrl);
                 boolean hasQuery = originalUrl.contains("?");
-                if (campaignCode != null) {
-                    urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
-                    hasQuery = true;
-                }
-                if (userId != null) {
-                    urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
-                }
+                // if (campaignCode != null) {
+                //     urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
+                //     hasQuery = true;
+                // }
+                // if (userId != null) {
+                //     urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                // }
                 
                 // Now shorten the URL with tracking parameters already included
                 String shortId = shortLinkService.shortenLink(urlWithTracking.toString(), null);
