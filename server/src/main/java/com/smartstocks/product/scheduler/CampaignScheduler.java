@@ -617,20 +617,22 @@ public class CampaignScheduler {
                  && !originalUrl.contains("/pixel") 
                  && !originalUrl.contains(baseUrl)) {
                 
-                String shortId = shortLinkService.shortenLink(originalUrl, null);
-                String shortUrl = baseUrl + "s/" + shortId;
-                
-                StringBuilder fullUrl = new StringBuilder(shortUrl);
-                boolean hasQuery = false;
+                // Build the URL with campaign and user tracking BEFORE shortening
+                StringBuilder urlWithTracking = new StringBuilder(originalUrl);
+                boolean hasQuery = originalUrl.contains("?");
                 if (campaignCode != null) {
-                    fullUrl.append("?campaign=").append(campaignCode);
+                    urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
                     hasQuery = true;
                 }
                 if (userId != null) {
-                    fullUrl.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                    urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
                 }
                 
-                matcher.appendReplacement(sb, "href=\"" + fullUrl.toString() + "\"");
+                // Now shorten the URL with tracking parameters already included
+                String shortId = shortLinkService.shortenLink(urlWithTracking.toString(), null);
+                String shortUrl = baseUrl + "s/" + shortId;
+                
+                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(shortUrl) + "\"");
             } else {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
             }
@@ -676,4 +678,3 @@ public class CampaignScheduler {
         activity.setNextExecutionAt(next);
     }
 }
-
