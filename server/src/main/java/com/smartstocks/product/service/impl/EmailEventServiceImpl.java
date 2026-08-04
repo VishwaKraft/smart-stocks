@@ -236,8 +236,7 @@ public class EmailEventServiceImpl implements IEmailEventService {
                  && !originalUrl.contains("/pixel") 
                  && !originalUrl.contains(baseUrl)) {
                 
-                String shortId = shortLinkService.shortenLink(originalUrl, null);
-                String shortUrl = baseUrl + "s/" + shortId;
+                String shortUrl = shortLinkService.shortenLink(originalUrl, null);
                 
                 StringBuilder fullUrl = new StringBuilder(shortUrl);
                 boolean hasQuery = false;
