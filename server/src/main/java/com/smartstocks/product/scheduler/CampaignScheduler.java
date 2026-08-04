@@ -616,23 +616,21 @@ public class CampaignScheduler {
             if ((originalUrl.startsWith("http://") || originalUrl.startsWith("https://")) 
                  && !originalUrl.contains("/pixel") 
                  && !originalUrl.contains(baseUrl)) {
+
+                String urlWithTrackingString = shortLinkService.shortenLink(originalUrl.toString(), null);
                 
-                // Build the URL with campaign and user tracking BEFORE shortening
-                StringBuilder urlWithTracking = new StringBuilder(originalUrl);
+                // Build the URL with campaign and user tracking AFTER shortening
+                StringBuilder urlWithTracking = new StringBuilder(urlWithTrackingString);
                 boolean hasQuery = originalUrl.contains("?");
-                // if (campaignCode != null) {
-                //     urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
-                //     hasQuery = true;
-                // }
-                // if (userId != null) {
-                //     urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
-                // }
+                if (campaignCode != null) {
+                    urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
+                    hasQuery = true;
+                }
+                if (userId != null) {
+                    urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
+                }
                 
-                // Now shorten the URL with tracking parameters already included
-                String shortId = shortLinkService.shortenLink(urlWithTracking.toString(), null);
-                String shortUrl = baseUrl + "s/" + shortId;
-                
-                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(shortId) + "\"");
+                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(urlWithTracking) + "\"");
             } else {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
             }
