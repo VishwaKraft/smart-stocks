@@ -42,7 +42,7 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
     @Query("SELECT a FROM CampaignActivity a " +
            "WHERE a.scheduleType = 'RECURRING' " +
            "AND a.parentActivity IS NULL " +
-           "AND a.status = 'ACTIVE' " +
+           "AND a.status IN ('ACTIVE', 'READY') " +
            "AND a.isDeleted = false " +
            "AND a.nextExecutionAt <= :now")
     List<CampaignActivity> findDueRecurringParents(@Param("now") LocalDateTime now);
