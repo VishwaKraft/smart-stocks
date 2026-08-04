@@ -632,7 +632,7 @@ public class CampaignScheduler {
                 String shortId = shortLinkService.shortenLink(urlWithTracking.toString(), null);
                 String shortUrl = baseUrl + "s/" + shortId;
                 
-                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(shortUrl) + "\"");
+                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(shortId) + "\"");
             } else {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
             }
