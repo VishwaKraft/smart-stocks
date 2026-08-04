@@ -630,7 +630,7 @@ public class CampaignScheduler {
                     urlWithTracking.append(hasQuery ? "&" : "?").append("user_id=").append(userId);
                 }
                 
-                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(urlWithTracking) + "\"");
+                matcher.appendReplacement(sb, "href=\"" + Matcher.quoteReplacement(urlWithTracking.toString()) + "\"");
             } else {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
             }
