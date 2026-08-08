@@ -1,6 +1,7 @@
 package com.smartstocks.product.models;
 
 import com.smartstocks.product.converters.MapToJsonConverter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "segment"})
 public class SegmentUser {
 
     @Id

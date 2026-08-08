@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -86,6 +87,15 @@ public class SegmentServiceImpl implements ISegmentService {
     @Override
     @Transactional
     public Segment uploadCsvSegment(String name, String description, MultipartFile file) {
+        // Read file bytes ONCE so we can use them for both the S3 upload and CSV parsing.
+        // Calling file.getInputStream() twice consumes the underlying stream on the first call.
+        byte[] fileBytes;
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read uploaded CSV file: " + e.getMessage(), e);
+        }
+
         String s3Key = "segments/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         log.info("Uploading CSV to S3 with key: {}", s3Key);
@@ -98,16 +108,12 @@ public class SegmentServiceImpl implements ISegmentService {
 
             s3Client.putObject(
                     request,
-                    RequestBody.fromInputStream(
-                            file.getInputStream(),
-                            file.getSize()));
+                    RequestBody.fromBytes(fileBytes));
         } catch (AwsServiceException e) {
             log.error(
                     "AmazonServiceException: Error Message: {}", e);
             throw new RuntimeException(
                     "Failed to upload CSV to S3. Error: {}", e);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload CSV to S3: " + e.getMessage(), e);
         }
 
         Segment segment = new Segment();
@@ -123,7 +129,8 @@ public class SegmentServiceImpl implements ISegmentService {
         eventInfo.put("s3Path", segment.getS3Path());
         eventLogger.log("SEGMENT_CREATED", eventInfo);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+        // Parse CSV from the same byte array (second independent read)
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileBytes)))) {
             parseCsvAndSaveUsers(segment, reader);
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse CSV", e);

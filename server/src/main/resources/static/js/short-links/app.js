@@ -876,6 +876,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             if (cachedCampaigns.length === 0) cachedCampaigns = await apiFetch(apiCampaignsUrl);
             const sel = document.getElementById("actCampaign");
+            const currentVal = sel.value; // preserve user's current selection
             sel.innerHTML = '<option value="">— select —</option>';
             campaignsById = {};
             cachedCampaigns.forEach(c => {
@@ -885,6 +886,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 opt.textContent = c.name;
                 sel.appendChild(opt);
             });
+            if (currentVal) sel.value = currentVal; // restore it
         } catch (e) { console.error(e); }
     }
 
@@ -1273,6 +1275,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cleanParams = params.replace(/wabaId=[^&]*/, `wabaId=${wabaId}`);
                 await fetch(`/api/whatsapp/templates?${cleanParams}&name=${name}`, { method: "DELETE" });
                 loadWhatsappTemplates();
+            } else if (type === "segment") {
+                await fetch(`${apiSegmentsUrl}/${id}`, { method: "DELETE" });
+                loadSegmentTable();
             } else {
                 let url;
                 if (type === "template") url = `${apiTemplatesUrl}/${id}`;
@@ -1324,14 +1329,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e.target.disabled = true;
             e.target.textContent = "Sending...";
 
-            const isVoiceOrWa = (campaignType === 'VOICE' || campaignType === 'WHATSAPP');
-            const payload = isVoiceOrWa
-                ? { phoneNumbers: recipients }
-                : recipients; // email: send plain array (existing backend format)
-
+            // The backend testTrigger() endpoint always expects a plain List<String> —
+            // either email addresses (EMAIL) or phone numbers (VOICE/WHATSAPP).
             await apiFetch(`${apiActivitiesUrl}/${actId}/test-trigger`, {
                 method: "POST",
-                body: JSON.stringify(payload)
+                body: JSON.stringify(recipients)
             });
 
             const successMsg = { EMAIL: "Test email triggered!", WHATSAPP: "Test WhatsApp message triggered!", VOICE: "Test voice call triggered!" }[campaignType] || "Test triggered successfully!";
@@ -1507,22 +1509,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) { console.error("loadSegmentTable:", err); }
     }
 
-    // Update delete handler for segments
-    const originalConfirmDelete = confirmDeleteBtn.onclick;
-    confirmDeleteBtn.addEventListener("click", async () => {
-        if (!deleteContext) return;
-        const { type, id } = deleteContext;
-        if (type === "segment") {
-            try {
-                await fetch(`${apiSegmentsUrl}/${id}`, { method: "DELETE" });
-                loadSegmentTable();
-                showToast("Segment deleted successfully", "success");
-            } catch (err) { showToast("Error: " + err.message, "error"); }
-            finally { modal.style.display = "none"; deleteContext = null; }
-            // Prevents original click listener from triggering if we handled it
-            // Actually, we replaced it using event listener, so we just add conditions.
-        }
-    });
+    // Segment delete is handled in the consolidated confirmDeleteBtn listener above.
 
     /* ======================================================
        MOBILE MENU LOGIC
