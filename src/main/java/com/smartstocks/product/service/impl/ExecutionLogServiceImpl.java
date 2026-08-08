@@ -31,8 +31,9 @@ public class ExecutionLogServiceImpl implements IExecutionLogService {
                 .activityId(log.getActivity().getId())
                 .campaignId(log.getCampaign().getId())
                 .campaignName(log.getCampaign().getName())
-                .templateId(log.getTemplate().getId())
-                .templateName(log.getTemplate().getName())
+                // template is nullable for WHATSAPP/VOICE activities
+                .templateId(log.getTemplate() != null ? log.getTemplate().getId() : null)
+                .templateName(log.getTemplate() != null ? log.getTemplate().getName() : null)
                 .startedAt(log.getStartedAt())
                 .completedAt(log.getCompletedAt())
                 .status(log.getStatus())
