@@ -670,7 +670,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ======================================================
        ACTIVITIES — Premium Wizard
     ====================================================== */
-    const activityForm        = document.getElementById("activityForm");
     const activityFormWrapper = document.getElementById("activityFormWrapper");
     const activityEditId      = document.getElementById("activityEditId");
     const activityFormTitle   = document.getElementById("activityFormTitle");
@@ -985,9 +984,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.error(e); }
     }
 
-    activityForm.addEventListener("submit", async e => {
-        e.preventDefault(); // handled by actSaveBtn — do nothing
-    });
+    // Activity save is handled by actSaveBtn above
 
 
     async function loadActivityTable() {
@@ -2054,6 +2051,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, null, 2);
     }
 
+    const voiceTplLangSel = document.getElementById("voiceTplLanguage");
     if (voiceTplVoiceGenderSel) voiceTplVoiceGenderSel.addEventListener("change", updateVoicePayloadPreview);
     if (voiceTplLangSel) voiceTplLangSel.addEventListener("change", updateVoicePayloadPreview);
 
