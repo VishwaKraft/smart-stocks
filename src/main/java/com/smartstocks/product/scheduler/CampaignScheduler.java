@@ -145,7 +145,6 @@ public class CampaignScheduler {
      * Recurring parents are never included here — they are handled by Tick-A only.
      */
     @Scheduled(cron = "0 * * * * *")
-    @Transactional
     public void processExecutableActivities() {
         LocalDateTime now = LocalDateTime.now();
         List<CampaignActivity> dueActivities = activityRepository.findDueExecutableActivities(now);
@@ -157,7 +156,16 @@ public class CampaignScheduler {
         log.info("[Scheduler][TickC] Executing {} activit(y/ies) at {}", dueActivities.size(), now);
 
         for (CampaignActivity activity : dueActivities) {
-            executeActivity(activity, now);
+            try {
+                // Claim activity to prevent concurrent overlapping executions
+                // Push nextExecutionAt into the future temporarily while executing
+                activity.setNextExecutionAt(now.plusHours(1));
+                activityRepository.save(activity);
+                
+                executeActivity(activity, now);
+            } catch (Exception e) {
+                log.error("[Scheduler][TickC] Failed to execute activity [{}]", activity.getId(), e);
+            }
         }
     }
 
@@ -286,6 +294,7 @@ public class CampaignScheduler {
 
         int sentCount = 0;
         int bounceCount = 0;
+        Set<String> processedPhones = new HashSet<>();
 
         for (SegmentUser recipient : segmentUsers) {
             String phone = recipient.getPhoneNumber();
@@ -293,6 +302,10 @@ public class CampaignScheduler {
                 log.warn("[Scheduler] Recipient [{}] has no phone number – skipping for WhatsApp activity [{}]",
                         recipient.getEmailId(), activity.getId());
                 bounceCount++;
+                continue;
+            }
+            if (!processedPhones.add(phone)) {
+                log.debug("[Scheduler] Skipping duplicate WhatsApp number [{}]", phone);
                 continue;
             }
 
@@ -387,6 +400,7 @@ public class CampaignScheduler {
 
         int sentCount = 0;
         int bounceCount = 0;
+        Set<String> processedPhones = new HashSet<>();
 
         for (CampaignSegmentUser recipient : segmentUsers) {
             String phone = recipient.getPhoneNumber();
@@ -394,6 +408,10 @@ public class CampaignScheduler {
                 log.warn("[Scheduler] Recipient [{}] has no phone number – skipping for voice activity [{}]",
                         recipient.getEmailId(), activity.getId());
                 bounceCount++;
+                continue;
+            }
+            if (!processedPhones.add(phone)) {
+                log.debug("[Scheduler] Skipping duplicate Voice number [{}]", phone);
                 continue;
             }
 
@@ -490,9 +508,19 @@ public class CampaignScheduler {
             }
         }
 
+        Set<String> processedEmails = new HashSet<>();
+
         // 4. Send one email per recipient
         for (SegmentUser recipient : segmentUsers) {
             String emailId = recipient.getEmailId();
+            if (emailId == null || emailId.isBlank()) {
+                bounceCount++;
+                continue;
+            }
+            if (!processedEmails.add(emailId.toLowerCase())) {
+                log.debug("[Scheduler] Skipping duplicate email [{}]", emailId);
+                continue;
+            }
 
             try {
                 // 4a. Build per-recipient template variables
