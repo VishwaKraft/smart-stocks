@@ -1315,8 +1315,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("confirmTestFire").addEventListener("click", async (e) => {
-        const actId = e.target.dataset.actId;
-        const campaignType = e.target.dataset.campaignType || 'EMAIL';
+        const btn = document.getElementById("confirmTestFire");
+        const actId = btn.dataset.actId;
+        const campaignType = btn.dataset.campaignType || 'EMAIL';
         const recipientsStr = document.getElementById("testFireRecipients").value.trim();
         const recipients = recipientsStr ? recipientsStr.split(",").map(s => s.trim()).filter(s => s) : [];
 
@@ -1326,8 +1327,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            e.target.disabled = true;
-            e.target.textContent = "Sending...";
+            btn.disabled = true;
+            btn.textContent = "Sending...";
 
             // The backend testTrigger() endpoint always expects a plain List<String> —
             // either email addresses (EMAIL) or phone numbers (VOICE/WHATSAPP).
@@ -1343,8 +1344,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             showToast("Test failed: " + err.message, "error");
         } finally {
-            e.target.disabled = false;
-            e.target.textContent = "Send Test";
+            const btn = document.getElementById("confirmTestFire");
+            btn.disabled = false;
+            btn.textContent = "Send Test";
         }
     });
 
