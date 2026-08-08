@@ -72,6 +72,16 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
     List<CampaignActivity> findDueExecutableActivities(@Param("now") LocalDateTime now);
 
     /**
+     * Atomically lock an activity for execution by pushing its nextExecutionAt into the future.
+     * Prevents multiple scheduler nodes from executing the same activity simultaneously.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("UPDATE CampaignActivity a SET a.nextExecutionAt = :futureTime " +
+           "WHERE a.id = :id AND a.nextExecutionAt <= :now AND a.status IN ('ACTIVE', 'READY')")
+    int lockActivityForExecution(@Param("id") Long id, @Param("now") LocalDateTime now, @Param("futureTime") LocalDateTime futureTime);
+
+    /**
      * Returns all child activities spawned by the given parent activity.
      * Used by the list API (?parentId=X).
      */

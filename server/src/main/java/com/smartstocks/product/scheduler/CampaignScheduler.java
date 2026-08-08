@@ -157,10 +157,13 @@ public class CampaignScheduler {
 
         for (CampaignActivity activity : dueActivities) {
             try {
-                // Claim activity to prevent concurrent overlapping executions
+                // Atomically claim activity to prevent concurrent overlapping executions across multiple nodes
                 // Push nextExecutionAt into the future temporarily while executing
-                activity.setNextExecutionAt(now.plusHours(1));
-                activityRepository.save(activity);
+                int locked = activityRepository.lockActivityForExecution(activity.getId(), now, now.plusHours(1));
+                if (locked == 0) {
+                    log.debug("[Scheduler][TickC] Activity [{}] already locked by another node, skipping.", activity.getId());
+                    continue;
+                }
                 
                 executeActivity(activity, now);
             } catch (Exception e) {
