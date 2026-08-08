@@ -670,6 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ======================================================
        ACTIVITIES — Premium Wizard
     ====================================================== */
+    const activityForm        = document.getElementById("activityForm");
     const activityFormWrapper = document.getElementById("activityFormWrapper");
     const activityEditId      = document.getElementById("activityEditId");
     const activityFormTitle   = document.getElementById("activityFormTitle");
@@ -2037,12 +2038,9 @@ document.addEventListener("DOMContentLoaded", () => {
             updateVoicePayloadPreview();
         });
     }
-    if (voiceTplVoiceGenderSel) voiceTplVoiceGenderSel.addEventListener("change", updateVoicePayloadPreview);
-    const voiceTplLangSel = document.getElementById("voiceTplLanguage");
-    if (voiceTplLangSel) voiceTplLangSel.addEventListener("change", updateVoicePayloadPreview);
-
     // Live preview function (also exposed globally for oninput)
-    window.updateVoicePayloadPreview = function() {
+    window.updateVoicePayloadPreview = updateVoicePayloadPreview;
+    function updateVoicePayloadPreview() {
         const pre = document.getElementById("voicePayloadPreviewCode");
         if (!pre) return;
         const lang = document.getElementById("voiceTplLanguage")?.value || "en";
@@ -2054,7 +2052,10 @@ document.addEventListener("DOMContentLoaded", () => {
             text: text,
             voice: { name: vName, gender: vGender }
         }, null, 2);
-    };
+    }
+
+    if (voiceTplVoiceGenderSel) voiceTplVoiceGenderSel.addEventListener("change", updateVoicePayloadPreview);
+    if (voiceTplLangSel) voiceTplLangSel.addEventListener("change", updateVoicePayloadPreview);
 
     // Populate voice template campaign dropdown
     async function loadVoiceTemplateCampaignDropdown() {
