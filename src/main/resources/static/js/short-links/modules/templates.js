@@ -91,6 +91,16 @@ export function initTemplates() {
             templateForm.reset();
             tplHtmlBody.value = DEFAULT_EMAIL_TEMPLATE;
             document.getElementById("chatHistory").innerHTML = "";
+            
+            const imgFileInput = document.getElementById("tplImageFile");
+            if (imgFileInput) imgFileInput.value = "";
+            const imgSelectedName = document.getElementById("tplImageSelectedName");
+            if (imgSelectedName) imgSelectedName.hidden = true;
+            const imgUploadBtn = document.getElementById("tplImageUploadBtn");
+            if (imgUploadBtn) imgUploadBtn.disabled = true;
+            const imgUrlResult = document.getElementById("tplImageUrlResult");
+            if (imgUrlResult) imgUrlResult.hidden = true;
+
             templateFormWrapper.hidden = false;
             scheduleTplPreview();
             templateFormWrapper.scrollIntoView({ behavior: "smooth" });
@@ -100,6 +110,15 @@ export function initTemplates() {
     document.getElementById("tplCancelBtn").addEventListener("click", () => {
         templateFormWrapper.hidden = true;
         templateForm.reset();
+        
+        const imgFileInput = document.getElementById("tplImageFile");
+        if (imgFileInput) imgFileInput.value = "";
+        const imgSelectedName = document.getElementById("tplImageSelectedName");
+        if (imgSelectedName) imgSelectedName.hidden = true;
+        const imgUploadBtn = document.getElementById("tplImageUploadBtn");
+        if (imgUploadBtn) imgUploadBtn.disabled = true;
+        const imgUrlResult = document.getElementById("tplImageUrlResult");
+        if (imgUrlResult) imgUrlResult.hidden = true;
     });
 
     document.getElementById("tplFormatBtn").addEventListener("click", () => {
@@ -212,6 +231,102 @@ export function initTemplates() {
         });
     }
 
+    // ========================================================
+    // Image Upload Logic
+    // ========================================================
+    const imgDropZone      = document.getElementById("tplImageDropZone");
+    const imgFileInput     = document.getElementById("tplImageFile");
+    const imgBrowseBtn     = document.getElementById("tplImageBrowseBtn");
+    const imgSelectedName  = document.getElementById("tplImageSelectedName");
+    const imgUploadBtn     = document.getElementById("tplImageUploadBtn");
+    const imgUploadBtnText = document.getElementById("tplImageUploadBtnText");
+    const imgSpinner       = document.getElementById("tplImageSpinner");
+    const imgUrlResult     = document.getElementById("tplImageUrlResult");
+    const imgUrlDisplay    = document.getElementById("tplImageUrlDisplay");
+    const imgCopyBtn       = document.getElementById("tplCopyImageUrlBtn");
+    const imgInsertBtn     = document.getElementById("tplInsertImageBtn");
+
+    if (imgDropZone && imgFileInput) {
+        // Browse click
+        imgBrowseBtn.addEventListener("click", () => imgFileInput.click());
+
+        // Drag and drop
+        imgDropZone.addEventListener("dragover", e => { e.preventDefault(); imgDropZone.classList.add("dragover"); });
+        imgDropZone.addEventListener("dragleave", () => imgDropZone.classList.remove("dragover"));
+        imgDropZone.addEventListener("drop", e => {
+            e.preventDefault();
+            imgDropZone.classList.remove("dragover");
+            if (e.dataTransfer.files.length > 0) {
+                imgFileInput.files = e.dataTransfer.files;
+                imgFileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // File selection
+        imgFileInput.addEventListener("change", () => {
+            const file = imgFileInput.files[0];
+            if (file) {
+                imgSelectedName.textContent = file.name;
+                imgSelectedName.hidden = false;
+                imgUploadBtn.disabled = false;
+                imgUrlResult.hidden = true; // hide previous result if any
+            } else {
+                imgSelectedName.hidden = true;
+                imgUploadBtn.disabled = true;
+            }
+        });
+
+        // Upload button click
+        imgUploadBtn.addEventListener("click", async () => {
+            const file = imgFileInput.files[0];
+            if (!file) return;
+
+            imgUploadBtn.disabled = true;
+            imgUploadBtnText.textContent = "Uploading...";
+            imgSpinner.hidden = false;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch(`${apiTemplatesUrl}/upload-image`, { method: "POST", body: formData });
+                if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(msg);
+                }
+                const data = await res.json();
+                imgUrlDisplay.value = data.url;
+                imgUrlResult.hidden = false;
+                showToast("Image uploaded successfully!", "success");
+            } catch (err) {
+                showToast("Image upload failed: " + err.message, "error");
+                imgUploadBtn.disabled = false;
+            } finally {
+                imgUploadBtnText.textContent = "Upload Image";
+                imgSpinner.hidden = true;
+            }
+        });
+
+        // Copy URL button
+        if (imgCopyBtn) {
+            imgCopyBtn.addEventListener("click", () => {
+                navigator.clipboard.writeText(imgUrlDisplay.value)
+                    .then(() => showToast("URL copied to clipboard!", "success"))
+                    .catch(() => showToast("Failed to copy URL", "error"));
+            });
+        }
+        
+        // Insert into template button
+        if (imgInsertBtn) {
+            imgInsertBtn.addEventListener("click", () => {
+                const imgTag = `<img src="${imgUrlDisplay.value}" alt="Uploaded Image" style="max-width:100%; height:auto;">`;
+                tplHtmlBody.value += '\n' + imgTag;
+                scheduleTplPreview();
+                showToast("Image inserted into template", "success");
+            });
+        }
+    }
+
     // Form submit (create / update)
     if (templateForm) {
         templateForm.addEventListener("submit", async e => {
@@ -294,6 +409,16 @@ export async function loadTemplateTable() {
                 document.getElementById("tplDataSourceUrl").value = tpl.dataSourceUrl || "";
                 tplHtmlBody.value = tpl.htmlBody;
                 document.getElementById("chatHistory").innerHTML  = "";
+                
+                const imgFileInput = document.getElementById("tplImageFile");
+                if (imgFileInput) imgFileInput.value = "";
+                const imgSelectedName = document.getElementById("tplImageSelectedName");
+                if (imgSelectedName) imgSelectedName.hidden = true;
+                const imgUploadBtn = document.getElementById("tplImageUploadBtn");
+                if (imgUploadBtn) imgUploadBtn.disabled = true;
+                const imgUrlResult = document.getElementById("tplImageUrlResult");
+                if (imgUrlResult) imgUrlResult.hidden = true;
+
                 templateFormWrapper.hidden = false;
                 if (window._scheduleTplPreview) window._scheduleTplPreview();
                 templateFormWrapper.scrollIntoView({ behavior: "smooth" });
