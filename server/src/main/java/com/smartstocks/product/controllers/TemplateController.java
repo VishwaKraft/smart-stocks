@@ -6,14 +6,17 @@ import com.smartstocks.product.dto.UpdateTemplateRequestDto;
 import com.smartstocks.product.dto.ChatRequestDto;
 import com.smartstocks.product.dto.GeminiResponse;
 import com.smartstocks.product.service.ITemplateService;
+import com.smartstocks.product.service.ITemplateImageService;
 import com.smartstocks.product.service.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/templates")
@@ -25,6 +28,9 @@ public class TemplateController {
 
     @Autowired
     private GeminiService geminiService;
+
+    @Autowired
+    private ITemplateImageService templateImageService;
 
     /**
      * POST /api/templates
@@ -91,9 +97,27 @@ public class TemplateController {
     }
 
     /**
+     * POST /api/templates/upload-image
+     * Upload an image file and return its public URL.
+     */
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String publicUrl = templateImageService.uploadImage(file);
+            return ResponseEntity.ok(Map.of("url", publicUrl));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Image upload failed: " + ex.getMessage());
+        }
+    }
+
+    /**
      * POST /api/templates/chat
      * Request Gemini AI to edit a template based on the prompt.
      */
+
     @PostMapping("/chat")
     public ResponseEntity<?> chatWithGemini(@RequestBody ChatRequestDto request) {
         try {

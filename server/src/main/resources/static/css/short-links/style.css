@@ -1807,6 +1807,130 @@ body.editor-active .main {
     box-shadow: 0 12px 20px rgba(106, 27, 154, 0.35);
 }
 
+/* ── Premium Image Upload ───────────────────────────────────── */
+.img-upload-card {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.img-upload-card:hover {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.02);
+}
+.img-upload-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.img-upload-icon {
+    width: 40px;
+    height: 40px;
+    background: #f3e8ff;
+    color: #9333ea;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.img-upload-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+}
+.img-upload-subtitle {
+    font-size: 13px;
+    color: #64748b;
+}
+.img-drop-zone {
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.img-drop-zone:hover, .img-drop-zone.dragover {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+}
+.img-drop-icon {
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+.img-drop-icon svg {
+    width: 32px;
+    height: 32px;
+}
+.img-drop-text {
+    font-size: 14px;
+    color: #475569;
+    margin: 0 0 4px;
+}
+.img-drop-link {
+    color: #7c3aed;
+    font-weight: 600;
+}
+.img-drop-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+.img-selected-name {
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #10b981;
+    background: #ecfdf5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+.img-upload-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+.img-url-result {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px;
+    animation: fadeIn 0.3s ease;
+}
+.img-url-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #166534;
+    margin-bottom: 12px;
+}
+.img-url-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.img-url-input {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: monospace;
+    color: #1e293b;
+    outline: none;
+}
+.img-copy-btn, .img-insert-btn {
+    height: 38px;
+}
+
 /* ========================================================================= */
 /* Analytics Dashboard                                                       */
 /* ========================================================================= */
