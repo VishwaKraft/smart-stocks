@@ -86,6 +86,13 @@ export function initSegments() {
             }
         });
     }
+
+    const closeSegmentPreviewBtn = document.getElementById("closeSegmentPreviewModal");
+    if (closeSegmentPreviewBtn) {
+        closeSegmentPreviewBtn.addEventListener("click", () => {
+            document.getElementById("segmentPreviewModal").style.display = "none";
+        });
+    }
 }
 
 export async function loadSegmentTable() {
@@ -112,6 +119,7 @@ export async function loadSegmentTable() {
                 <td>${s.userCount != null ? s.userCount : "—"}</td>
                 <td>${fmtDate(s.createdAt)}</td>
                 <td class="table-actions">
+                    <button class="primary-btn btn-xs" data-preview-seg="${s.id}">Preview</button>
                     <button class="danger-btn" data-delete-seg="${s.id}" data-delete-name="${escHtml(s.name)}">Delete</button>
                 </td>`;
             segmentTableBody.appendChild(tr);
@@ -122,6 +130,54 @@ export async function loadSegmentTable() {
                 setDeleteContext({ type: "segment", id: btn.dataset.deleteSeg });
                 deleteModalMessage.textContent = `Delete segment "${btn.dataset.deleteName}"?`;
                 modal.style.display = "flex";
+            });
+        });
+
+        segmentTableBody.querySelectorAll("[data-preview-seg]").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const segId = btn.dataset.previewSeg;
+                try {
+                    const users = await apiFetch(`${apiSegmentsUrl}/${segId}/users`);
+                    const top5 = users.slice(0, 5);
+                    
+                    const head = document.getElementById("segmentPreviewHead");
+                    const body = document.getElementById("segmentPreviewBody");
+                    head.innerHTML = "";
+                    body.innerHTML = "";
+                    
+                    if (top5.length === 0) {
+                        head.innerHTML = "<tr><th>No data found</th></tr>";
+                    } else {
+                        const keys = new Set(["emailId", "userId", "phoneNumber"]);
+                        top5.forEach(u => {
+                            if (u.data) Object.keys(u.data).forEach(k => keys.add(k));
+                        });
+                        const cols = Array.from(keys);
+                        
+                        const trHead = document.createElement("tr");
+                        cols.forEach(c => {
+                            const th = document.createElement("th");
+                            th.textContent = c;
+                            trHead.appendChild(th);
+                        });
+                        head.appendChild(trHead);
+                        
+                        top5.forEach(u => {
+                            const tr = document.createElement("tr");
+                            cols.forEach(c => {
+                                const td = document.createElement("td");
+                                let val = u[c];
+                                if (val === undefined && u.data) val = u.data[c];
+                                td.textContent = val !== null && val !== undefined ? val : "—";
+                                tr.appendChild(td);
+                            });
+                            body.appendChild(tr);
+                        });
+                    }
+                    document.getElementById("segmentPreviewModal").style.display = "flex";
+                } catch (err) {
+                    showToast("Failed to fetch segment data", "error");
+                }
             });
         });
     } catch (err) { console.error("loadSegmentTable:", err); }
