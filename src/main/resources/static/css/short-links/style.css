@@ -1074,6 +1074,393 @@ body.editor-active .main {
 .badge-whatsapp { background: #e8f5e9; color: #1b5e20; }
 .badge-voice   { background: #f3e8ff; color: #6a1b9a; }
 
+/* ══════════════════════════════════════════════════════════
+   Premium Campaign Form  (pcf-*)
+   ══════════════════════════════════════════════════════════ */
+
+/* Outer card — glassmorphism upgrade */
+.premium-campaign-form {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(142,36,170,0.07), 0 1px 0 rgba(255,255,255,0.8) inset;
+    position: relative;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+.premium-campaign-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.premium-campaign-header-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(142,36,170,0.06) 0%, rgba(99,102,241,0.04) 50%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.premium-campaign-icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(142,36,170,0.30);
+    z-index: 1;
+}
+
+.premium-campaign-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #fff;
+}
+
+.premium-campaign-title-wrap {
+    flex: 1;
+    z-index: 1;
+}
+
+.premium-campaign-title {
+    margin: 0 0 3px;
+    font-size: 21px;
+    font-weight: 800;
+    color: #1a1a2e;
+    letter-spacing: -0.4px;
+}
+
+.premium-campaign-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.premium-campaign-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+    border: 1px solid rgba(142,36,170,0.15);
+    font-size: 12px;
+    font-weight: 600;
+    color: #6a1b9a;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.premium-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16,185,129,0.4);
+    animation: pulse-green 2s infinite;
+}
+
+/* ── Form body ─────────────────────────────────────────── */
+.premium-campaign-body {
+    padding: 24px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Sections ──────────────────────────────────────────── */
+.pcf-section {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px dashed rgba(0,0,0,0.07);
+}
+
+.pcf-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.pcf-section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+}
+
+.pcf-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ── Row / Group ───────────────────────────────────────── */
+.pcf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+    .pcf-row { grid-template-columns: 1fr; }
+}
+
+.pcf-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pcf-full {
+    width: 100%;
+}
+
+.pcf-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.pcf-required { color: #e11d48; margin-left: 2px; }
+.pcf-optional { color: #94a3b8; font-weight: 400; font-size: 11px; margin-left: 4px; }
+
+/* ── Input ─────────────────────────────────────────────── */
+.pcf-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pcf-input-icon {
+    position: absolute;
+    left: 13px;
+    width: 15px;
+    height: 15px;
+    color: #94a3b8;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.pcf-input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 13.5px;
+    color: #1e293b;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.pcf-input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.1);
+    transform: translateY(-1px);
+}
+
+.pcf-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 13.5px;
+    color: #1e293b;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    line-height: 1.5;
+}
+
+.pcf-textarea:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.1);
+}
+
+/* ── Channel Type Cards — premium ──────────────────────── */
+.premium-type-cards {
+    gap: 14px;
+}
+
+.card-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    margin-bottom: 4px;
+}
+
+.email-wrap    { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.whatsapp-wrap { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.voice-wrap    { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); }
+
+.campaign-type-card.selected .card-icon-wrap {
+    transform: scale(1.12);
+    box-shadow: 0 6px 18px rgba(142,36,170,0.20);
+}
+
+.campaign-type-card.selected .email-wrap    { background: linear-gradient(135deg, #93c5fd, #3b82f6); }
+.campaign-type-card.selected .whatsapp-wrap { background: linear-gradient(135deg, #34d399, #10b981); }
+.campaign-type-card.selected .voice-wrap    { background: linear-gradient(135deg, #c084fc, #8e24aa); }
+
+/* ── Select ────────────────────────────────────────────── */
+.pcf-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pcf-select-icon {
+    position: absolute;
+    left: 13px;
+    width: 15px;
+    height: 15px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.pcf-select-chevron {
+    position: absolute;
+    right: 13px;
+    width: 15px;
+    height: 15px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.pcf-select {
+    width: 100%;
+    padding: 11px 38px 11px 38px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 13.5px;
+    color: #1e293b;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.pcf-select:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.1);
+}
+
+.pcf-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ── Actions ───────────────────────────────────────────── */
+.pcf-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    margin-top: 24px;
+}
+
+.pcf-reset-btn {
+    padding: 10px 20px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pcf-reset-btn:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.pcf-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 26px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8e24aa 0%, #6a1b9a 100%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(142,36,170,0.30);
+    letter-spacing: 0.2px;
+}
+
+.pcf-submit-btn:hover {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(142,36,170,0.38);
+}
+
+.pcf-submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(142,36,170,0.22);
+}
+
+.pcf-submit-btn svg { flex-shrink: 0; }
+
+/* Provider section spacing */
+.pcf-provider-section .pcf-group + .pcf-group { margin-top: 16px; }
+
+@media (max-width: 640px) {
+    .premium-campaign-form .premium-campaign-header { flex-wrap: wrap; }
+    .premium-campaign-badge { display: none; }
+    .premium-campaign-body { padding: 20px; }
+}
+
 /* ── Premium Email Template Form UI ──────────────────────── */
 .premium-email-form {
     background: rgba(255, 255, 255, 0.7);

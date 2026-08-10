@@ -125,81 +125,162 @@
 
         <!-- ── Campaigns ── -->
         <section id="campaignPanel" class="panel" hidden>
-            <div class="campaign-form-card">
-                <h2>Campaign Builder</h2>
-                <p class="panel-hint">Create a campaign to send emails, WhatsApp messages, or voice calls to your audience segments.</p>
-                <form id="campaignForm" class="form stacked-full">
-                    <div class="form-group full-width">
-                        <label for="campaignName">Campaign Name *</label>
-                        <input type="text" id="campaignName" name="name" placeholder="e.g. Summer Sale 2025" required>
+            <div class="campaign-form-card premium-campaign-form">
+                <!-- Premium Header -->
+                <div class="premium-campaign-header">
+                    <div class="premium-campaign-header-bg"></div>
+                    <div class="premium-campaign-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="campaignCode">Custom Code <span style="font-weight:400;color:#aaa">(optional)</span></label>
-                        <input type="text" id="campaignCode" name="campaignCode" placeholder="e.g. SUMMER25">
+                    <div class="premium-campaign-title-wrap">
+                        <h2 class="premium-campaign-title">Campaign Builder</h2>
+                        <p class="premium-campaign-subtitle">Launch targeted campaigns across Email, WhatsApp &amp; Voice channels</p>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="campaignDescription">Description <span style="font-weight:400;color:#aaa">(optional)</span></label>
-                        <textarea id="campaignDescription" name="description" placeholder="What is this campaign about?" rows="2"></textarea>
+                    <div class="premium-campaign-badge">
+                        <span class="premium-pulse-dot"></span>
+                        Multi-Channel
+                    </div>
+                </div>
+
+                <form id="campaignForm" class="premium-campaign-body">
+
+                    <!-- Section 1: Identity -->
+                    <div class="pcf-section">
+                        <div class="pcf-section-label">
+                            <span class="pcf-step-num">1</span>
+                            <span>Campaign Identity</span>
+                        </div>
+                        <div class="pcf-row">
+                            <div class="pcf-group">
+                                <label for="campaignName" class="pcf-label">Campaign Name <span class="pcf-required">*</span></label>
+                                <div class="pcf-input-wrap">
+                                    <svg class="pcf-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    <input type="text" id="campaignName" name="name" class="pcf-input" placeholder="e.g. Summer Sale 2025" required>
+                                </div>
+                            </div>
+                            <div class="pcf-group">
+                                <label for="campaignCode" class="pcf-label">Custom Code <span class="pcf-optional">(optional)</span></label>
+                                <div class="pcf-input-wrap">
+                                    <svg class="pcf-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                                    </svg>
+                                    <input type="text" id="campaignCode" name="campaignCode" class="pcf-input" placeholder="e.g. SUMMER25">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pcf-group pcf-full">
+                            <label for="campaignDescription" class="pcf-label">Description <span class="pcf-optional">(optional)</span></label>
+                            <textarea id="campaignDescription" name="description" class="pcf-textarea" placeholder="Describe what this campaign is about and who it targets…" rows="2"></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-group full-width">
-                        <label>Campaign Type *</label>
-                        <div class="campaign-type-cards" id="campaignTypeCards">
+                    <!-- Section 2: Channel -->
+                    <div class="pcf-section">
+                        <div class="pcf-section-label">
+                            <span class="pcf-step-num">2</span>
+                            <span>Choose Channel</span>
+                        </div>
+                        <div class="campaign-type-cards premium-type-cards" id="campaignTypeCards">
                             <label class="campaign-type-card selected" data-value="EMAIL">
                                 <input type="radio" name="campaignType" value="EMAIL" checked>
-                                <span class="card-icon">✉️</span>
+                                <div class="card-icon-wrap email-wrap">
+                                    <span class="card-icon">✉️</span>
+                                </div>
                                 <span class="card-label">Email</span>
-                                <span class="card-desc">Send HTML emails with open tracking</span>
+                                <span class="card-desc">HTML emails with open tracking</span>
                             </label>
                             <label class="campaign-type-card" data-value="WHATSAPP">
                                 <input type="radio" name="campaignType" value="WHATSAPP">
-                                <span class="card-icon">💬</span>
+                                <div class="card-icon-wrap whatsapp-wrap">
+                                    <span class="card-icon">💬</span>
+                                </div>
                                 <span class="card-label">WhatsApp</span>
-                                <span class="card-desc">Send messages via Meta Business API</span>
+                                <span class="card-desc">Messages via Meta Business API</span>
                             </label>
                             <label class="campaign-type-card" data-value="VOICE">
                                 <input type="radio" name="campaignType" value="VOICE">
-                                <span class="card-icon">🎙️</span>
+                                <div class="card-icon-wrap voice-wrap">
+                                    <span class="card-icon">🎙️</span>
+                                </div>
                                 <span class="card-label">Voice</span>
-                                <span class="card-desc">Outbound TTS calls via Infobip</span>
+                                <span class="card-desc">TTS outbound calls via Infobip</span>
                             </label>
                         </div>
                     </div>
 
-                    <div class="form-group full-width" id="emailProviderGroup">
-                        <label for="campaignEmailProvider">Email Provider</label>
-                        <select id="campaignEmailProvider" name="emailProviderType">
-                            <option value="">— none —</option>
-                            <option value="SES">AWS SES</option>
-                            <option value="SENDGRID">SendGrid</option>
-                            <option value="MAILGUN">Mailgun</option>
-                            <option value="SMTP">SMTP</option>
-                            <option value="GMAIL">Gmail (OAuth)</option>
-                        </select>
+                    <!-- Section 3: Provider -->
+                    <div class="pcf-section pcf-provider-section">
+                        <div class="pcf-section-label">
+                            <span class="pcf-step-num">3</span>
+                            <span>Provider Settings</span>
+                        </div>
+                        <div id="emailProviderGroup" class="pcf-group pcf-full">
+                            <label for="campaignEmailProvider" class="pcf-label">Email Provider</label>
+                            <div class="pcf-select-wrap">
+                                <svg class="pcf-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                                </svg>
+                                <select id="campaignEmailProvider" name="emailProviderType" class="pcf-select">
+                                    <option value="">— select provider —</option>
+                                    <option value="SES">☁️ AWS SES</option>
+                                    <option value="SENDGRID">📮 SendGrid</option>
+                                    <option value="MAILGUN">🔫 Mailgun</option>
+                                    <option value="SMTP">🔌 SMTP</option>
+                                    <option value="GMAIL">📧 Gmail (OAuth)</option>
+                                </select>
+                                <svg class="pcf-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+
+                        <div id="whatsappSenderGroup" class="pcf-group pcf-full" hidden>
+                            <label for="campaignWhatsappSender" class="pcf-label">WhatsApp Sender Number <span class="pcf-required">*</span></label>
+                            <div class="pcf-select-wrap">
+                                <svg class="pcf-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 12 19.79 19.79 0 0 1 1.21 3.18 2 2 0 0 1 3.22 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/>
+                                </svg>
+                                <select id="campaignWhatsappSender" name="whatsappSenderNumber" class="pcf-select">
+                                    <option value="">— select number —</option>
+                                    <option value="+919258844009">+919258844009 (Sandbox)</option>
+                                </select>
+                                <svg class="pcf-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <small class="pcf-hint">This is your Meta-registered sender number.</small>
+                        </div>
+
+                        <div id="voiceSenderGroup" class="pcf-group pcf-full" hidden>
+                            <label for="campaignVoiceSender" class="pcf-label">Infobip Sender Number <span class="pcf-required">*</span></label>
+                            <div class="pcf-select-wrap">
+                                <svg class="pcf-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
+                                </svg>
+                                <select id="campaignVoiceSender" name="infobipSenderNumber" class="pcf-select">
+                                    <option value="">— select number —</option>
+                                    <option value="38515507799">38515507799 (Infobip Sandbox)</option>
+                                </select>
+                                <svg class="pcf-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <small class="pcf-hint">This is your Infobip-registered outbound number.</small>
+                        </div>
                     </div>
 
-                    <div class="form-group full-width" id="whatsappSenderGroup" hidden>
-                        <label for="campaignWhatsappSender">WhatsApp Sender Number *</label>
-                        <select id="campaignWhatsappSender" name="whatsappSenderNumber">
-                            <option value="">— select number —</option>
-                            <option value="+919258844009">+919258844009 (Sandbox)</option>
-                        </select>
-                        <small class="form-hint">This is your Meta-registered sender number.</small>
-                    </div>
-
-                    <div class="form-group full-width" id="voiceSenderGroup" hidden>
-                        <label for="campaignVoiceSender">Infobip Sender Number *</label>
-                        <select id="campaignVoiceSender" name="infobipSenderNumber">
-                            <option value="">— select number —</option>
-                            <option value="38515507799">38515507799 (Infobip Sandbox)</option>
-                        </select>
-                        <small class="form-hint">This is your Infobip-registered outbound number.</small>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="primary-btn">🚀 Create Campaign</button>
+                    <!-- Actions -->
+                    <div class="pcf-actions">
+                        <button type="reset" class="pcf-reset-btn">Clear</button>
+                        <button type="submit" class="pcf-submit-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            Launch Campaign
+                        </button>
                     </div>
                 </form>
+
                 <div id="campaignResult"></div>
             </div>
 
