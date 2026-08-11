@@ -164,8 +164,12 @@ public class CampaignScheduler {
                     log.debug("[Scheduler][TickC] Activity [{}] already locked by another node, skipping.", activity.getId());
                     continue;
                 }
+                CampaignActivity lockedActivity = activityRepository.findByIdWithDetails(activity.getId()).orElse(null);
+                if (lockedActivity == null) {
+                    continue;
+                }
                 
-                executeActivity(activity, now);
+                executeActivity(lockedActivity, now);
             } catch (Exception e) {
                 log.error("[Scheduler][TickC] Failed to execute activity [{}]", activity.getId(), e);
             }
