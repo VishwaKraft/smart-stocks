@@ -90,4 +90,12 @@ public interface CampaignActivityRepository extends JpaRepository<CampaignActivi
            "AND a.isDeleted = false " +
            "ORDER BY a.createdAt DESC")
     List<CampaignActivity> findChildrenByParentId(@Param("parentId") Long parentId);
+
+    @Query("SELECT a FROM CampaignActivity a " +
+           "LEFT JOIN FETCH a.campaign " +
+           "LEFT JOIN FETCH a.template " +
+           "LEFT JOIN FETCH a.voiceTemplate " +
+           "LEFT JOIN FETCH a.segment " +
+           "WHERE a.id = :id")
+    java.util.Optional<CampaignActivity> findByIdWithDetails(@Param("id") Long id);
 }
