@@ -145,6 +145,7 @@ public class CampaignScheduler {
      * Recurring parents are never included here — they are handled by Tick-A only.
      */
     @Scheduled(cron = "0 * * * * *")
+    @Transactional
     public void processExecutableActivities() {
         LocalDateTime now = LocalDateTime.now();
         List<CampaignActivity> dueActivities = activityRepository.findDueExecutableActivities(now);
@@ -654,9 +655,10 @@ public class CampaignScheduler {
 
                 String urlWithTrackingString = shortLinkService.shortenLink(originalUrl.toString(), null);
                 
-                // Build the URL with campaign and user tracking AFTER shortening
+                // Build the URL with campaign and user tracking AFTER shortening.
+                // hasQuery must check the SHORTENED url (never contains '?'), not the original.
                 StringBuilder urlWithTracking = new StringBuilder(urlWithTrackingString);
-                boolean hasQuery = originalUrl.contains("?");
+                boolean hasQuery = urlWithTrackingString.contains("?");
                 if (campaignCode != null) {
                     urlWithTracking.append(hasQuery ? "&" : "?").append("campaign=").append(campaignCode);
                     hasQuery = true;
