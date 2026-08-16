@@ -31,12 +31,6 @@ public class BeansConfig {
     @Value("${user.agent}")
     private String userAgent;
 
-    @Value("${radiapi.host}")
-    private String rapidApiHost;
-
-    @Value("${radiapi.apikey}")
-    private String rapidApiKey;
-
     @Value("${indian.api.key}")
     private String indianApiKey;
 
@@ -63,17 +57,6 @@ public class BeansConfig {
     @Bean
     public ModelMapper getModelMapperBean() {
         return new ModelMapper();
-    }
-
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public HttpEntity getHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("User-Agent", userAgent);
-        headers.set("x-rapidapi-host", rapidApiHost);
-        headers.set("x-rapidapi-key", rapidApiKey);
-        return new HttpEntity(headers);
     }
 
     @Primary
