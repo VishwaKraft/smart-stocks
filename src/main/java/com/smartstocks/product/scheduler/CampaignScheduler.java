@@ -59,6 +59,8 @@ public class CampaignScheduler {
 
     private final com.smartstocks.product.repository.CampaignSegmentUserRepository campaignSegmentUserRepository;
 
+    private final com.smartstocks.product.service.ExternalDataFetcherService externalDataFetcher;
+
     private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @Value("${app.short-link.base-url:http://localhost:8080}")
@@ -396,7 +398,7 @@ public class CampaignScheduler {
         // Fetch external data if dataSourceUrl is present
         Map<String, Object> externalData = new HashMap<>();
         if (voiceTemplate.getDataSourceUrl() != null && !voiceTemplate.getDataSourceUrl().isBlank()) {
-            Map<String, Object> fetched = fetchExternalData(voiceTemplate.getDataSourceUrl());
+            Map<String, Object> fetched = externalDataFetcher.fetch(voiceTemplate.getDataSourceUrl());
             if (fetched != null) {
                 externalData.putAll(fetched);
             }
@@ -501,7 +503,7 @@ public class CampaignScheduler {
         // Fetch external data if dataSourceUrl is present
         Map<String, Object> externalData = new HashMap<>();
         if (template.getDataSourceUrl() != null && !template.getDataSourceUrl().isBlank()) {
-            Map<String, Object> fetched = fetchExternalData(template.getDataSourceUrl());
+            Map<String, Object> fetched = externalDataFetcher.fetch(template.getDataSourceUrl());
             if (fetched != null) {
                 externalData.putAll(fetched);
             }
@@ -702,45 +704,5 @@ public class CampaignScheduler {
 
         LocalDateTime next = activityService.computeNextExecution(activity, now);
         activity.setNextExecutionAt(next);
-    }
-
-    // -----------------------------------------------------------------------
-    // External data fetcher — handles both JSON array and JSON object responses
-    // -----------------------------------------------------------------------
-    /**
-     * Fetches external data from the given URL and returns it as a flat map.
-     * Supports two response shapes:
-     * <ul>
-     *   <li>JSON object: {@code {"key": "value", ...}} — used directly.</li>
-     *   <li>JSON array:  {@code [{"key": "value", ...}, ...]} — first element is used.</li>
-     * </ul>
-     * Returns {@code null} on any error so callers can safely skip external data.
-     */
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> fetchExternalData(String url) {
-        try {
-            String raw = restTemplate.getForObject(url, String.class);
-            if (raw == null || raw.isBlank()) {
-                return null;
-            }
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            String trimmed = raw.stripLeading();
-            if (trimmed.startsWith("[")) {
-                // API returned a JSON array — use the first element
-                List<Map<String, Object>> list = mapper.readValue(raw,
-                        mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
-                if (list != null && !list.isEmpty()) {
-                    return list.get(0);
-                }
-                return null;
-            } else {
-                // API returned a plain JSON object
-                return mapper.readValue(raw,
-                        mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
-            }
-        } catch (Exception e) {
-            log.error("[Scheduler] Failed to fetch external data from URL: {}", url, e);
-            return null;
-        }
     }
 }

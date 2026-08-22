@@ -61,6 +61,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final IShortLinkService shortLinkService;
     private final EmailProviderFactory emailProviderFactory;
     private final RestTemplate restTemplate;
+    private final com.smartstocks.product.service.ExternalDataFetcherService externalDataFetcher;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
@@ -384,13 +385,9 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             
             Map<String, Object> testVariables = new HashMap<>();
             if (templateObj.getDataSourceUrl() != null && !templateObj.getDataSourceUrl().isBlank()) {
-                try {
-                    Map<String, Object> apiResponse = restTemplate.getForObject(templateObj.getDataSourceUrl(), Map.class);
-                    if (apiResponse != null) {
-                        testVariables.putAll(apiResponse);
-                    }
-                } catch (Exception e) {
-                    log.error("[CampaignActivityServiceImpl] Failed to fetch external data during testTrigger from URL: {}", templateObj.getDataSourceUrl(), e);
+                Map<String, Object> fetched = externalDataFetcher.fetch(templateObj.getDataSourceUrl());
+                if (fetched != null) {
+                    testVariables.putAll(fetched);
                 }
             }
 
