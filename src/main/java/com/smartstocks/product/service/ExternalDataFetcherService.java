@@ -40,6 +40,7 @@ public class ExternalDataFetcherService {
             return null;
         }
         try {
+            log.info("[ExternalDataFetcher] Hitting external API: {}", url);
             String raw = restTemplate.getForObject(url, String.class);
             if (raw == null || raw.isBlank()) {
                 log.warn("[ExternalDataFetcher] Empty response from URL: {}", url);
@@ -47,6 +48,7 @@ public class ExternalDataFetcherService {
             }
 
             String trimmed = raw.stripLeading();
+            Map<String, Object> result;
 
             if (trimmed.startsWith("[")) {
                 // API returned a JSON array — use the first element
@@ -58,17 +60,21 @@ public class ExternalDataFetcherService {
                     log.warn("[ExternalDataFetcher] Empty array response from URL: {}", url);
                     return null;
                 }
-                log.debug("[ExternalDataFetcher] Array response ({} element(s)) from URL: {}", list.size(), url);
-                return list.get(0);
+                log.info("[ExternalDataFetcher] Array response ({} element(s)) — using element[0] from URL: {}", list.size(), url);
+                result = list.get(0);
             } else {
                 // API returned a plain JSON object
-                Map<String, Object> result = objectMapper.readValue(
+                result = objectMapper.readValue(
                         raw,
                         objectMapper.getTypeFactory()
                                 .constructMapType(Map.class, String.class, Object.class));
-                log.debug("[ExternalDataFetcher] Object response ({} key(s)) from URL: {}", result == null ? 0 : result.size(), url);
-                return result;
             }
+
+            log.info("[ExternalDataFetcher] Data fetched successfully ({} key(s)) from URL: {} — keys: {}",
+                    result == null ? 0 : result.size(), url,
+                    result == null ? "[]" : result.keySet());
+            log.debug("[ExternalDataFetcher] Full external data payload: {}", result);
+            return result;
 
         } catch (Exception e) {
             log.error("[ExternalDataFetcher] Failed to fetch or parse data from URL: {}", url, e);
