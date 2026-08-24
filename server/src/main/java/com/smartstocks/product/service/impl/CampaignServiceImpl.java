@@ -150,11 +150,14 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     @Transactional
-    public void saveMetaToken(Long id, String accessToken, String phoneNumberId) {
+    public void saveMetaToken(Long id, String accessToken, String phoneNumberId, String wabaId) {
         Campaign campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
         campaign.setMetaAccessToken(accessToken);
         campaign.setMetaPhoneNumberId(phoneNumberId);
+        if (wabaId != null && !wabaId.isBlank()) {
+            campaign.setMetaWabaId(wabaId);
+        }
         campaignRepository.save(campaign);
     }
 
@@ -179,22 +182,54 @@ public class CampaignServiceImpl implements ICampaignService {
                 String accessToken = (String) response.getBody().get("access_token");
                 campaign.setMetaAccessToken(accessToken);
                 
-                // Automatically fetch and store the Phone Number ID
+                // Automatically fetch phone numbers and WABA ID using the debug_token or shared WABAs endpoint
                 String appSecretProof = computeAppSecretProof(accessToken, metaClientSecret);
-                String phoneNumbersUrl = "https://graph.facebook.com/v25.0/" + configuredWabaId + "/phone_numbers?access_token=" + accessToken + "&appsecret_proof=" + appSecretProof;
-                
+
+                // Try to discover WABA IDs accessible by this token via the business/owned WABAs
                 try {
-                    ResponseEntity<Map> phoneResponse = restTemplate.getForEntity(phoneNumbersUrl, Map.class);
-                    if (phoneResponse.getStatusCode() == HttpStatus.OK && phoneResponse.getBody() != null) {
-                        List<Map<String, Object>> data = (List<Map<String, Object>>) phoneResponse.getBody().get("data");
-                        if (data != null && !data.isEmpty()) {
-                            String phoneNumberId = String.valueOf(data.get(0).get("id"));
-                            campaign.setMetaPhoneNumberId(phoneNumberId);
-                            log.info("[CampaignService] Fetched and saved Meta Phone Number ID: {}", phoneNumberId);
+                    String wabasUrl = "https://graph.facebook.com/v25.0/me/whatsapp_business_accounts"
+                            + "?access_token=" + accessToken + "&appsecret_proof=" + appSecretProof;
+                    ResponseEntity<Map> wabaResponse = restTemplate.getForEntity(wabasUrl, Map.class);
+                    if (wabaResponse.getStatusCode() == HttpStatus.OK && wabaResponse.getBody() != null) {
+                        List<Map<String, Object>> wabaData = (List<Map<String, Object>>) wabaResponse.getBody().get("data");
+                        if (wabaData != null && !wabaData.isEmpty()) {
+                            String discoveredWabaId = String.valueOf(wabaData.get(0).get("id"));
+                            campaign.setMetaWabaId(discoveredWabaId);
+                            log.info("[CampaignService] Discovered WABA ID: {}", discoveredWabaId);
+
+                            // Fetch phone numbers from the discovered WABA
+                            String phoneNumbersUrl = "https://graph.facebook.com/v25.0/" + discoveredWabaId
+                                    + "/phone_numbers?access_token=" + accessToken + "&appsecret_proof=" + appSecretProof;
+                            ResponseEntity<Map> phoneResponse = restTemplate.getForEntity(phoneNumbersUrl, Map.class);
+                            if (phoneResponse.getStatusCode() == HttpStatus.OK && phoneResponse.getBody() != null) {
+                                List<Map<String, Object>> data = (List<Map<String, Object>>) phoneResponse.getBody().get("data");
+                                if (data != null && !data.isEmpty()) {
+                                    String phoneNumberId = String.valueOf(data.get(0).get("id"));
+                                    campaign.setMetaPhoneNumberId(phoneNumberId);
+                                    log.info("[CampaignService] Fetched and saved Meta Phone Number ID: {}", phoneNumberId);
+                                }
+                            }
                         }
                     }
                 } catch (Exception e) {
-                    log.warn("[CampaignService] Failed to fetch phone number ID: {}", e.getMessage());
+                    log.warn("[CampaignService] Failed to auto-discover WABA/phone number: {}. Falling back to configured WABA ID.", e.getMessage());
+                    // Fallback: try the globally configured WABA ID
+                    try {
+                        campaign.setMetaWabaId(configuredWabaId);
+                        String phoneNumbersUrl = "https://graph.facebook.com/v25.0/" + configuredWabaId
+                                + "/phone_numbers?access_token=" + accessToken + "&appsecret_proof=" + appSecretProof;
+                        ResponseEntity<Map> phoneResponse = restTemplate.getForEntity(phoneNumbersUrl, Map.class);
+                        if (phoneResponse.getStatusCode() == HttpStatus.OK && phoneResponse.getBody() != null) {
+                            List<Map<String, Object>> data = (List<Map<String, Object>>) phoneResponse.getBody().get("data");
+                            if (data != null && !data.isEmpty()) {
+                                String phoneNumberId = String.valueOf(data.get(0).get("id"));
+                                campaign.setMetaPhoneNumberId(phoneNumberId);
+                                log.info("[CampaignService] Fetched Meta Phone Number ID (fallback): {}", phoneNumberId);
+                            }
+                        }
+                    } catch (Exception ex2) {
+                        log.warn("[CampaignService] Fallback phone number fetch also failed: {}", ex2.getMessage());
+                    }
                 }
 
                 campaignRepository.save(campaign);
@@ -403,7 +438,7 @@ public class CampaignServiceImpl implements ICampaignService {
                 .openCount(openCount)
                 .createdAt(campaign.getCreatedAt())
                 .metaPhoneNumberId(campaign.getMetaPhoneNumberId())
-                .wabaId(campaign.getWhatsappSenderNumber())  // whatsappSenderNumber stores WABA-ID for WA campaigns
+                .wabaId(campaign.getMetaWabaId())
                 .build();
     }
 

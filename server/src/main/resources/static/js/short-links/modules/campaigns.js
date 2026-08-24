@@ -106,12 +106,13 @@ export function initCampaigns() {
         const campaignId    = document.getElementById("metaTokenCampaignId").value;
         const accessToken   = document.getElementById("metaAccessTokenInput").value.trim();
         const phoneNumberId = document.getElementById("metaPhoneNumberIdInput").value.trim();
+        const wabaId        = document.getElementById("metaWabaIdInput").value.trim();
         if (!accessToken)   { showToast("Access token is required",   "error"); return; }
         if (!phoneNumberId) { showToast("Phone Number ID is required", "error"); return; }
         try {
             await apiFetch(`${apiCampaignsUrl}/${campaignId}/meta-token`, {
                 method: "POST",
-                body: JSON.stringify({ access_token: accessToken, phone_number_id: phoneNumberId })
+                body: JSON.stringify({ access_token: accessToken, phone_number_id: phoneNumberId, waba_id: wabaId })
             });
             showToast("Meta token saved successfully!", "success");
             metaTokenModal.style.display = "none";
@@ -187,6 +188,7 @@ export async function loadCampaignTable() {
                 document.getElementById("metaTokenCampaignId").value   = campaignId;
                 document.getElementById("metaAccessTokenInput").value   = "";
                 document.getElementById("metaPhoneNumberIdInput").value = "";
+                document.getElementById("metaWabaIdInput").value        = "";
                 const oauthSection = document.getElementById("metaOAuthSection");
                 if (oauthSection) oauthSection.hidden = !window.META_CLIENT_ID;
                 metaTokenModal.style.display = "flex";

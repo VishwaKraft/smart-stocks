@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const { type, id, name, wabaId } = ctx;
         try {
             if (type === "whatsapp-template") {
-                const params = new URLSearchParams({ wabaId });
-                await fetch(`/api/whatsapp/templates?${params}&name=${encodeURIComponent(name)}`, { method: "DELETE" });
+                const query = ctx.queryParams || new URLSearchParams({ wabaId }).toString();
+                await fetch(`/api/whatsapp/templates?${query}&name=${encodeURIComponent(name)}`, { method: "DELETE" });
                 loadWhatsappTemplates();
             } else if (type === "segment") {
                 await fetch(`${apiSegmentsUrl}/${id}`, { method: "DELETE" });

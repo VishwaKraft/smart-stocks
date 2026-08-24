@@ -16,7 +16,13 @@ let _waTemplateTableBody       = null;
 let _waTemplateFormWrapper     = null;
 
 function getSelectedWabaId() {
-    return "1726866808739698";
+    if (_waTemplateCampaignSelect && _waTemplateCampaignSelect.value && _waTemplateCampaignSelect.value !== "manual") {
+        const campaign = state.cachedCampaigns.find(c => String(c.id) === _waTemplateCampaignSelect.value);
+        if (campaign && campaign.wabaId) {
+            return campaign.wabaId;
+        }
+    }
+    return "";  // let the server resolve using its own fallback
 }
 
 function getWabaRequestParams() {
@@ -113,7 +119,12 @@ export async function loadWhatsappTemplates() {
 
         _waTemplateTableBody.querySelectorAll("[data-delete-wa-tpl]").forEach(btn => {
             btn.addEventListener("click", () => {
-                setDeleteContext({ type: "whatsapp-template", name: btn.dataset.deleteWaTpl, wabaId: btn.dataset.wabaId });
+                setDeleteContext({
+                    type: "whatsapp-template",
+                    name: btn.dataset.deleteWaTpl,
+                    wabaId: btn.dataset.wabaId,
+                    queryParams: getWabaRequestParams()
+                });
                 console.log(`[WA Templates] Delete requested for template: ${btn.dataset.deleteWaTpl}, wabaId: ${btn.dataset.wabaId}`);
                 deleteModalMessage.textContent = `Delete WhatsApp template "${btn.dataset.deleteWaTplName}"? This action cannot be undone.`;
                 modal.style.display = "flex";

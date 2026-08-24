@@ -66,6 +66,28 @@ public class WhatsappTemplateController {
     }
 
     /**
+     * Resolves the WABA ID to use. Priority:
+     * 1. Explicit wabaId parameter (if valid)
+     * 2. Campaign's own metaWabaId (if campaignId provided)
+     * 3. Global configured fallback
+     */
+    private String resolveWabaId(String wabaId, Long campaignId) {
+        if (wabaId != null && !wabaId.isBlank() && !wabaId.startsWith("+")) {
+            return wabaId;
+        }
+        if (campaignId != null) {
+            Optional<Campaign> campaignOpt = campaignService.findById(campaignId);
+            if (campaignOpt.isPresent()) {
+                String campaignWabaId = campaignOpt.get().getMetaWabaId();
+                if (campaignWabaId != null && !campaignWabaId.isBlank()) {
+                    return campaignWabaId;
+                }
+            }
+        }
+        return configuredWabaId;
+    }
+
+    /**
      * Computes the appsecret_proof required for all server-side Meta Graph API calls.
      * Formula: HMAC-SHA256(key=app_secret, message=access_token), hex-encoded.
      */
@@ -119,9 +141,7 @@ public class WhatsappTemplateController {
             @RequestParam(value = "campaignId", required = false) Long campaignId,
             @RequestParam(value = "token", required = false) String manualToken) {
 
-        if (wabaId == null || wabaId.isBlank() || wabaId.startsWith("+")) {
-            wabaId = configuredWabaId;
-        }
+        wabaId = resolveWabaId(wabaId, campaignId);
         log.info("[WhatsappTemplateController] Fetching templates for wabaId={}, campaignId={}", wabaId, campaignId);
         try {
             String token = getAccessToken(campaignId, manualToken);
@@ -154,7 +174,8 @@ public class WhatsappTemplateController {
 
         String templateName = payload != null ? String.valueOf(payload.get("name")) : "unknown";
         if (wabaId == null || wabaId.isBlank() || wabaId.startsWith("+")) {
-            wabaId = configuredWabaId;
+            // For POST, also try to resolve from campaign
+            wabaId = resolveWabaId(wabaId, campaignId);
         }
         log.info("[WhatsappTemplateController] Creating template name={} for wabaId={}, campaignId={}",
                 templateName, wabaId, campaignId);
@@ -191,7 +212,7 @@ public class WhatsappTemplateController {
             @RequestParam(value = "token", required = false) String manualToken) {
 
         if (wabaId == null || wabaId.isBlank() || wabaId.startsWith("+")) {
-            wabaId = configuredWabaId;
+            wabaId = resolveWabaId(wabaId, campaignId);
         }
         log.info("[WhatsappTemplateController] Deleting template name={} for wabaId={}, campaignId={}", name, wabaId, campaignId);
         try {
