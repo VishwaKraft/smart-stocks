@@ -10,27 +10,19 @@ import { state, setDeleteContext } from '../state.js';
 // ── Internal DOM refs (populated once on init) ──────────────
 let _waTemplateCampaignSelect = null;
 let _waManualTokenInput        = null;
-let _waWabaIdInput             = null;
-let _waAutoDetectWabaBtn       = null;
 let _waTemplateEmpty           = null;
 let _waTemplateTable           = null;
 let _waTemplateTableBody       = null;
 let _waTemplateFormWrapper     = null;
 
 function getSelectedWabaId() {
-    if (_waWabaIdInput && _waWabaIdInput.value.trim()) {
-        const val = _waWabaIdInput.value.trim();
-        if (val !== "1726866808739698") {
-            return val;
-        }
-    }
     if (_waTemplateCampaignSelect && _waTemplateCampaignSelect.value && _waTemplateCampaignSelect.value !== "manual") {
         const campaign = state.cachedCampaigns.find(c => String(c.id) === _waTemplateCampaignSelect.value);
-        if (campaign && campaign.wabaId && campaign.wabaId !== "1726866808739698") {
+        if (campaign && campaign.wabaId) {
             return campaign.wabaId;
         }
     }
-    return "";  // let the server resolve using its own discovery
+    return "";  // let the server resolve using its own fallback
 }
 
 function getWabaRequestParams() {
@@ -39,61 +31,13 @@ function getWabaRequestParams() {
     const manualToken = _waManualTokenInput        ? _waManualTokenInput.value.trim() : "";
 
     const params = new URLSearchParams();
-    if (wabaId) {
-        params.append("wabaId", wabaId);
-    }
+    params.append("wabaId", wabaId);
     if (campaignId && campaignId !== "manual") {
         params.append("campaignId", campaignId);
     } else if (manualToken) {
         params.append("token", manualToken);
     }
     return params.toString();
-}
-
-export async function autoDetectWabaId() {
-    const campaignId  = _waTemplateCampaignSelect ? _waTemplateCampaignSelect.value : "";
-    const manualToken = _waManualTokenInput ? _waManualTokenInput.value.trim() : "";
-
-    if (!campaignId && !manualToken) {
-        showToast("Please select a Campaign or enter a Manual Meta Token first.", "error");
-        return;
-    }
-
-    const params = new URLSearchParams();
-    if (campaignId && campaignId !== "manual") {
-        params.append("campaignId", campaignId);
-    } else if (manualToken) {
-        params.append("token", manualToken);
-    }
-
-    try {
-        if (_waAutoDetectWabaBtn) {
-            _waAutoDetectWabaBtn.disabled = true;
-            _waAutoDetectWabaBtn.textContent = "⏳ Detecting...";
-        }
-        const res = await apiFetch(`/api/whatsapp/templates/accounts?${params.toString()}`);
-        const accounts = res.data || [];
-        if (accounts.length > 0) {
-            const primary = accounts[0];
-            const wabaId = primary.wabaId || primary.id;
-            const wabaName = primary.wabaName || primary.name || "WhatsApp Business Account";
-            if (_waWabaIdInput) {
-                _waWabaIdInput.value = wabaId;
-            }
-            showToast(`Auto-detected: ${wabaName} (${wabaId})`, "success");
-            console.log("[WA Templates] Auto-detected accounts:", accounts);
-        } else {
-            showToast("No WhatsApp Business Accounts found for this token. Verify 'whatsapp_business_management' permission in Meta App Dashboard.", "error");
-        }
-    } catch (err) {
-        console.error("[WA Templates] Auto-detect failed:", err);
-        showToast("Auto-detect failed: " + err.message, "error");
-    } finally {
-        if (_waAutoDetectWabaBtn) {
-            _waAutoDetectWabaBtn.disabled = false;
-            _waAutoDetectWabaBtn.textContent = "🔍 Detect";
-        }
-    }
 }
 
 export async function loadWaCampaignDropdown() {
@@ -145,7 +89,7 @@ export async function loadWhatsappTemplates() {
         if (templates.length === 0) {
             _waTemplateTable.hidden = true;
             _waTemplateEmpty.hidden = false;
-            _waTemplateEmpty.innerHTML = `No templates found on Meta for WhatsApp Business Account ID: <code>${escHtml(wabaId || 'auto-detected')}</code>. Click <strong>+ New WhatsApp Template</strong> above to create one.`;
+            _waTemplateEmpty.innerHTML = "No templates found on Meta for the selected configuration.";
             return;
         }
 
@@ -190,28 +134,13 @@ export async function loadWhatsappTemplates() {
         console.error("[WA Templates] Failed to load templates:", e);
         _waTemplateTable.hidden = true;
         _waTemplateEmpty.hidden = false;
-        _waTemplateEmpty.innerHTML = `
-            <div style="padding: 16px; background: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; color: #9b2c2c;">
-                <strong>⚠️ Failed to load WhatsApp Templates:</strong>
-                <p style="margin: 6px 0 10px; font-size: 13px;">${escHtml(e.message)}</p>
-                <div style="font-size: 12px; color: #742a2a; border-top: 1px dashed #feb2b2; padding-top: 8px;">
-                    <strong>💡 Troubleshooting Tips:</strong>
-                    <ul style="margin: 4px 0 0 18px; padding: 0;">
-                        <li>Click <strong>🔍 Detect</strong> next to the WABA ID field to auto-discover your WhatsApp Business Account ID.</li>
-                        <li>Ensure your Meta Access Token has the <code>whatsapp_business_management</code> and <code>whatsapp_business_messaging</code> permissions.</li>
-                        <li>Do not use the Meta App ID or Phone Number ID as the WABA ID. WhatsApp Business Account ID can be found in Meta Business Suite → WhatsApp Accounts.</li>
-                    </ul>
-                </div>
-            </div>
-        `;
+        _waTemplateEmpty.innerHTML = `<span class="error">Error: ${escHtml(e.message)}</span>`;
     }
 }
 
 export function initWhatsappTemplates() {
     _waTemplateCampaignSelect = document.getElementById("waTemplateCampaignSelect");
     _waManualTokenInput        = document.getElementById("waManualTokenInput");
-    _waWabaIdInput             = document.getElementById("waWabaIdInput");
-    _waAutoDetectWabaBtn       = document.getElementById("waAutoDetectWabaBtn");
     const waManualTokenGroup   = document.getElementById("waManualTokenGroup");
     const waReloadTemplatesBtn = document.getElementById("waReloadTemplatesBtn");
     _waTemplateEmpty           = document.getElementById("waTemplateEmpty");
@@ -230,28 +159,8 @@ export function initWhatsappTemplates() {
 
     if (_waTemplateCampaignSelect) {
         _waTemplateCampaignSelect.addEventListener("change", () => {
-            const isManual = _waTemplateCampaignSelect.value === "manual";
-            if (waManualTokenGroup) {
-                waManualTokenGroup.hidden = !isManual;
-            }
-            if (_waWabaIdInput) {
-                if (!isManual && _waTemplateCampaignSelect.value) {
-                    const campaign = state.cachedCampaigns.find(c => String(c.id) === _waTemplateCampaignSelect.value);
-                    if (campaign && campaign.wabaId && campaign.wabaId !== "1726866808739698") {
-                        _waWabaIdInput.value = campaign.wabaId;
-                    } else {
-                        _waWabaIdInput.value = "";
-                        autoDetectWabaId();
-                    }
-                } else if (isManual) {
-                    _waWabaIdInput.value = "";
-                }
-            }
+            waManualTokenGroup.hidden = _waTemplateCampaignSelect.value !== "manual";
         });
-    }
-
-    if (_waAutoDetectWabaBtn) {
-        _waAutoDetectWabaBtn.addEventListener("click", () => autoDetectWabaId());
     }
 
     if (waTplHeaderText) {
