@@ -588,7 +588,7 @@
 
             <!-- Configuration selection row -->
             <div class="config-bar"
-                style="display: flex; gap: 16px; margin: 16px 0; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+                style="display: flex; gap: 16px; margin: 16px 0; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; flex-wrap: wrap; align-items: flex-end;">
                 <div class="form-group"
                     style="flex: 1; min-width: 200px; margin: 0; display: flex; flex-direction: column;">
                     <label for="waTemplateCampaignSelect"
@@ -602,7 +602,7 @@
                 </div>
 
                 <div class="form-group" id="waManualTokenGroup"
-                    style="flex: 2; min-width: 300px; margin: 0; display: flex; flex-direction: column;" hidden>
+                    style="flex: 2; min-width: 260px; margin: 0; display: flex; flex-direction: column;" hidden>
                     <label for="waManualTokenInput"
                         style="font-weight: 600; font-size: 13px; color: #4a5568; display: block; margin-bottom: 6px;">Manual
                         Meta Access Token</label>
@@ -610,6 +610,17 @@
                         style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;">
                 </div>
 
+                <div class="form-group" id="waWabaIdGroup"
+                    style="flex: 1.5; min-width: 240px; margin: 0; display: flex; flex-direction: column;">
+                    <label for="waWabaIdInput"
+                        style="font-weight: 600; font-size: 13px; color: #4a5568; display: block; margin-bottom: 6px;">WhatsApp Business Account (WABA) ID</label>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="waWabaIdInput" placeholder="Auto-detected or enter WABA ID"
+                            style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: monospace; font-size: 13px;">
+                        <button type="button" id="waAutoDetectWabaBtn" class="secondary-btn" title="Auto-detect WABA ID using the selected token"
+                            style="height: 38px; padding: 0 12px; font-size: 12px; white-space: nowrap;">🔍 Detect</button>
+                    </div>
+                </div>
 
                 <div style="display: flex; align-items: flex-end;">
                     <button type="button" id="waReloadTemplatesBtn" class="secondary-btn"
@@ -1676,10 +1687,10 @@
                     style="width:100%; padding:9px 12px; border:1px solid #dde3ea; border-radius:8px; font-family:Inter; font-size:14px;">
             </div>
             <div class="form-group full-width" style="margin: 10px 0;">
-                <label for="metaWabaIdInput">WhatsApp Business Account ID</label>
-                <input type="text" id="metaWabaIdInput" placeholder="e.g. 1726866808739698"
+                <label for="metaWabaIdInput">WhatsApp Business Account ID (Optional)</label>
+                <input type="text" id="metaWabaIdInput" placeholder="e.g. 104829381928374 (Optional - will auto-discover)"
                     style="width:100%; padding:9px 12px; border:1px solid #dde3ea; border-radius:8px; font-family:Inter; font-size:14px;">
-                <span style="font-size:11px; color:#718096; margin-top:4px; display:block;">Found in Meta Business Suite → WhatsApp Accounts. Different phone numbers may belong to different WABAs.</span>
+                <span style="font-size:11px; color:#718096; margin-top:4px; display:block;">If left blank, it will be auto-detected from your Phone Number ID or Access Token. Note: WABA ID is different from App ID.</span>
             </div>
             <div class="modal-buttons" style="margin-top:16px;">
                 <button id="confirmMetaToken" class="primary-btn"
