@@ -108,7 +108,6 @@ export function initCampaigns() {
         const phoneNumberId = document.getElementById("metaPhoneNumberIdInput").value.trim();
         const wabaId        = document.getElementById("metaWabaIdInput").value.trim();
         if (!accessToken)   { showToast("Access token is required",   "error"); return; }
-        if (!phoneNumberId) { showToast("Phone Number ID is required", "error"); return; }
         try {
             await apiFetch(`${apiCampaignsUrl}/${campaignId}/meta-token`, {
                 method: "POST",

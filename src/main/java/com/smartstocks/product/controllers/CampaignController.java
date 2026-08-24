@@ -120,10 +120,6 @@ public class CampaignController {
             log.warn("[CampaignController] saveMetaToken missing access_token for campaignId={}", id);
             return ResponseEntity.badRequest().body("access_token is required");
         }
-        if (phoneNumberId == null || phoneNumberId.isBlank()) {
-            log.warn("[CampaignController] saveMetaToken missing phone_number_id for campaignId={}", id);
-            return ResponseEntity.badRequest().body("phone_number_id is required");
-        }
         log.info("[CampaignController] Saving Meta token for campaignId={}, phoneNumberId={}, wabaId={}", id, phoneNumberId, wabaId);
         try {
             campaignService.saveMetaToken(id, token, phoneNumberId, wabaId);
