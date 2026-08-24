@@ -6,13 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -73,26 +71,16 @@ public class MetaWhatsappDiscoveryService {
         if (accessToken == null || accessToken.isBlank()) {
             return Collections.emptyList();
         }
-        log.info("[MetaDiscovery] Starting full WABA discovery for token (length={})...", accessToken.length());
         Map<String, DiscoveredWabaInfo> resultMap = new LinkedHashMap<>();
 
-        // 0. Inspect token permissions (/me/permissions)
-        inspectPermissions(accessToken);
-
-        // 1. debug_token endpoint (extract granular scopes target_ids)
+        // 1. debug_token endpoint (granular scopes)
         discoverFromDebugToken(accessToken, resultMap);
 
-        // 2. /me/whatsapp_business_accounts
-        discoverFromMeWabas(accessToken, resultMap);
-
-        // 3. /me/businesses -> owned and client WABAs
+        // 2. /me/businesses -> owned and client WABAs
         discoverFromBusinesses(accessToken, resultMap);
 
-        // 4. /me/accounts (Facebook Pages with linked WhatsApp)
-        discoverFromPages(accessToken, resultMap);
-
-        // 5. App-level WABAs if metaClientId is configured
-        discoverFromApp(accessToken, resultMap);
+        // 3. /me/whatsapp_business_accounts
+        discoverFromMeWabas(accessToken, resultMap);
 
         // For all discovered WABAs without phone numbers, attempt to fetch phone numbers
         for (Map.Entry<String, DiscoveredWabaInfo> entry : resultMap.entrySet()) {
@@ -101,10 +89,6 @@ public class MetaWhatsappDiscoveryService {
                 enrichPhoneNumbersForWaba(accessToken, info);
             }
         }
-
-        log.info("[MetaDiscovery] Discovery completed. Total discovered WABA accounts: {}", resultMap.size());
-        resultMap.forEach((id, waba) -> log.info("[MetaDiscovery] -> WABA ID: {}, Name: {}, Phone ID: {}, Display: {}",
-                id, waba.getWabaName(), waba.getPhoneNumberId(), waba.getDisplayPhoneNumber()));
 
         return new ArrayList<>(resultMap.values());
     }
@@ -141,22 +125,6 @@ public class MetaWhatsappDiscoveryService {
             }
         }
         return all.isEmpty() ? Optional.empty() : Optional.of(all.get(0));
-    }
-
-    /**
-     * Inspects /me/permissions and logs granted/declined scopes.
-     */
-    private void inspectPermissions(String accessToken) {
-        try {
-            String url = appendProof(GRAPH_BASE + "/me/permissions", accessToken);
-            ResponseEntity<Map> resp = restTemplate.exchange(URI.create(url), HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
-            if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
-                Object data = resp.getBody().get("data");
-                log.info("[MetaDiscovery] Granted Permissions for Token: {}", data);
-            }
-        } catch (Exception ex) {
-            log.warn("[MetaDiscovery] /me/permissions check: {}", ex.getMessage());
-        }
     }
 
     /**
@@ -200,24 +168,20 @@ public class MetaWhatsappDiscoveryService {
 
     private void discoverFromDebugToken(String accessToken, Map<String, DiscoveredWabaInfo> resultMap) {
         try {
-            String appToken = (metaClientId != null && !metaClientId.isBlank() && metaClientSecret != null && !metaClientSecret.isBlank())
+            String tokenToUse = (metaClientId != null && !metaClientId.isBlank() && metaClientSecret != null && !metaClientSecret.isBlank())
                     ? metaClientId.trim() + "|" + metaClientSecret.trim()
-                    : accessToken.trim();
-            String url = GRAPH_BASE + "/debug_token?input_token="
-                    + URLEncoder.encode(accessToken.trim(), StandardCharsets.UTF_8)
-                    + "&access_token=" + URLEncoder.encode(appToken, StandardCharsets.UTF_8);
+                    : accessToken;
+            String url = GRAPH_BASE + "/debug_token?input_token=" + accessToken.trim() + "&access_token=" + tokenToUse;
             URI uri = URI.create(url);
             ResponseEntity<Map> resp = restTemplate.getForEntity(uri, Map.class);
             if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
                 Map<?, ?> body = resp.getBody();
-                log.info("[MetaDiscovery] debug_token response: {}", body);
                 if (body.get("data") instanceof Map) {
                     Map<?, ?> data = (Map<?, ?>) body.get("data");
                     if (data.get("granular_scopes") instanceof List) {
                         List<?> granularScopes = (List<?>) data.get("granular_scopes");
                         List<String> wabaIds = new ArrayList<>();
                         List<String> phoneIds = new ArrayList<>();
-                        List<String> businessIds = new ArrayList<>();
 
                         for (Object item : granularScopes) {
                             if (item instanceof Map) {
@@ -232,8 +196,6 @@ public class MetaWhatsappDiscoveryService {
                                                 wabaIds.add(targetId);
                                             } else if ("whatsapp_business_messaging".equalsIgnoreCase(scope)) {
                                                 phoneIds.add(targetId);
-                                            } else if ("business_management".equalsIgnoreCase(scope)) {
-                                                businessIds.add(targetId);
                                             }
                                         }
                                     }
@@ -256,30 +218,11 @@ public class MetaWhatsappDiscoveryService {
                                 resultMap.put(info.getWabaId(), info);
                             });
                         }
-
-                        for (String bizId : businessIds) {
-                            fetchWabasForBusiness(accessToken, bizId, "owned_whatsapp_business_accounts", resultMap);
-                            fetchWabasForBusiness(accessToken, bizId, "client_whatsapp_business_accounts", resultMap);
-                        }
                     }
                 }
             }
         } catch (Exception ex) {
-            log.warn("[MetaDiscovery] debug_token inspection notice: {}", ex.getMessage());
-        }
-    }
-
-    private void discoverFromMeWabas(String accessToken, Map<String, DiscoveredWabaInfo> resultMap) {
-        try {
-            String url = appendProof(GRAPH_BASE + "/me/whatsapp_business_accounts?fields=id,name,timezone_id,currency", accessToken);
-            URI uri = URI.create(url);
-            ResponseEntity<Map> resp = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
-            if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
-                log.info("[MetaDiscovery] /me/whatsapp_business_accounts returned: {}", resp.getBody());
-                extractWabaData(resp.getBody(), resultMap);
-            }
-        } catch (Exception ex) {
-            log.warn("[MetaDiscovery] /me/whatsapp_business_accounts notice: {}", ex.getMessage());
+            log.debug("[MetaDiscovery] debug_token discovery notice: {}", ex.getMessage());
         }
     }
 
@@ -290,7 +233,6 @@ public class MetaWhatsappDiscoveryService {
             ResponseEntity<Map> resp = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
             if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
                 Map<?, ?> body = resp.getBody();
-                log.info("[MetaDiscovery] /me/businesses returned: {}", body);
                 if (body.get("data") instanceof List) {
                     List<?> businesses = (List<?>) body.get("data");
                     for (Object bObj : businesses) {
@@ -303,7 +245,7 @@ public class MetaWhatsappDiscoveryService {
                 }
             }
         } catch (Exception ex) {
-            log.warn("[MetaDiscovery] /me/businesses notice: {}", ex.getMessage());
+            log.debug("[MetaDiscovery] me/businesses discovery notice: {}", ex.getMessage());
         }
     }
 
@@ -313,61 +255,23 @@ public class MetaWhatsappDiscoveryService {
             URI uri = URI.create(url);
             ResponseEntity<Map> resp = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
             if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
-                log.info("[MetaDiscovery] Business {} edge {} returned: {}", bizId, edge, resp.getBody());
                 extractWabaData(resp.getBody(), resultMap);
             }
         } catch (Exception ex) {
-            log.warn("[MetaDiscovery] Business {} edge {} notice: {}", bizId, edge, ex.getMessage());
+            log.debug("[MetaDiscovery] fetch business {} edge {} notice: {}", bizId, edge, ex.getMessage());
         }
     }
 
-    private void discoverFromPages(String accessToken, Map<String, DiscoveredWabaInfo> resultMap) {
+    private void discoverFromMeWabas(String accessToken, Map<String, DiscoveredWabaInfo> resultMap) {
         try {
-            String url = appendProof(GRAPH_BASE + "/me/accounts?fields=id,name,whatsapp_business_account", accessToken);
+            String url = appendProof(GRAPH_BASE + "/me/whatsapp_business_accounts?fields=id,name,timezone_id,currency", accessToken);
             URI uri = URI.create(url);
             ResponseEntity<Map> resp = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
             if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
-                Map<?, ?> body = resp.getBody();
-                if (body.get("data") instanceof List) {
-                    List<?> pages = (List<?>) body.get("data");
-                    for (Object pObj : pages) {
-                        if (pObj instanceof Map) {
-                            Map<?, ?> pMap = (Map<?, ?>) pObj;
-                            if (pMap.get("whatsapp_business_account") instanceof Map) {
-                                Map<?, ?> wMap = (Map<?, ?>) pMap.get("whatsapp_business_account");
-                                String wabaId = String.valueOf(wMap.get("id"));
-                                if (wabaId != null && !wabaId.isBlank() && !"null".equals(wabaId) && !DUMMY_WABA_ID.equals(wabaId)) {
-                                    log.info("[MetaDiscovery] Discovered WABA ID {} from Page: {}", wabaId, pMap.get("name"));
-                                    String pageWabaName = wMap.get("name") != null ? String.valueOf(wMap.get("name")) : "Page WhatsApp (" + pMap.get("name") + ")";
-                                    resultMap.put(wabaId, DiscoveredWabaInfo.builder()
-                                            .wabaId(wabaId)
-                                            .wabaName(pageWabaName)
-                                            .build());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            log.warn("[MetaDiscovery] /me/accounts notice: {}", ex.getMessage());
-        }
-    }
-
-    private void discoverFromApp(String accessToken, Map<String, DiscoveredWabaInfo> resultMap) {
-        if (metaClientId == null || metaClientId.isBlank()) {
-            return;
-        }
-        try {
-            String url = appendProof(GRAPH_BASE + "/" + metaClientId.trim() + "/whatsapp_business_accounts?fields=id,name,timezone_id,currency", accessToken);
-            URI uri = URI.create(url);
-            ResponseEntity<Map> resp = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(bearerHeaders(accessToken)), Map.class);
-            if (resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null) {
-                log.info("[MetaDiscovery] App {} whatsapp_business_accounts returned: {}", metaClientId, resp.getBody());
                 extractWabaData(resp.getBody(), resultMap);
             }
         } catch (Exception ex) {
-            log.warn("[MetaDiscovery] App whatsapp_business_accounts notice: {}", ex.getMessage());
+            log.debug("[MetaDiscovery] me/whatsapp_business_accounts notice: {}", ex.getMessage());
         }
     }
 
@@ -426,13 +330,12 @@ public class MetaWhatsappDiscoveryService {
                         info.setPhoneNumberId(String.valueOf(pMap.get("id")));
                         info.setDisplayPhoneNumber((String) pMap.get("display_phone_number"));
                         info.setVerifiedName((String) pMap.get("verified_name"));
-                        log.info("[MetaDiscovery] Enriched WABA {} with Phone Number ID {} ({})",
-                                info.getWabaId(), info.getPhoneNumberId(), info.getDisplayPhoneNumber());
+                        log.info("[MetaDiscovery] Enriched WABA {} with Phone Number ID {}", info.getWabaId(), info.getPhoneNumberId());
                     }
                 }
             }
         } catch (Exception ex) {
-            log.warn("[MetaDiscovery] enrich phone numbers for WABA {} notice: {}", info.getWabaId(), ex.getMessage());
+            log.debug("[MetaDiscovery] enrich phone numbers for WABA {} notice: {}", info.getWabaId(), ex.getMessage());
         }
     }
 }
