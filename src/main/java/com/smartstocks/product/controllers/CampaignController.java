@@ -108,13 +108,14 @@ public class CampaignController {
     }
 
     /**
-     * Stores the permanent Meta/WhatsApp access token and phone number ID for a campaign.
+     * Stores the permanent Meta/WhatsApp access token, phone number ID, and WABA ID for a campaign.
      * Called after the user manually enters their token from the Meta App Dashboard.
      */
     @PostMapping("/{id}/meta-token")
     public ResponseEntity<?> saveMetaToken(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         String token = payload.get("access_token");
         String phoneNumberId = payload.get("phone_number_id");
+        String wabaId = payload.get("waba_id");
         if (token == null || token.isBlank()) {
             log.warn("[CampaignController] saveMetaToken missing access_token for campaignId={}", id);
             return ResponseEntity.badRequest().body("access_token is required");
@@ -123,9 +124,9 @@ public class CampaignController {
             log.warn("[CampaignController] saveMetaToken missing phone_number_id for campaignId={}", id);
             return ResponseEntity.badRequest().body("phone_number_id is required");
         }
-        log.info("[CampaignController] Saving Meta token for campaignId={}, phoneNumberId={}", id, phoneNumberId);
+        log.info("[CampaignController] Saving Meta token for campaignId={}, phoneNumberId={}, wabaId={}", id, phoneNumberId, wabaId);
         try {
-            campaignService.saveMetaToken(id, token, phoneNumberId);
+            campaignService.saveMetaToken(id, token, phoneNumberId, wabaId);
             return ResponseEntity.ok("Meta token saved");
         } catch (IllegalArgumentException e) {
             log.warn("[CampaignController] Campaign not found for Meta token save id={}: {}", id, e.getMessage());

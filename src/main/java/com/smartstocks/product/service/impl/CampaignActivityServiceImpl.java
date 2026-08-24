@@ -446,10 +446,13 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                 throw new IllegalArgumentException("A WhatsApp template name must be configured in the activity before testing.");
             }
 
+            String waLanguage = (activity.getWhatsappLanguage() != null && !activity.getWhatsappLanguage().isBlank())
+                    ? activity.getWhatsappLanguage() : "en_US";
+
             com.smartstocks.product.service.provider.SendResult result = whatsappProvider.send(
                     testPhone,
                     waTemplateName,
-                    "en_US"
+                    waLanguage
             );
 
             if (result.isSuccess()) {

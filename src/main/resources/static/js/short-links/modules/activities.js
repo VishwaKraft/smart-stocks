@@ -325,7 +325,7 @@ export async function loadActivityTable() {
                     const c = campaignsById[a.campaignId];
                     updateTemplateGroupVisibility(c);
                     if (c && c.campaignType === "WHATSAPP") {
-                        await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
+                        await loadWhatsappTemplatesForActivity(c.wabaId || "", c.id);
                         document.getElementById("actWaTemplate").value  = a.whatsappTemplateName || "";
                         document.getElementById("actWaLanguage").value  = a.whatsappLanguage || "en";
                     } else if (c && c.campaignType === "VOICE") {
@@ -481,7 +481,7 @@ export function initActivities() {
         actCampaignSel.addEventListener("change", async (e) => {
             const c = campaignsById[e.target.value];
             updateTemplateGroupVisibility(c);
-            if (c && c.campaignType === "WHATSAPP") await loadWhatsappTemplatesForActivity("1726866808739698", c.id);
+            if (c && c.campaignType === "WHATSAPP") await loadWhatsappTemplatesForActivity(c.wabaId || "", c.id);
             else if (c && c.campaignType === "VOICE") await loadVoiceTemplatesForActivity(c.id);
             else if (c && c.campaignType === "EMAIL") await loadTemplateDropdownsForActivity();
         });
