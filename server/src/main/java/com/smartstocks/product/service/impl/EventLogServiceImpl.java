@@ -6,6 +6,7 @@ import com.smartstocks.product.models.EventLog;
 import com.smartstocks.product.models.User;
 import com.smartstocks.product.repository.EventLogRepository;
 import com.smartstocks.product.service.IEventLogService;
+import com.smartstocks.product.service.IpGeoService;
 import com.smartstocks.product.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,9 @@ public class EventLogServiceImpl implements IEventLogService {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private IpGeoService ipGeoService;
+
     @Override
     public EventLogResponseDto logEvent(
             EventLogRequestDto request,
@@ -35,11 +39,17 @@ public class EventLogServiceImpl implements IEventLogService {
             String userAgent,
             Map<String, String> requestHeaders,
             Principal principal) {
+
+        String resolvedIp = firstNonBlank(request.getIpAddress(), ipAddress);
+
+        // Enrich event_info with geo/ISP data from ip-api.com before persisting
+        Map<String, Object> geoData = ipGeoService.lookup(resolvedIp);
+
         EventLog eventLog = new EventLog();
         eventLog.setEventType(request.getEventType());
-        eventLog.setEventInfo(mergeEventInfo(request.getEventInfo(), requestHeaders));
+        eventLog.setEventInfo(mergeEventInfo(request.getEventInfo(), requestHeaders, geoData));
         eventLog.setUserId(resolveUserId(request.getUserId(), principal));
-        eventLog.setIpAddress(firstNonBlank(request.getIpAddress(), ipAddress));
+        eventLog.setIpAddress(resolvedIp);
         eventLog.setUserAgent(firstNonBlank(request.getUserAgent(), userAgent, ""));
         eventLog.setTimestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now());
 
@@ -112,10 +122,16 @@ public class EventLogServiceImpl implements IEventLogService {
         return null;
     }
 
-    private Map<String, Object> mergeEventInfo(Map<String, Object> eventInfo, Map<String, String> requestHeaders) {
+    private Map<String, Object> mergeEventInfo(
+            Map<String, Object> eventInfo,
+            Map<String, String> requestHeaders,
+            Map<String, Object> geoData) {
         Map<String, Object> merged = eventInfo != null ? new HashMap<>(eventInfo) : new HashMap<>();
         if (requestHeaders != null && !requestHeaders.isEmpty()) {
             merged.put("headers", requestHeaders);
+        }
+        if (geoData != null && !geoData.isEmpty()) {
+            merged.put("ip_geo", geoData);
         }
         return merged;
     }
