@@ -3,6 +3,7 @@ package com.smartstocks.product.scheduler;
 import com.smartstocks.product.models.*;
 import com.smartstocks.product.repository.CampaignActivityExecutionLogRepository;
 import com.smartstocks.product.repository.CampaignActivityRepository;
+import com.smartstocks.product.repository.CampaignUnsubscribeRepository;
 import com.smartstocks.product.repository.EmailBounceEventRepository;
 import com.smartstocks.product.repository.SegmentUserRepository;
 import com.smartstocks.product.repository.WhatsappMessageLogRepository;
@@ -56,6 +57,7 @@ public class CampaignScheduler {
     private final ICampaignService campaignService;
     private final WhatsappMessageLogRepository whatsappMessageLogRepository;
     private final IShortLinkService shortLinkService;
+    private final CampaignUnsubscribeRepository unsubscribeRepository;
 
     private final com.smartstocks.product.repository.CampaignSegmentUserRepository campaignSegmentUserRepository;
 
@@ -498,6 +500,7 @@ public class CampaignScheduler {
 
         int sentCount = 0;
         int bounceCount = 0;
+        int skippedUnsubscribed = 0;
         SendResult lastResult = null;
 
         // Fetch external data if dataSourceUrl is present
@@ -508,6 +511,10 @@ public class CampaignScheduler {
                 externalData.putAll(fetched);
             }
         }
+
+        // Load the full set of unsubscribed emails for this campaign once (bulk fetch)
+        Set<String> unsubscribedEmails = unsubscribeRepository
+                .findEmailIdsByCampaignId(campaign.getId());
 
         Set<String> processedEmails = new HashSet<>();
 
@@ -520,6 +527,14 @@ public class CampaignScheduler {
             }
             if (!processedEmails.add(emailId.toLowerCase())) {
                 log.debug("[Scheduler] Skipping duplicate email [{}]", emailId);
+                continue;
+            }
+
+            // 4a-pre. Skip users who have unsubscribed from this campaign
+            if (unsubscribedEmails.contains(emailId.trim().toLowerCase())) {
+                skippedUnsubscribed++;
+                log.debug("[Scheduler] Skipping unsubscribed recipient [{}] for campaign [{}]",
+                        emailId, campaign.getCampaignCode());
                 continue;
             }
 
@@ -545,19 +560,26 @@ public class CampaignScheduler {
                         activity.getId(),
                         nonce);
 
-                String finalBody = shortenLinksInHtml(bodyWithPixel, campaign.getCampaignCode(), recipient.getUserId());
+                // 4d. Inject unsubscribe footer so every outbound email contains the link
+                String bodyWithUnsub = campaignService.injectUnsubscribeFooter(
+                        bodyWithPixel,
+                        campaign.getCampaignCode(),
+                        emailId,
+                        activity.getId());
+
+                String finalBody = shortenLinksInHtml(bodyWithUnsub, campaign.getCampaignCode(), recipient.getUserId());
 
                 RenderedTemplate emailContent = new RenderedTemplate(
                         rendered.getRenderedSubject(), finalBody);
 
-                // 4d. Send via provider (single recipient per call)
+                // 4e. Send via provider (single recipient per call)
                 lastResult = emailProvider.send(emailContent, Collections.singletonList(emailId), campaign);
 
                 if (lastResult.isSuccess()) {
                     sentCount++;
                     log.debug("[Scheduler] Sent to [{}] for activity [{}]", emailId, activity.getId());
                 } else {
-                    // 4e. Record bounce
+                    // 4f. Record bounce
                     bounceCount++;
                     log.warn("[Scheduler] Send failed (bounce) for [{}], activity [{}]: {}",
                             emailId, activity.getId(), lastResult.getErrorMessage());
@@ -571,6 +593,11 @@ public class CampaignScheduler {
                 recordBounce(activity, campaign, emailId,
                         SendResult.failure("Exception: " + ex.getMessage()));
             }
+        }
+
+        if (skippedUnsubscribed > 0) {
+            log.info("[Scheduler] Skipped {} unsubscribed recipient(s) for activity [{}] campaign [{}]",
+                    skippedUnsubscribed, activity.getId(), campaign.getCampaignCode());
         }
 
         // 5. Build aggregate result for execution log

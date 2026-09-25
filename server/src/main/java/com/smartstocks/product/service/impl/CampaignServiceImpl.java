@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.LinkedMultiValueMap;
@@ -59,6 +61,15 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Value("${meta.waba-id:1726866808739698}")
     private String configuredWabaId;
+
+    /**
+     * Server-side secret used to sign unsubscribe tokens (HMAC-MD5).
+     * Set via {@code app.unsubscribe.secret} in application.yml.
+     * Defaults to a hard-coded fallback so the app boots without configuration,
+     * but <strong>always override this in production</strong>.
+     */
+    @Value("${app.unsubscribe.secret:change-me-in-production-unsubscribe-secret}")
+    private String unsubscribeSecret;
 
     public CampaignServiceImpl(
             CampaignRepository campaignRepository,
@@ -503,6 +514,102 @@ public class CampaignServiceImpl implements ICampaignService {
             return null;
         }
         return value.trim();
+    }
+
+    // -----------------------------------------------------------------------
+    // Unsubscribe link helpers
+    // -----------------------------------------------------------------------
+
+    @Override
+    public String buildUnsubscribeUrl(String campaignCode, String emailId, Long activityId) {
+        // Derive the unsubscribe base URL from the same base used for tracking
+        // e.g. if trackingBaseUrl = "http://host/tracking" -> "http://host/tracking/unsubscribe"
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromHttpUrl(trackingBaseUrl + "/unsubscribe");
+        if (campaignCode != null && !campaignCode.isBlank()) {
+            builder.queryParam("campaign", campaignCode);
+        }
+        if (emailId != null && !emailId.isBlank()) {
+            try {
+                builder.queryParam("email_id",
+                        URLEncoder.encode(emailId, StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                builder.queryParam("email_id", emailId);
+            }
+        }
+        if (activityId != null) {
+            builder.queryParam("activity_id", activityId);
+        }
+
+        // Append HMAC-MD5 signature so only the intended recipient can use the link.
+        // token = HMAC-MD5( "<normalised-email>:<campaignCode>", unsubscribeSecret )
+        String token = computeUnsubscribeToken(
+                emailId  != null ? emailId.trim().toLowerCase()  : "",
+                campaignCode != null ? campaignCode : "");
+        builder.queryParam("token", token);
+
+        return builder.build(false).toUriString();
+    }
+
+    @Override
+    public String injectUnsubscribeFooter(String htmlBody, String campaignCode, String emailId, Long activityId) {
+        if (htmlBody == null || htmlBody.isBlank()) {
+            return htmlBody;
+        }
+
+        String unsubscribeUrl = buildUnsubscribeUrl(campaignCode, emailId, activityId);
+
+        String footer =
+            "<div style=\"margin-top:32px;padding:16px;text-align:center;" +
+            "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" +
+            "font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;\">" +
+            "You're receiving this email because you're a subscriber. " +
+            "<a href=\"" + unsubscribeUrl + "\" " +
+            "style=\"color:#6b7280;text-decoration:underline;\" " +
+            "target=\"_blank\">Unsubscribe</a>" +
+            "</div>";
+
+        String lower = htmlBody.toLowerCase(Locale.ROOT);
+        int bodyClose = lower.lastIndexOf("</body>");
+        if (bodyClose >= 0) {
+            return htmlBody.substring(0, bodyClose) + footer + "\n" + htmlBody.substring(bodyClose);
+        }
+        return htmlBody + "\n" + footer;
+    }
+
+    // -----------------------------------------------------------------------
+    // Unsubscribe token (HMAC-MD5)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Computes an HMAC-MD5 hex digest that binds an email address to a campaign.
+     * The message is {@code "<normalised-email>:<campaignCode>"} and the key
+     * is the value of {@code app.unsubscribe.secret}.
+     *
+     * <p>HMAC-MD5 is used here for link-signing only (not password storage).
+     * Because the secret key is server-side, the digest cannot be forged even
+     * though MD5 itself is considered cryptographically weak for collision resistance.
+     *
+     * @param emailId      normalised (lower-case, trimmed) recipient email
+     * @param campaignCode campaign code
+     * @return 32-character lowercase hex string, or an empty string on failure
+     */
+    public String computeUnsubscribeToken(String emailId, String campaignCode) {
+        try {
+            String message = emailId + ":" + campaignCode;
+            Mac mac = Mac.getInstance("HmacMD5");
+            mac.init(new SecretKeySpec(
+                    unsubscribeSecret.getBytes(StandardCharsets.UTF_8), "HmacMD5"));
+            byte[] rawHmac = mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(rawHmac.length * 2);
+            for (byte b : rawHmac) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+            log.error("[CampaignService] Failed to compute unsubscribe HMAC token: {}", ex.getMessage(), ex);
+            return "";
+        }
     }
 
     private String normalizeBaseUrl(String baseUrl) {
