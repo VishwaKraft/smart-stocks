@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring()
                 .antMatchers(HttpMethod.POST, "/events")
-                .antMatchers("/tracking/**")
+                .antMatchers("/tracking/**")   // includes /tracking/unsubscribe
                 .antMatchers("/s/**")
                 .antMatchers("/short-links")
                 .antMatchers("/css/**", "/js/**", "/images/**")

@@ -6,6 +6,7 @@ import com.smartstocks.product.models.*;
 import com.smartstocks.product.repository.CampaignActivityRepository;
 import com.smartstocks.product.repository.CampaignActivityWeekdayRepository;
 import com.smartstocks.product.repository.CampaignRepository;
+import com.smartstocks.product.repository.CampaignUnsubscribeRepository;
 import com.smartstocks.product.repository.SegmentRepository;
 import com.smartstocks.product.repository.SegmentUserRepository;
 import com.smartstocks.product.repository.TemplateRepository;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +57,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final SegmentRepository segmentRepository;
     private final SegmentUserRepository segmentUserRepository;
     private final CampaignSegmentUserRepository campaignSegmentUserRepository;
+    private final CampaignUnsubscribeRepository unsubscribeRepository;
     private final CampaignEventLogger eventLogger;
     private final ICampaignService campaignService;
     private final TemplateRendererFactory templateRendererFactory;
@@ -397,8 +400,15 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     htmlWithPixel,
                     testVariables
             );
-            
-            String finalBody = shortenLinksInHtml(rendered.getRenderedBody(), campaign.getCampaignCode(), null);
+
+            // Inject unsubscribe footer so test emails mirror real sends
+            String bodyWithUnsub = campaignService.injectUnsubscribeFooter(
+                    rendered.getRenderedBody(),
+                    campaign.getCampaignCode(),
+                    testEmailId,
+                    activity.getId());
+
+            String finalBody = shortenLinksInHtml(bodyWithUnsub, campaign.getCampaignCode(), null);
             
             com.smartstocks.product.service.renderer.RenderedTemplate finalRendered = new com.smartstocks.product.service.renderer.RenderedTemplate(
                     rendered.getRenderedSubject(),
@@ -547,6 +557,25 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         }
 
         List<com.smartstocks.product.models.SegmentUser> segmentUsers = segmentUserRepository.findBySegmentId(segment.getId());
+
+        // Filter out users who have unsubscribed from this campaign at the segment generation stage.
+        // This gives an accurate recipient_count and avoids sending to opted-out users even if
+        // the scheduler's runtime filter were ever bypassed.
+        Set<String> unsubscribedEmails = java.util.Collections.emptySet();
+        if (activity.getCampaign().getCampaignType() == com.smartstocks.product.models.CampaignType.EMAIL) {
+            unsubscribedEmails = unsubscribeRepository
+                    .findEmailIdsByCampaignId(activity.getCampaign().getId());
+        }
+        final Set<String> finalUnsubscribedEmails = unsubscribedEmails;
+        if (!finalUnsubscribedEmails.isEmpty()) {
+            int before = segmentUsers.size();
+            segmentUsers = segmentUsers.stream()
+                    .filter(su -> su.getEmailId() == null
+                            || !finalUnsubscribedEmails.contains(su.getEmailId().trim().toLowerCase()))
+                    .collect(Collectors.toList());
+            log.info("[ActivityService] Filtered {} unsubscribed user(s) from segment for activity [{}]",
+                    before - segmentUsers.size(), id);
+        }
 
         InfobipPeopleProvider peopleProvider = null;
         if (activity.getCampaign().getCampaignType() == com.smartstocks.product.models.CampaignType.VOICE) {

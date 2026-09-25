@@ -68,4 +68,39 @@ public interface ICampaignService {
 
     /** Exchanges the Meta OAuth code and saves the permanent access token. */
     void saveMetaAuthCode(Long id, String code, String redirectUri);
+
+    /**
+     * Builds a one-click unsubscribe URL for the given campaign and recipient email.
+     * The URL points to {@code /tracking/unsubscribe} and includes campaign, email_id,
+     * and optionally the activity_id so the controller can record the exact context.
+     *
+     * @param campaignCode the campaign's unique code
+     * @param emailId      the recipient email address
+     * @param activityId   the activity whose email contained the link (may be null)
+     * @return fully-qualified unsubscribe URL
+     */
+    String buildUnsubscribeUrl(String campaignCode, String emailId, Long activityId);
+
+    /**
+     * Appends a branded unsubscribe footer block (containing a visible unsubscribe link)
+     * to the bottom of an HTML email body — before {@code </body>} when present.
+     *
+     * @param htmlBody     the rendered email HTML
+     * @param campaignCode the campaign's unique code
+     * @param emailId      the recipient email address
+     * @param activityId   the originating activity ID
+     * @return the HTML with the unsubscribe footer injected
+     */
+    String injectUnsubscribeFooter(String htmlBody, String campaignCode, String emailId, Long activityId);
+
+    /**
+     * Computes the HMAC-MD5 token that is appended to every unsubscribe URL.
+     * Used by {@link com.smartstocks.product.controllers.UnsubscribeController}
+     * to verify that an incoming unsubscribe request was not forged.
+     *
+     * @param emailId      normalised (lower-case, trimmed) recipient email
+     * @param campaignCode campaign code
+     * @return 32-character lowercase hex HMAC-MD5 digest
+     */
+    String computeUnsubscribeToken(String emailId, String campaignCode);
 }
