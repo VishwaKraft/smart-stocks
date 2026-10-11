@@ -320,6 +320,9 @@ export async function loadActivityTable() {
                     const a = await apiFetch(`${apiActivitiesUrl}/${btn.dataset.editAct}`);
                     activityEditId.value = a.id;
                     activityFormTitle.textContent = "Edit Activity";
+
+                    // Ensure campaign dropdown is populated before setting the value
+                    await loadCampaignDropdowns();
                     document.getElementById("actCampaign").value = a.campaignId;
 
                     const c = campaignsById[a.campaignId];
@@ -332,6 +335,8 @@ export async function loadActivityTable() {
                         await loadVoiceTemplatesForActivity(c.id);
                         document.getElementById("actVoiceTemplate").value = a.voiceTemplateId || "";
                     } else if (c && c.campaignType === "EMAIL") {
+                        // Load email template dropdown before setting the selected value
+                        await loadTemplateDropdownsForActivity();
                         document.getElementById("actTemplate").value = a.templateId;
                     }
 
