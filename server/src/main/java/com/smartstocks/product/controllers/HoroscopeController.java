@@ -1,6 +1,8 @@
 package com.smartstocks.product.controllers;
 
 import com.smartstocks.product.dto.HoroscopeItem;
+import com.smartstocks.product.dto.RootResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import java.io.StringReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +31,7 @@ public class HoroscopeController {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<HoroscopeItem>> getHoroscopeJson() {
+    public ResponseEntity<RootResponseDto<List<HoroscopeItem>>> getHoroscopeJson() {
         String url = "https://www.hindustantimes.com/feeds/rss/astrology/horoscope/rssfeed.xml";
         try {
             String rssFeed = restTemplate.getForObject(url, String.class);
@@ -112,10 +115,26 @@ public class HoroscopeController {
 
             items.sort(java.util.Comparator.comparingInt(item -> validZodiacs.indexOf(item.getZodiacName())));
 
-            return ResponseEntity.ok(items);
+            RootResponseDto<List<HoroscopeItem>> response = new RootResponseDto<>(
+                    200,
+                    HttpStatus.OK,
+                    "SUCCESS",
+                    LocalDateTime.now(),
+                    null,
+                    items
+            );
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+            RootResponseDto<List<HoroscopeItem>> errorResponse = new RootResponseDto<>(
+                    500,
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "FAILED",
+                    LocalDateTime.now(),
+                    null,
+                    null
+            );
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
