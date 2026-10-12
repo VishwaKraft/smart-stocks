@@ -35,6 +35,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,7 +132,7 @@ public class SegmentServiceImpl implements ISegmentService {
         eventLogger.log("SEGMENT_CREATED", eventInfo);
 
         // Parse CSV from the same byte array (second independent read)
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileBytes)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileBytes), StandardCharsets.UTF_8))) {
             parseCsvAndSaveUsers(segment, reader);
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse CSV", e);
@@ -161,12 +163,12 @@ public class SegmentServiceImpl implements ISegmentService {
                 String phoneNumber = null;
 
                 for (Map.Entry<String, Object> entry : row.entrySet()) {
-                    String col = entry.getKey().toLowerCase();
-                    if (col.equals("emailid") || col.equals("email"))
+                    String col = normalizeHeader(entry.getKey());
+                    if (isEmailHeader(col))
                         emailId = String.valueOf(entry.getValue());
-                    if (col.equals("userid") || col.equals("id"))
+                    if (isUserIdHeader(col))
                         userId = String.valueOf(entry.getValue());
-                    if (col.equals("phone_number") || col.equals("phonenumber") || col.equals("phone"))
+                    if (isPhoneHeader(col))
                         phoneNumber = String.valueOf(entry.getValue());
                 }
 
@@ -229,7 +231,7 @@ public class SegmentServiceImpl implements ISegmentService {
 
             ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(s3Object))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(s3Object, StandardCharsets.UTF_8))) {
                 parseCsvAndSaveUsers(segment, reader);
             }
         } catch (AwsServiceException e) {
@@ -243,63 +245,161 @@ public class SegmentServiceImpl implements ISegmentService {
     }
 
     private void parseCsvAndSaveUsers(Segment segment, BufferedReader reader) throws IOException {
-        String headerLine = reader.readLine();
-        if (headerLine != null) {
-            String[] headers = headerLine.split(",");
-            int emailIdx = -1, userIdx = -1, phoneIdx = -1;
-            for (int i = 0; i < headers.length; i++) {
-                String h = headers[i].trim().toLowerCase();
-                if (h.equals("emailid") || h.equals("email"))
-                    emailIdx = i;
-                if (h.equals("userid") || h.equals("id"))
-                    userIdx = i;
-                if (h.equals("phone_number") || h.equals("phonenumber") || h.equals("phone"))
-                    phoneIdx = i;
+        String headerLine = null;
+        while ((headerLine = reader.readLine()) != null) {
+            if (headerLine.startsWith("\uFEFF")) {
+                headerLine = headerLine.substring(1);
             }
-
-            if (emailIdx == -1) {
-                throw new IllegalArgumentException("CSV must contain an 'emailid' column");
+            if (!headerLine.trim().isEmpty()) {
+                break;
             }
+        }
 
-            final int finalEmailIdx = emailIdx;
-            final int finalUserIdx = userIdx;
-            final int finalPhoneIdx = phoneIdx;
+        if (headerLine == null) {
+            throw new IllegalArgumentException("CSV file is empty");
+        }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                if (parts.length > emailIdx) {
-                    String email = parts[emailIdx].trim();
-                    if (!email.isEmpty()) {
-                        SegmentUser su = new SegmentUser();
-                        su.setSegment(segment);
-                        su.setEmailId(email);
-                        if (userIdx != -1 && parts.length > userIdx)
-                            su.setUserId(parts[userIdx].trim());
-                        if (phoneIdx != -1 && parts.length > phoneIdx)
-                            su.setPhoneNumber(parts[phoneIdx].trim());
+        char delimiter = detectDelimiter(headerLine);
+        List<String> rawHeaders = parseCsvLine(headerLine, delimiter);
+        int emailIdx = -1, userIdx = -1, phoneIdx = -1;
+        for (int i = 0; i < rawHeaders.size(); i++) {
+            String norm = normalizeHeader(rawHeaders.get(i));
+            if (isEmailHeader(norm) && emailIdx == -1) {
+                emailIdx = i;
+            } else if (isUserIdHeader(norm) && userIdx == -1) {
+                userIdx = i;
+            } else if (isPhoneHeader(norm) && phoneIdx == -1) {
+                phoneIdx = i;
+            }
+        }
 
-                        Map<String, Object> extraData = new java.util.HashMap<>();
-                        for (int i = 0; i < headers.length; i++) {
-                            if (i == finalEmailIdx || i == finalUserIdx || i == finalPhoneIdx) continue;
-                            String key = headers[i].trim();
-                            String val = parts.length > i ? parts[i].trim() : "";
-                            if (!key.isEmpty()) {
-                                extraData.put(key, val);
-                            }
-                        }
-                        extraData.put("email", email);
-                        if (su.getUserId() != null) extraData.put("userId", su.getUserId());
-                        if (su.getPhoneNumber() != null) extraData.put("phoneNumber", su.getPhoneNumber());
-                        if (!extraData.isEmpty()) {
-                            su.setData(extraData);
-                        }
+        if (emailIdx == -1) {
+            throw new IllegalArgumentException("CSV must contain an 'emailid' column (found columns: " + String.join(", ", rawHeaders) + ")");
+        }
 
-                        segmentUserRepository.save(su);
+        final int finalEmailIdx = emailIdx;
+        final int finalUserIdx = userIdx;
+        final int finalPhoneIdx = phoneIdx;
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+            List<String> parts = parseCsvLine(line, delimiter);
+            if (parts.size() > emailIdx) {
+                String email = cleanToken(parts.get(emailIdx));
+                if (!email.isEmpty()) {
+                    SegmentUser su = new SegmentUser();
+                    su.setSegment(segment);
+                    su.setEmailId(email);
+                    if (userIdx != -1 && parts.size() > userIdx) {
+                        String uid = cleanToken(parts.get(userIdx));
+                        if (!uid.isEmpty()) su.setUserId(uid);
                     }
+                    if (phoneIdx != -1 && parts.size() > phoneIdx) {
+                        String phone = cleanToken(parts.get(phoneIdx));
+                        if (!phone.isEmpty()) su.setPhoneNumber(phone);
+                    }
+
+                    Map<String, Object> extraData = new java.util.HashMap<>();
+                    for (int i = 0; i < rawHeaders.size(); i++) {
+                        if (i == finalEmailIdx || i == finalUserIdx || i == finalPhoneIdx) continue;
+                        String key = cleanToken(rawHeaders.get(i));
+                        String val = parts.size() > i ? cleanToken(parts.get(i)) : "";
+                        if (!key.isEmpty()) {
+                            extraData.put(key, val);
+                        }
+                    }
+                    extraData.put("email", email);
+                    if (su.getUserId() != null) extraData.put("userId", su.getUserId());
+                    if (su.getPhoneNumber() != null) extraData.put("phoneNumber", su.getPhoneNumber());
+                    if (!extraData.isEmpty()) {
+                        su.setData(extraData);
+                    }
+
+                    segmentUserRepository.save(su);
                 }
             }
         }
+    }
+
+    private char detectDelimiter(String line) {
+        int commas = 0, semicolons = 0, tabs = 0;
+        for (char c : line.toCharArray()) {
+            if (c == ',') commas++;
+            else if (c == ';') semicolons++;
+            else if (c == '\t') tabs++;
+        }
+        if (semicolons > commas && semicolons >= tabs) return ';';
+        if (tabs > commas && tabs > semicolons) return '\t';
+        return ',';
+    }
+
+    private List<String> parseCsvLine(String line, char delimiter) {
+        List<String> tokens = new ArrayList<>();
+        if (line == null) {
+            return tokens;
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean inQuotes = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    sb.append('"');
+                    i++; // skip escaped quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == delimiter && !inQuotes) {
+                tokens.add(cleanToken(sb.toString()));
+                sb.setLength(0);
+            } else {
+                sb.append(c);
+            }
+        }
+        tokens.add(cleanToken(sb.toString()));
+        return tokens;
+    }
+
+    private String cleanToken(String token) {
+        if (token == null) return "";
+        String s = token.trim();
+        s = s.replace("\uFEFF", "").replace("\u200B", "");
+        if ((s.startsWith("\"") && s.endsWith("\"") && s.length() >= 2) ||
+            (s.startsWith("'") && s.endsWith("'") && s.length() >= 2)) {
+            s = s.substring(1, s.length() - 1).trim();
+        }
+        return s;
+    }
+
+    private String normalizeHeader(String header) {
+        if (header == null) return "";
+        String s = cleanToken(header).toLowerCase();
+        return s.replaceAll("[^a-z0-9]", "");
+    }
+
+    private boolean isEmailHeader(String normalized) {
+        return normalized.equals("emailid")
+                || normalized.equals("email")
+                || normalized.equals("emailaddress")
+                || normalized.equals("mail");
+    }
+
+    private boolean isUserIdHeader(String normalized) {
+        return normalized.equals("userid")
+                || normalized.equals("id")
+                || normalized.equals("uid");
+    }
+
+    private boolean isPhoneHeader(String normalized) {
+        return normalized.equals("phonenumber")
+                || normalized.equals("phone")
+                || normalized.equals("mobilenumber")
+                || normalized.equals("mobile")
+                || normalized.equals("contactnumber")
+                || normalized.equals("contact");
     }
 
     @Override
