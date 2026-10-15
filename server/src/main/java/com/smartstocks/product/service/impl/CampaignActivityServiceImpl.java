@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,11 +44,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CampaignActivityServiceImpl implements ICampaignActivityService {
+
+    private static final int GENERATE_BATCH_SIZE = 2000;
 
     private final CampaignActivityRepository activityRepository;
     private final CampaignActivityWeekdayRepository weekdayRepository;
@@ -65,6 +75,7 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
     private final EmailProviderFactory emailProviderFactory;
     private final RestTemplate restTemplate;
     private final com.smartstocks.product.service.ExternalDataFetcherService externalDataFetcher;
+    private final JdbcTemplate jdbcTemplate;
 
     @org.springframework.beans.factory.annotation.Value("${meta.oauth.client-secret:}")
     private String appSecret;
@@ -537,8 +548,15 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
      */
     @Transactional
     public CampaignActivityDto generateActivityData(Long id) {
+        log.info("[ActivityService] generateActivityData() called for activity id: {}", id);
+        long startTime = System.currentTimeMillis();
+
         CampaignActivity activity = activityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Activity not found: " + id));
+
+        log.info("[ActivityService] Found activity [{}] name='{}' status={} campaignType={}",
+                id, activity.getActivityName(), activity.getStatus(),
+                activity.getCampaign().getCampaignType());
 
         if (activity.getStatus() != ActivityStatus.GENERATING) {
             // Allow auto-generation triggered by the scheduler for child activities
@@ -555,8 +573,12 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
         if (segment == null) {
             throw new IllegalStateException("No segment attached to this activity.");
         }
+        log.info("[ActivityService] Loading segment id={} name='{}' for activity [{}]",
+                segment.getId(), segment.getName(), id);
 
         List<com.smartstocks.product.models.SegmentUser> segmentUsers = segmentUserRepository.findBySegmentId(segment.getId());
+        log.info("[ActivityService] Loaded {} segment users from segment id={} for activity [{}]",
+                segmentUsers.size(), segment.getId(), id);
 
         // Filter out users who have unsubscribed from this campaign at the segment generation stage.
         // This gives an accurate recipient_count and avoids sending to opted-out users even if
@@ -573,8 +595,8 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
                     .filter(su -> su.getEmailId() == null
                             || !finalUnsubscribedEmails.contains(su.getEmailId().trim().toLowerCase()))
                     .collect(Collectors.toList());
-            log.info("[ActivityService] Filtered {} unsubscribed user(s) from segment for activity [{}]",
-                    before - segmentUsers.size(), id);
+            log.info("[ActivityService] Filtered {} unsubscribed user(s) from segment for activity [{}]. Remaining: {}",
+                    before - segmentUsers.size(), id, segmentUsers.size());
         }
 
         InfobipPeopleProvider peopleProvider = null;
@@ -585,34 +607,110 @@ public class CampaignActivityServiceImpl implements ICampaignActivityService {
             peopleProvider = new InfobipPeopleProvider(infobipApiKey, infobipPeopleBaseUrl);
         }
 
+        log.info("[ActivityService] Deleting existing campaign_segment_users for activity [{}]", id);
         campaignSegmentUserRepository.deleteAllByActivityId(id);
 
-        int count = 0;
-        for (com.smartstocks.product.models.SegmentUser su : segmentUsers) {
-            CampaignSegmentUser csu = new CampaignSegmentUser();
-            csu.setActivity(activity);
-            csu.setEmailId(su.getEmailId());
-            csu.setPhoneNumber(su.getPhoneNumber());
-            csu.setUserId(su.getUserId());
-            csu.setData(su.getData());
+        final boolean isVoice = (peopleProvider != null);
+        final InfobipPeopleProvider finalPeopleProvider = peopleProvider;
+        final CampaignActivity finalActivity = activity;
 
-            if (peopleProvider != null && csu.getPhoneNumber() != null && !csu.getPhoneNumber().isBlank()) {
-                String personId = peopleProvider.createPerson(csu);
+        // Batch insert into campaign_segment_users using JdbcTemplate for performance.
+        // The previous per-row save() caused N round-trips to the DB, which stalls
+        // for large segments (tens of thousands of users).
+        final String insertSql =
+                "INSERT INTO campaign_segment_users (activity_id, email_id, phone_number, user_id, data, infobip_person_created, infobip_person_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        log.info("[ActivityService] Starting batch insert for {} recipients into campaign_segment_users (batchSize={}) for activity [{}]",
+                segmentUsers.size(), GENERATE_BATCH_SIZE, id);
+
+        int count = 0;
+        List<com.smartstocks.product.models.SegmentUser> batch = new ArrayList<>(GENERATE_BATCH_SIZE);
+        final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        for (com.smartstocks.product.models.SegmentUser su : segmentUsers) {
+            // For VOICE campaigns, register person in Infobip before batching
+            if (isVoice && su.getPhoneNumber() != null && !su.getPhoneNumber().isBlank()) {
+                CampaignSegmentUser tempCsu = new CampaignSegmentUser();
+                tempCsu.setActivity(finalActivity);
+                tempCsu.setEmailId(su.getEmailId());
+                tempCsu.setPhoneNumber(su.getPhoneNumber());
+                tempCsu.setUserId(su.getUserId());
+                tempCsu.setData(su.getData());
+                String personId = finalPeopleProvider.createPerson(tempCsu);
                 if (personId != null) {
-                    csu.setInfobipPersonCreated(true);
+                    // Infobip registration happened - persist via JPA for this record only
+                    tempCsu.setInfobipPersonCreated(true);
                     if (!personId.equals("existing")) {
-                        csu.setInfobipPersonId(personId);
+                        tempCsu.setInfobipPersonId(personId);
                     }
+                    campaignSegmentUserRepository.save(tempCsu);
+                    count++;
+                    continue;
                 }
             }
+            batch.add(su);
+            if (batch.size() >= GENERATE_BATCH_SIZE) {
+                final List<com.smartstocks.product.models.SegmentUser> batchToInsert = new ArrayList<>(batch);
+                jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        com.smartstocks.product.models.SegmentUser u = batchToInsert.get(i);
+                        ps.setLong(1, finalActivity.getId());
+                        ps.setString(2, u.getEmailId());
+                        ps.setString(3, u.getPhoneNumber());
+                        ps.setString(4, u.getUserId());
+                        String dataJson = null;
+                        if (u.getData() != null) {
+                            try { dataJson = objectMapper.writeValueAsString(u.getData()); } catch (Exception ignored) {}
+                        }
+                        ps.setString(5, dataJson);
+                        ps.setBoolean(6, false);
+                        ps.setNull(7, Types.VARCHAR);
+                    }
+                    @Override
+                    public int getBatchSize() { return batchToInsert.size(); }
+                });
+                count += batch.size();
+                log.info("[ActivityService] Inserted {} / {} recipients so far for activity [{}]...",
+                        count, segmentUsers.size(), id);
+                batch.clear();
+            }
+        }
 
-            campaignSegmentUserRepository.save(csu);
-            count++;
+        // Flush remaining records
+        if (!batch.isEmpty()) {
+            final List<com.smartstocks.product.models.SegmentUser> lastBatch = new ArrayList<>(batch);
+            jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    com.smartstocks.product.models.SegmentUser u = lastBatch.get(i);
+                    ps.setLong(1, finalActivity.getId());
+                    ps.setString(2, u.getEmailId());
+                    ps.setString(3, u.getPhoneNumber());
+                    ps.setString(4, u.getUserId());
+                    String dataJson = null;
+                    if (u.getData() != null) {
+                        try { dataJson = objectMapper.writeValueAsString(u.getData()); } catch (Exception ignored) {}
+                    }
+                    ps.setString(5, dataJson);
+                    ps.setBoolean(6, false);
+                    ps.setNull(7, Types.VARCHAR);
+                }
+                @Override
+                public int getBatchSize() { return lastBatch.size(); }
+            });
+            count += batch.size();
+            batch.clear();
         }
 
         activity.setRecipientCount(count);
         activity.setStatus(ActivityStatus.NEW);
         CampaignActivity saved = activityRepository.save(activity);
+
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("[ActivityService] generateActivityData() completed for activity [{}]. Recipients inserted: {}, Duration: {} ms",
+                id, count, duration);
 
         Map<String, Object> info = new HashMap<>();
         info.put("activityId", saved.getId());
