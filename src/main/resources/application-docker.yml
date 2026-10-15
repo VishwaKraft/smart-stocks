@@ -4,6 +4,10 @@ spring:
     username: "smartuser"
     password: "smartpass"
     driverClassName: "org.postgresql.Driver"
+    hikari:
+      data-source-properties:
+        prepareThreshold: 0
+        reWriteBatchedInserts: true
 
   jpa:
     hibernate:

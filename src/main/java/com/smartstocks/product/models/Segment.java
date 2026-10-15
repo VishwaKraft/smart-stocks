@@ -32,6 +32,9 @@ public class Segment {
     @Column(name = "segment_type", nullable = false)
     private String segmentType; // CSV or SQL
 
+    @Column(name = "status")
+    private String status; // PROCESSING, READY, FAILED
+
     @Column(name = "s3_path")
     private String s3Path;
 
