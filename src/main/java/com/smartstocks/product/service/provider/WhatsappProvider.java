@@ -6,6 +6,9 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +19,8 @@ import java.util.Map;
  *
  * API endpoint: POST https://graph.facebook.com/v25.0/{phoneNumberId}/messages
  *
- * Note: appsecret_proof is NOT used here. The WhatsApp Cloud API /messages endpoint
- * only accepts Bearer token auth and rejects appsecret_proof query params with a 400
- * GraphMethodException ("Unsupported request - method type: post").
+ * appsecret_proof is appended as a query parameter when the appSecret is configured.
+ * This is required when the Meta app has "Require App Secret" enforcement enabled.
  */
 public class WhatsappProvider {
 
@@ -27,14 +29,40 @@ public class WhatsappProvider {
 
     private final String accessToken;
     private final String phoneNumberId;
+    private final String appSecret;
     private final RestTemplate restTemplate;
 
     public WhatsappProvider(String accessToken, String phoneNumberId, String appSecret) {
         this.accessToken = accessToken;
         this.phoneNumberId = phoneNumberId;
-        // appSecret is intentionally not used: the WhatsApp Cloud API /messages endpoint
-        // does not support appsecret_proof and rejects requests that include it.
+        this.appSecret = appSecret;
         this.restTemplate = new RestTemplate();
+    }
+
+    /**
+     * Computes appsecret_proof = HMAC-SHA256(appSecret, accessToken).
+     * Required when the Meta app has "Require App Secret" enforcement enabled.
+     * Returns an empty string if appSecret is not configured.
+     */
+    private String computeAppSecretProof(String token) {
+        if (appSecret == null || appSecret.isBlank()) {
+            log.warn("[WhatsappProvider] appSecret is not configured — appsecret_proof will be omitted. " +
+                     "This will fail if the Meta app has 'Require App Secret' enabled.");
+            return "";
+        }
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(appSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+            log.error("[WhatsappProvider] Failed to compute appsecret_proof", ex);
+            return "";
+        }
     }
 
     /**
@@ -47,6 +75,10 @@ public class WhatsappProvider {
      */
     public SendResult send(String toPhoneNumber, String templateName, String languageCode) {
         String url = GRAPH_API_BASE + "/" + phoneNumberId + "/messages";
+        String proof = computeAppSecretProof(accessToken);
+        if (proof != null && !proof.isEmpty()) {
+            url += "?appsecret_proof=" + proof;
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
