@@ -77,6 +77,10 @@ public class WhatsappProvider {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
+        log.info("[WhatsappProvider] USING phoneNumberId={} token={}...{}",
+                phoneNumberId,
+                accessToken != null && accessToken.length() > 16 ? accessToken.substring(0, 8) : "?",
+                accessToken != null && accessToken.length() > 16 ? accessToken.substring(accessToken.length() - 8) : "?");
         log.info("[WhatsappProvider] REQUEST url={} to={} template={}", url, toPhoneNumber, templateName);
 
         try {
