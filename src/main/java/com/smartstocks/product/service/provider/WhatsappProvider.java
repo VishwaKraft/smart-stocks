@@ -6,9 +6,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +14,18 @@ import java.util.Map;
  * Sends WhatsApp template messages via the Meta WhatsApp Business Cloud API.
  * Uses a permanent access token obtained through the "Sign in with Meta" flow.
  *
- * API endpoint: POST https://graph.facebook.com/v25.0/{phoneNumberId}/messages
+ * Equivalent curl:
+ *   curl --request POST \
+ *     --url https://graph.facebook.com/v25.0/{phoneNumberId}/messages \
+ *     --header 'Authorization: Bearer <ACCESS_TOKEN>' \
+ *     --header 'Content-Type: application/json' \
+ *     --data '{"messaging_product":"whatsapp","to":"<PHONE>","type":"template",
+ *              "template":{"name":"<TEMPLATE>","language":{"code":"en_US"}}}'
  *
- * appsecret_proof is appended as a query parameter when the appSecret is configured.
- * This is required when the Meta app has "Require App Secret" enforcement enabled.
+ * NOTE: appsecret_proof is intentionally NOT sent. The /messages endpoint only
+ * requires Bearer-token auth. Sending an appsecret_proof computed with the wrong
+ * secret causes Meta to return a misleading 400 GraphMethodException
+ * ("Unsupported request - method type: post") instead of a clear auth error.
  */
 public class WhatsappProvider {
 
@@ -29,62 +34,35 @@ public class WhatsappProvider {
 
     private final String accessToken;
     private final String phoneNumberId;
-    private final String appSecret;
     private final RestTemplate restTemplate;
 
+    /**
+     * @param accessToken   Meta permanent access token
+     * @param phoneNumberId Meta Phone Number ID (not the display phone number)
+     * @param appSecret     Unused — kept for API compatibility; appsecret_proof is not
+     *                      sent to the /messages endpoint (see class-level note)
+     */
     public WhatsappProvider(String accessToken, String phoneNumberId, String appSecret) {
         this.accessToken = accessToken;
         this.phoneNumberId = phoneNumberId;
-        this.appSecret = appSecret;
         this.restTemplate = new RestTemplate();
-    }
-
-    /**
-     * Computes appsecret_proof = HMAC-SHA256(appSecret, accessToken).
-     * Required when the Meta app has "Require App Secret" enforcement enabled.
-     * Returns an empty string if appSecret is not configured.
-     */
-    private String computeAppSecretProof(String token) {
-        if (appSecret == null || appSecret.isBlank()) {
-            log.warn("[WhatsappProvider] appSecret is not configured — appsecret_proof will be omitted. " +
-                     "This will fail if the Meta app has 'Require App Secret' enabled.");
-            return "";
-        }
-        try {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(appSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            byte[] hash = mac.doFinal(token.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (Exception ex) {
-            log.error("[WhatsappProvider] Failed to compute appsecret_proof", ex);
-            return "";
-        }
     }
 
     /**
      * Sends a WhatsApp template message to the given phone number.
      *
-     * @param toPhoneNumber  Recipient phone number in E.164 format (e.g. "+919258844009")
-     * @param templateName   Meta-approved template name (e.g. "3p_direct_integration_test_template")
-     * @param languageCode   Template language code (e.g. "en_US")
+     * @param toPhoneNumber Recipient phone number in E.164 format (e.g. "+919258844009")
+     * @param templateName  Meta-approved template name (e.g. "promotional_season")
+     * @param languageCode  Template language code (e.g. "en_US")
      * @return SendResult with success/failure details
      */
     public SendResult send(String toPhoneNumber, String templateName, String languageCode) {
         String url = GRAPH_API_BASE + "/" + phoneNumberId + "/messages";
-        String proof = computeAppSecretProof(accessToken);
-        if (proof != null && !proof.isEmpty()) {
-            url += "?appsecret_proof=" + proof;
-        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
 
-        // Build the WhatsApp Cloud API payload
         Map<String, Object> payload = new HashMap<>();
         payload.put("messaging_product", "whatsapp");
         payload.put("to", toPhoneNumber);
